@@ -17,15 +17,16 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         String path = request.getRequestURI();
 
-        // Public endpoints that don't need authentication
-        // In preHandle method, add:
+        // ================= PUBLIC ENDPOINTS =================
         if (path.startsWith("/api/admin/auth/login") ||
                 path.startsWith("/api/admin/auth/init") ||
                 path.startsWith("/api/staff/auth/login") ||
                 path.startsWith("/api/staff/auth/forgot-password") ||
+                path.startsWith("/api/staff/auth/check-status") ||
                 path.startsWith("/api/health") ||
-                path.startsWith("/api/test/") ||  // Allow all test endpoints
-                path.startsWith("/api/debug/")) { // Allow debug endpoints
+                path.startsWith("/api/test/") ||
+                path.startsWith("/api/debug/") ||
+                path.startsWith("/api/public/")) {  // ALL public endpoints
             return true;
         }
 
@@ -46,8 +47,9 @@ public class JwtInterceptor implements HandlerInterceptor {
             }
 
             String role = SimpleJwtUtil.extractRole(token);
+            String userId = SimpleJwtUtil.extractUserId(token);
 
-            // ADMIN-only endpoints (Admin management, all appointments)
+            // ================= ADMIN-ONLY ENDPOINTS =================
             if (path.startsWith("/api/admin/") && !path.startsWith("/api/admin/auth/")) {
                 if (!"ADMIN".equals(role)) {
                     sendError(response, 403, "Admin access required");
@@ -55,7 +57,21 @@ public class JwtInterceptor implements HandlerInterceptor {
                 }
             }
 
-            // STAFF-only endpoints (Their appointments, profile)
+            // ================= STAFF PHOTO ENDPOINTS =================
+            if (path.startsWith("/api/staff/photos")) {
+                if (!"STAFF".equals(role)) {
+                    sendError(response, 403, "Staff access required");
+                    return false;
+                }
+
+                // For DELETE /api/staff/photos/{id}, ensure staff can only delete their own
+                if (path.matches("/api/staff/photos/[^/]+") && "DELETE".equals(request.getMethod())) {
+                    String photoId = path.substring(path.lastIndexOf("/") + 1);
+                    // The controller will verify ownership
+                }
+            }
+
+            // ================= STAFF APPOINTMENT ENDPOINTS =================
             if (path.startsWith("/api/staff/appointments/") ||
                     path.startsWith("/api/staff/me")) {
                 if (!"STAFF".equals(role)) {
@@ -64,9 +80,10 @@ public class JwtInterceptor implements HandlerInterceptor {
                 }
             }
 
-            // STAFF endpoints (staff-specific operations)
+            // ================= STAFF MANAGEMENT ENDPOINTS =================
             if (path.startsWith("/api/staff/") &&
                     !path.startsWith("/api/staff/auth/") &&
+                    !path.startsWith("/api/staff/photos") &&
                     !path.startsWith("/api/staff/appointments/") &&
                     !path.startsWith("/api/staff/me")) {
                 // Only ADMIN can access general staff management
@@ -76,10 +93,18 @@ public class JwtInterceptor implements HandlerInterceptor {
                 }
             }
 
+            // ================= ADMIN PHOTO ENDPOINTS =================
+            if (path.startsWith("/api/admin/photos")) {
+                if (!"ADMIN".equals(role)) {
+                    sendError(response, 403, "Admin access required");
+                    return false;
+                }
+            }
+
             // Add user info to request
-            request.setAttribute("userId", SimpleJwtUtil.extractUserId(token));
+            request.setAttribute("userId", userId);
             request.setAttribute("email", SimpleJwtUtil.extractEmail(token));
-            request.setAttribute("role", SimpleJwtUtil.extractRole(token));
+            request.setAttribute("role", role);
 
             return true;
 
