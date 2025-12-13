@@ -18,9 +18,14 @@ public class JwtInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI();
 
         // Public endpoints that don't need authentication
+        // In preHandle method, add:
         if (path.startsWith("/api/admin/auth/login") ||
                 path.startsWith("/api/admin/auth/init") ||
-                path.startsWith("/api/staff/auth/login")) {
+                path.startsWith("/api/staff/auth/login") ||
+                path.startsWith("/api/staff/auth/forgot-password") ||
+                path.startsWith("/api/health") ||
+                path.startsWith("/api/test/") ||  // Allow all test endpoints
+                path.startsWith("/api/debug/")) { // Allow debug endpoints
             return true;
         }
 
@@ -40,9 +45,31 @@ public class JwtInterceptor implements HandlerInterceptor {
                 return false;
             }
 
-            // Check role for admin endpoints
+            String role = SimpleJwtUtil.extractRole(token);
+
+            // ADMIN-only endpoints (Admin management, all appointments)
             if (path.startsWith("/api/admin/") && !path.startsWith("/api/admin/auth/")) {
-                String role = SimpleJwtUtil.extractRole(token);
+                if (!"ADMIN".equals(role)) {
+                    sendError(response, 403, "Admin access required");
+                    return false;
+                }
+            }
+
+            // STAFF-only endpoints (Their appointments, profile)
+            if (path.startsWith("/api/staff/appointments/") ||
+                    path.startsWith("/api/staff/me")) {
+                if (!"STAFF".equals(role)) {
+                    sendError(response, 403, "Staff access required");
+                    return false;
+                }
+            }
+
+            // STAFF endpoints (staff-specific operations)
+            if (path.startsWith("/api/staff/") &&
+                    !path.startsWith("/api/staff/auth/") &&
+                    !path.startsWith("/api/staff/appointments/") &&
+                    !path.startsWith("/api/staff/me")) {
+                // Only ADMIN can access general staff management
                 if (!"ADMIN".equals(role)) {
                     sendError(response, 403, "Admin access required");
                     return false;
