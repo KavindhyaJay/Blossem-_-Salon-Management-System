@@ -1,0 +1,281 @@
+{
+	"info": {
+		"name": "Reception Module API",
+		"description": "Complete API collection for Salon Reception Module",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "receptionAppointmentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bookingId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Reception Appointments",
+			"item": [
+				{
+					"name": "Get All Reception Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get Reception Appointment by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/{{receptionAppointmentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "{{receptionAppointmentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Create New Reception Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ridmi@gmail.com\",\n  \"customerName\": \"Ridmi\",\n  \"services\": [\"Hair cut\", \"Hair Color\"],\n  \"date\": \"2025-12-16\",\n  \"time\": \"4:00 PM\",\n  \"staff\": \"Thinuri\",\n  \"amount\": \"2000\",\n  \"payment\": \"Paid\",\n  \"customerArrived\": \"No\",\n  \"receptionPaymentChecked\": \"No\",\n  \"receptionNotes\": \"Customer prefers morning slot\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments"]
+						}
+					}
+				},
+				{
+					"name": "Create from Existing Booking",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/from-booking/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "from-booking", "{{bookingId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Reception Appointment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ridmi@gmail.com\",\n  \"services\": [\"Hair cut\", \"Hair Color\", \"Hair Treatment\"],\n  \"date\": \"2025-12-16\",\n  \"time\": \"5:00 PM\",\n  \"staff\": \"Thinuri\",\n  \"payment\": \"Paid\",\n  \"customerArrived\": \"Yes\",\n  \"receptionPaymentChecked\": \"Yes\",\n  \"receptionNotes\": \"Updated appointment time\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/{{receptionAppointmentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "{{receptionAppointmentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Mark Customer Arrived (by ID)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/{{receptionAppointmentId}}/arrived?staffEmail=thinuri@salon.com",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "{{receptionAppointmentId}}", "arrived"],
+							"query": [
+								{
+									"key": "staffEmail",
+									"value": "thinuri@salon.com",
+									"description": "Optional: Email to send notification to staff"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mark Customer Arrived (by Booking ID)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/booking/{{bookingId}}/arrived?staffEmail=thinuri@salon.com",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "booking", "{{bookingId}}", "arrived"],
+							"query": [
+								{
+									"key": "staffEmail",
+									"value": "thinuri@salon.com",
+									"description": "Optional: Email to send notification to staff"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Payment Check Status",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/{{receptionAppointmentId}}/payment-check?paymentChecked=Yes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "{{receptionAppointmentId}}", "payment-check"],
+							"query": [
+								{
+									"key": "paymentChecked",
+									"value": "Yes",
+									"description": "Must be 'Yes' or 'No'"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Payment Status (by Booking ID)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/booking/{{bookingId}}/payment?status=PAID",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "booking", "{{bookingId}}", "payment"],
+							"query": [
+								{
+									"key": "status",
+									"value": "PAID",
+									"description": "Must be 'PAID' or 'PENDING'"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Reception Appointment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reception_appointments/{{receptionAppointmentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reception_appointments", "{{receptionAppointmentId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Get All Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						}
+					}
+				},
+				{
+					"name": "Get Booking by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "{{bookingId}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Ridmi\",\n  \"services\": [\"Hair cut\", \"Hair Color\"],\n  \"date\": \"2025-12-16\",\n  \"time\": \"4:00 PM\",\n  \"staff\": \"Thinuri\",\n  \"payment\": \"2000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						}
+					}
+				},
+				{
+					"name": "Update Booking",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Ridmi\",\n  \"services\": [\"Hair cut\", \"Hair Color\"],\n  \"date\": \"2025-12-16\",\n  \"time\": \"5:00 PM\",\n  \"staff\": \"Thinuri\",\n  \"payment\": \"2000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "{{bookingId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Booking",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "{{bookingId}}"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
+
