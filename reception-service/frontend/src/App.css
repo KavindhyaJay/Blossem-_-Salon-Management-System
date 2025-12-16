@@ -1,48 +1,54 @@
 .app-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
 }
 
 /* Button Styles */
 .btn-primary {
-  background-color: var(--primary-green);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+  color: #0f1419;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 214, 126, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn-primary:hover {
-  background-color: var(--hover-green);
+  background: linear-gradient(135deg, var(--primary-green-light) 0%, var(--primary-green) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow);
+  box-shadow: 0 6px 20px rgba(0, 214, 126, 0.3);
 }
 
 .btn-secondary {
-  background-color: var(--white);
+  background-color: transparent;
   color: var(--primary-green);
   border: 2px solid var(--primary-green);
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn-secondary:hover {
-  background-color: var(--light-green);
+  background-color: rgba(0, 214, 126, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 214, 126, 0.2);
 }
 
 .btn-danger {
-  background-color: #ef4444;
+  background-color: #ff4757;
   color: white;
   border: none;
   padding: 8px 16px;

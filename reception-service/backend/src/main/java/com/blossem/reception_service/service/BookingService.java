@@ -3,7 +3,6 @@ package com.blossem.reception_service.service;
 import com.blossem.reception_service.DTO.BookingRequest;
 import com.blossem.reception_service.model.Booking;
 import com.blossem.reception_service.model.BookingStatus;
-import com.blossem.reception_service.model.PaymentStatus;
 import com.blossem.reception_service.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

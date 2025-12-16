@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AppointmentModal.css';
+import { useCreateAppointmentsMutation, useUpdateAppointmentMutation } from '../redux/Query';
 
 const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,13 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     receptionPaymentChecked: 'No',
     receptionNotes: '',
   });
+
+  // Redux mutations
+  const [createAppointment, { isLoading: isCreateLoading, isError: isCreateError, error: createError }] = useCreateAppointmentsMutation();
+  const [updateAppointment, { isLoading: isUpdateLoading, isError: isUpdateError, error: updateError }] = useUpdateAppointmentMutation();
+
+  const isLoading = isCreateLoading || isUpdateLoading;
+  const isError = isCreateError || isUpdateError;
 
   const [servicesInput, setServicesInput] = useState('');
 
@@ -70,13 +78,36 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const dataToSave = {
       ...formData,
       services: formData.services.filter((s) => s),
     };
-    onSave(dataToSave);
+
+    try {
+      if (appointment) {
+        // Update existing appointment
+        console.log('📝 Updating appointment:', appointment._id);
+        await updateAppointment({
+          id: appointment._id || appointment.id,
+          ...dataToSave
+        }).unwrap();
+        console.log('✅ Appointment updated successfully');
+      } else {
+        // Create new appointment
+        console.log('📝 Creating new appointment:', dataToSave);
+        await createAppointment(dataToSave).unwrap();
+        console.log('✅ Appointment created successfully');
+      }
+
+      // Call parent callback after successful save
+      onSave(dataToSave);
+      onClose();
+    } catch (error) {
+      console.error('❌ Error saving appointment:', error);
+      alert('Failed to save appointment: ' + (error?.message || 'Unknown error'));
+    }
   };
 
   if (!isOpen) return null;
@@ -90,6 +121,12 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
           </h2>
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
+
+        {isError && (
+          <div className="error-message">
+            ❌ Error: {createError?.message || updateError?.message || 'Failed to save appointment'}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-row">
@@ -222,7 +259,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 <label className="form-label">Payment Checked</label>
                 <select
                   name="receptionPaymentChecked"
-                  className="form-select"
+                  className="form-select "
                   value={formData.receptionPaymentChecked}
                   onChange={handleChange}
                 >
@@ -246,11 +283,18 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
+            <button type="button" className="btn-secondary" onClick={onClose} disabled={isLoading}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              {appointment ? 'Update Appointment' : 'Create Appointment'}
+            <button type="submit" className="btn-primary" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <span className="spinner"></span>
+                  {appointment ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                appointment ? 'Update Appointment' : 'Create Appointment'
+              )}
             </button>
           </div>
         </form>

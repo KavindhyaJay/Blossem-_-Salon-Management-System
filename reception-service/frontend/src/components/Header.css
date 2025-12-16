@@ -1,11 +1,12 @@
 .app-header {
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #00d67e 100%);
     color: white;
-    padding: 20px 24px;
+    padding: 24px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 214, 126, 0.15);
+    border-bottom: 3px solid var(--primary-green);
 }
 
 .header-left {
@@ -14,19 +15,26 @@
 }
 
 .brand h1 {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #00d67e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
 }
 
 .brand .tag {
     font-size: 13px;
-    opacity: 0.9;
-    margin: 4px 0 0 0;
-    font-weight: 400;
+    opacity: 0.85;
+    margin: 6px 0 0 0;
+    font-weight: 500;
+    color: #a0aec0;
+    letter-spacing: 0.3px;
 }
 
 .header-right {
@@ -36,25 +44,27 @@
 }
 
 .btn-add {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #00d67e 0%, #00a65e 100%);
+    border: none;
+    color: #0f1419;
+    padding: 12px 24px;
+    border-radius: 10px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 214, 126, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-add:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #26e891 0%, #00d67e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 214, 126, 0.3);
 }
 
 .btn-add:active {

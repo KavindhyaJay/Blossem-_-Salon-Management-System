@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import AppointmentTable from "../components/AppointmentTable";
 import AppointmentModal from "../components/AppointmentModal";
+import AllDataDisplay from "../components/AllDataDisplay";
 import { receptionService } from "../services/receptionService";
 import "../styles/main.css";
 
@@ -18,9 +19,10 @@ export default function ReceptionDashboard() {
       setLoading(true);
       setError(null);
       const data = await receptionService.getAllAppointments();
-      setAppointments(data);
+      console.log("📊 Loaded appointments:", data); // Debug log
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Error loading appointments:", err);
+      console.error("❌ Error loading appointments:", err);
       setError("Failed to load appointments. Please try again.");
       setAppointments([]);
     } finally {
@@ -29,7 +31,15 @@ export default function ReceptionDashboard() {
   };
 
   useEffect(() => {
+    // Load appointments on component mount
     loadAppointments();
+
+    // Refresh data every 10 seconds for real-time updates
+    const interval = setInterval(loadAppointments, 10000);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, []);
 
   // Handle add appointment
@@ -83,7 +93,6 @@ export default function ReceptionDashboard() {
       setError(null);
       if (status === "Yes") {
         // Get staff email from the appointment or prompt
-        const appointment = appointments.find(a => a.id === id);
         const staffEmail = prompt("Enter staff email for notification (optional):");
         if (staffEmail && staffEmail.trim()) {
           await receptionService.markArrived(id, staffEmail.trim());
@@ -92,9 +101,9 @@ export default function ReceptionDashboard() {
         }
       } else {
         // If setting to "No", just update via edit
-        const appointment = appointments.find(a => a.id === id);
+        const apt = appointments.find(a => a.id === id);
         await receptionService.updateAppointment(id, {
-          ...appointment,
+          ...apt,
           customerArrived: "No"
         });
       }
@@ -169,6 +178,9 @@ export default function ReceptionDashboard() {
             />
           )}
         </div>
+
+        {/* All Database Data Display */}
+        <AllDataDisplay />
       </main>
 
       <AppointmentModal
