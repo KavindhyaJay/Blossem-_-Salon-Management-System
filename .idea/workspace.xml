@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="39963a43-068d-45ab-acde-1328cabce5ae" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/salonmanagement/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/.idea/Salonms.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/SalonmsApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/controller/AppointmentController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/controller/StaffController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/model/Appointment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/model/Staff.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/repository/AppointmentRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/repository/StaffRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/service/AppointmentService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/service/StaffService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/service/impl/AppointmentServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/java/com/fullstack/Salonms/service/impl/StaffServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/Salonms/Salonms/src/test/java/com/fullstack/Salonms/SalonmsApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/logo192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/logo512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/public/robots.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/App.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/App.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/App.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/auth/Login.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/common/Footer.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/common/Header.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/Appointments.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/ContentManagement.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/Dashboard.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/ManagementTools.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/StaffTable.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/dashboard/StatsCards.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/staffdashboard/PhotoUpload.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/staffdashboard/StaffCalendar.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/staffdashboard/StaffMain.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/components/staffdashboard/StaffProfile.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/index.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/reportWebVitals.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/services/api.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/setupTests.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/App.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/Footer.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/Header.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/Login.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/PhotoUpload.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/StaffDashboard.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/salonmanagement/src/styles/StaffTable.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/src/components/auth/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/src/components/auth/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/src/components/dashboard/StaffTable.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/src/components/dashboard/StaffTable.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/src/components/staffdashboard/PhotoUpload.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/src/components/staffdashboard/PhotoUpload.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/src/styles/Login.css" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/src/styles/Login.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../salonmanagement/src/styles/PhotoUpload.css" beforeDir="false" afterPath="$PROJECT_DIR$/../salonmanagement/src/styles/PhotoUpload.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="Use Maven wrapper" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="36kgGcUxOxbRJWTUOUuYemL6EjB" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.SalonmsApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Salonms [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Salonms [install].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;admin__branch&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.importing&quot;
+  }
+}</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-17.0.9-corretto-17.0.9-4caba194b151-107bc6b7" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="39963a43-068d-45ab-acde-1328cabce5ae" name="Changes" comment="" />
+      <created>1765555889817</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1765555889817</updated>
+    </task>
+    <servers />
+  </component>
+</project>
