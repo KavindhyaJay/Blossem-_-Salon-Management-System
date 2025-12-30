@@ -1,0 +1,45 @@
+// Authentication utilities
+export const loginUser = async (email, password, role) => {
+  // In a real application, this would call your API
+  try {
+    // Simulate API call
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password, role }),
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userRole', data.role);
+      localStorage.setItem('userEmail', data.email);
+      return { success: true, data };
+    } else {
+      return { success: false, error: 'Invalid credentials' };
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, error: 'Network error' };
+  }
+};
+
+export const logoutUser = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('userEmail');
+};
+
+export const isAuthenticated = () => {
+  return !!localStorage.getItem('token');
+};
+
+export const getUserRole = () => {
+  return localStorage.getItem('userRole');
+};
+
+export const getUserEmail = () => {
+  return localStorage.getItem('userEmail');
+};
