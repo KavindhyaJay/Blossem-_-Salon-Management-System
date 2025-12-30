@@ -1,30 +1,27 @@
-// File: SimpleJwtUtil.java
 package com.fullstack.Salonms.util;
 
+import org.springframework.stereotype.Component;
+
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-public class SimpleJwtUtil {
+@Component
+public class JwtTokenUtil {
 
-    private static final String SECRET_KEY = "salon-management-system-secret-key-2024";
+    private static final String SECRET_KEY = "salon-management-system-secret-key-2024-change-in-production";
     private static final long EXPIRATION_TIME = 86400000; // 24 hours
-    private static final Base64.Encoder encoder = Base64.getUrlEncoder();
-    private static final Base64.Decoder decoder = Base64.getUrlDecoder();
 
-    // Generate JWT token
-    public static String generateToken(String userId, String email, String role) {
+    private final Base64.Encoder encoder = Base64.getUrlEncoder();
+    private final Base64.Decoder decoder = Base64.getUrlDecoder();
+
+    public String generateToken(String userId, String email, String role) {
         try {
             // Create header
-            Map<String, String> header = new HashMap<>();
-            header.put("alg", "HS256");
-            header.put("typ", "JWT");
-            String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
-            String encodedHeader = encoder.encodeToString(headerJson.getBytes());
+            String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+            String encodedHeader = encoder.encodeToString(header.getBytes());
 
             // Create payload
             Map<String, Object> payload = new HashMap<>();
@@ -33,14 +30,13 @@ public class SimpleJwtUtil {
             payload.put("role", role);
             payload.put("iat", System.currentTimeMillis() / 1000);
             payload.put("exp", (System.currentTimeMillis() + EXPIRATION_TIME) / 1000);
-            payload.put("jti", UUID.randomUUID().toString());
 
             String payloadJson = mapToJson(payload);
             String encodedPayload = encoder.encodeToString(payloadJson.getBytes());
 
-            // Create signature
+            // Create signature (simple hash for now)
             String data = encodedHeader + "." + encodedPayload;
-            String signature = hmacSha256(data, SECRET_KEY);
+            String signature = simpleHash(data + SECRET_KEY);
 
             return data + "." + signature;
 
@@ -49,8 +45,7 @@ public class SimpleJwtUtil {
         }
     }
 
-    // Validate JWT token
-    public static boolean validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length != 3) {
@@ -63,7 +58,7 @@ public class SimpleJwtUtil {
 
             // Verify signature
             String data = header + "." + payload;
-            String expectedSignature = hmacSha256(data, SECRET_KEY);
+            String expectedSignature = simpleHash(data + SECRET_KEY);
 
             if (!constantTimeEquals(providedSignature, expectedSignature)) {
                 return false;
@@ -85,69 +80,48 @@ public class SimpleJwtUtil {
         }
     }
 
-    // Extract claims from token
-    public static Map<String, Object> extractClaims(String token) {
+    public String extractEmail(String token) {
+        return extractClaim(token, "sub");
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, "role");
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, "userId");
+    }
+
+    private String extractClaim(String token, String claim) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length != 3) {
-                throw new RuntimeException("Invalid token format");
+                throw new RuntimeException("Invalid token");
             }
 
             String payload = parts[1];
             String payloadJson = new String(decoder.decode(payload), StandardCharsets.UTF_8);
-            return jsonToMap(payloadJson);
+            Map<String, Object> payloadMap = jsonToMap(payloadJson);
+
+            return (String) payloadMap.get(claim);
 
         } catch (Exception e) {
             throw new RuntimeException("Invalid token", e);
         }
     }
 
-    // Extract email from token
-    public static String extractEmail(String token) {
-        Map<String, Object> claims = extractClaims(token);
-        return (String) claims.get("sub");
-    }
-
-    // Extract role from token
-    public static String extractRole(String token) {
-        Map<String, Object> claims = extractClaims(token);
-        return (String) claims.get("role");
-    }
-
-    // Extract user ID from token
-    public static String extractUserId(String token) {
-        Map<String, Object> claims = extractClaims(token);
-        return (String) claims.get("userId");
-    }
-
-    // Simple HMAC SHA-256
-    private static String hmacSha256(String data, String key) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-
-        // Simple XOR-based HMAC (for demo - in production use proper HMAC)
-        byte[] result = new byte[keyBytes.length];
-        for (int i = 0; i < keyBytes.length; i++) {
-            if (i < dataBytes.length) {
-                result[i] = (byte) (keyBytes[i] ^ dataBytes[i]);
-            } else {
-                result[i] = keyBytes[i];
-            }
+    private String simpleHash(String input) {
+        try {
+            // Simple hash for demo - in production use proper HMAC
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            return encoder.encodeToString(hash).replace("=", "");
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing", e);
         }
-
-        digest.update(result);
-        byte[] hash = digest.digest();
-
-        // Double hash for better security
-        digest.update(hash);
-        byte[] finalHash = digest.digest();
-
-        return encoder.encodeToString(finalHash).replace("=", "");
     }
 
-    // Constant-time string comparison
-    private static boolean constantTimeEquals(String a, String b) {
+    private boolean constantTimeEquals(String a, String b) {
         if (a.length() != b.length()) {
             return false;
         }
@@ -158,8 +132,7 @@ public class SimpleJwtUtil {
         return result == 0;
     }
 
-    // Simple map to JSON conversion
-    private static String mapToJson(Map<String, Object> map) {
+    private String mapToJson(Map<String, Object> map) {
         StringBuilder json = new StringBuilder("{");
         boolean first = true;
 
@@ -172,10 +145,8 @@ public class SimpleJwtUtil {
             Object value = entry.getValue();
             if (value instanceof String) {
                 json.append("\"").append(value).append("\"");
-            } else if (value instanceof Number) {
-                json.append(value);
             } else {
-                json.append("\"").append(value.toString()).append("\"");
+                json.append(value);
             }
             first = false;
         }
@@ -183,8 +154,7 @@ public class SimpleJwtUtil {
         return json.toString();
     }
 
-    // Simple JSON to map conversion
-    private static Map<String, Object> jsonToMap(String json) {
+    private Map<String, Object> jsonToMap(String json) {
         Map<String, Object> map = new HashMap<>();
         json = json.trim().substring(1, json.length() - 1);
 
@@ -195,18 +165,12 @@ public class SimpleJwtUtil {
                 String key = keyValue[0].trim().replace("\"", "");
                 String value = keyValue[1].trim();
 
-                // Remove quotes if present
                 if (value.startsWith("\"") && value.endsWith("\"")) {
                     value = value.substring(1, value.length() - 1);
                     map.put(key, value);
                 } else {
-                    // Try to parse as number
                     try {
-                        if (value.contains(".")) {
-                            map.put(key, Double.parseDouble(value));
-                        } else {
-                            map.put(key, Long.parseLong(value));
-                        }
+                        map.put(key, Long.parseLong(value));
                     } catch (NumberFormatException e) {
                         map.put(key, value);
                     }

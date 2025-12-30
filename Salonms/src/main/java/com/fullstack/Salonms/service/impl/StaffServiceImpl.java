@@ -1,11 +1,12 @@
+// File: StaffServiceImpl.java (Updated for Spring Security JWT)
 package com.fullstack.Salonms.service.impl;
 
 import com.fullstack.Salonms.model.Staff;
 import com.fullstack.Salonms.repository.StaffRepository;
 import com.fullstack.Salonms.service.StaffService;
-import com.fullstack.Salonms.util.PasswordUtil;
-import com.fullstack.Salonms.util.SimpleJwtUtil;
+import com.fullstack.Salonms.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -19,6 +20,12 @@ public class StaffServiceImpl implements StaffService {
 
     @Autowired
     private StaffRepository staffRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public Staff createStaff(Staff staff) {
@@ -75,7 +82,7 @@ public class StaffServiceImpl implements StaffService {
             }
 
             // Set password and activate account
-            staff.setPasswordHash(PasswordUtil.hashPassword(password));
+            staff.setPasswordHash(passwordEncoder.encode(password));
             staff.setHasActivated(true);
             staff.setStatus("Active"); // Store as "Active" in DB
             staff.setActivatedAt(new Date());
@@ -88,7 +95,7 @@ public class StaffServiceImpl implements StaffService {
             // REGULAR LOGIN: Password exists
 
             // Verify password
-            if (!PasswordUtil.verifyPassword(password, staff.getPasswordHash())) {
+            if (!passwordEncoder.matches(password, staff.getPasswordHash())) {
                 throw new RuntimeException("Invalid email or password");
             }
 
@@ -112,6 +119,19 @@ public class StaffServiceImpl implements StaffService {
         }
     }
 
+    private Map<String, Object> createLoginResponse(Staff staff, boolean firstLogin, String message) {
+        String token = jwtUtil.generateToken(staff.getId(), staff.getEmail(), "STAFF");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("staff", staff);
+        response.put("role", "STAFF");
+        response.put("firstLogin", firstLogin);
+        response.put("message", message);
+
+        return response;
+    }
+
     // Helper method to normalize status (case-insensitive)
     private String normalizeStatus(String status) {
         if (status == null || status.isEmpty()) {
@@ -129,19 +149,6 @@ public class StaffServiceImpl implements StaffService {
         }
 
         return status; // Return original if no match
-    }
-
-    private Map<String, Object> createLoginResponse(Staff staff, boolean firstLogin, String message) {
-        String token = SimpleJwtUtil.generateToken(staff.getId(), staff.getEmail(), "STAFF");
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("staff", staff);
-        response.put("role", "STAFF");
-        response.put("firstLogin", firstLogin);
-        response.put("message", message);
-
-        return response;
     }
 
     @Override

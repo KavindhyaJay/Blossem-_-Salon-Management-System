@@ -17,5 +17,9 @@ public class FileStorageConfig implements WebMvcConfigurer {
         // Make uploaded files accessible via URL
         registry.addResourceHandler("/uploads/photos/**")
                 .addResourceLocations("file:" + uploadDir + "/");
+
+        // Add this for better CORS handling
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
     }
 }

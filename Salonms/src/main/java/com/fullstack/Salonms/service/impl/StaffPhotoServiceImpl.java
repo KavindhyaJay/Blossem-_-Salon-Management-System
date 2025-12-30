@@ -1,3 +1,4 @@
+// File: StaffPhotoServiceImpl.java (No changes needed)
 package com.fullstack.Salonms.service.impl;
 
 import com.fullstack.Salonms.model.StaffPhoto;
@@ -140,7 +141,6 @@ public class StaffPhotoServiceImpl implements StaffPhotoService {
         }
     }
 
-    // REST OF THE METHODS STAY THE SAME AS BEFORE...
     @Override
     public List<StaffPhoto> getStaffPhotos(String staffId) {
         return staffPhotoRepository.findByStaffId(staffId);

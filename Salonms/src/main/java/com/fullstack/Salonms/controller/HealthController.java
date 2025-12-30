@@ -1,11 +1,8 @@
-// File: HealthController.java
 package com.fullstack.Salonms.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,19 +16,27 @@ public class HealthController {
 
     @GetMapping
     public Map<String, Object> healthCheck() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("timestamp", System.currentTimeMillis());
+        System.out.println("=== DEBUG: Health endpoint called ===");
 
-        try {
-            // Test MongoDB connection
-            String dbName = mongoTemplate.getDb().getName();
-            response.put("mongodb", "CONNECTED");
-            response.put("database", dbName);
-        } catch (Exception e) {
-            response.put("mongodb", "DISCONNECTED");
-            response.put("error", e.getMessage());
-        }
+        // SIMPLE TEST - Remove MongoDB check temporarily
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Health check working!");
+        response.put("status", "OK");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("test", 123);
+
+        System.out.println("=== DEBUG: Returning: " + response);
+        return response;
+    }
+
+    // ADD THIS SIMPLE TEST ENDPOINT
+    @GetMapping("/simple")
+    public Map<String, String> simpleTest() {
+        System.out.println("=== DEBUG: Simple test endpoint called ===");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("test", "This is a simple test");
+        response.put("working", "yes");
 
         return response;
     }

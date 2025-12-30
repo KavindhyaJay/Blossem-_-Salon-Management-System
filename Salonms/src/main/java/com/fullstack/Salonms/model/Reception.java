@@ -10,26 +10,26 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection="staff")
-public class Staff {
+@Document(collection = "reception")
+public class Reception {
     @Id
     private String id;
     private String name;
     private String email;
-    private String specialization;
-    private String status; // PENDING_ACTIVATION, ACTIVE, INACTIVE
+    private String phone;
+    private String shift; // Morning, Evening, Full-day
 
-    // ADD THIS FIELD - Role is always "STAFF" for staff collection
-    private String role = "STAFF"; // This ensures role is always present
+    // ADD THIS FIELD - Role is always "RECEPTION" for reception collection
+    private String role = "RECEPTION"; // This ensures role is always present
 
-    // NEW AUTH FIELDS
-    private String passwordHash; // null initially, hashed after first login
-    private Boolean hasActivated = false; // false initially
+    // AUTH SYSTEM (SAME AS STAFF)
+    private String status; // PENDING, ACTIVE, INACTIVE
+    private String passwordHash; // null initially
+    private Boolean hasActivated = false;
     private Date activatedAt;
     private Date lastLogin;
 
-    // Your existing getters/setters are fine
-    // Lombok @Data will also generate them
+    // Your existing getters/setters
 
     public String getId() {
         return id;
@@ -55,20 +55,20 @@ public class Staff {
         this.email = email;
     }
 
-    public String getSpecialization() {
-        return specialization;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setSpecialization(String specialization) {
-        this.specialization = specialization;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public String getStatus() {
-        return status;
+    public String getShift() {
+        return shift;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setShift(String shift) {
+        this.shift = shift;
     }
 
     public String getRole() {
@@ -77,6 +77,14 @@ public class Staff {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getPasswordHash() {

@@ -1,9 +1,8 @@
-// File: AdminAuthController.java (Updated)
 package com.fullstack.Salonms.controller;
 
 import com.fullstack.Salonms.model.Admin;
 import com.fullstack.Salonms.service.AdminService;
-import com.fullstack.Salonms.util.SimpleJwtUtil;
+import com.fullstack.Salonms.security.JwtUtil;  // CHANGE THIS IMPORT
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +18,9 @@ public class AdminAuthController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private JwtUtil jwtUtil;  // ADD THIS
 
     @PostMapping("/init")
     public ResponseEntity<?> initializeAdmin(@RequestBody Admin admin) {
@@ -77,9 +79,10 @@ public class AdminAuthController {
                 throw new RuntimeException("Invalid or expired token");
             }
 
-            String adminId = SimpleJwtUtil.extractUserId(token);
-            String email = SimpleJwtUtil.extractEmail(token);
-            String role = SimpleJwtUtil.extractRole(token);
+            // USE jwtUtil HERE
+            String adminId = jwtUtil.extractUserId(token);      // or getUserIdFromToken(token)
+            String email = jwtUtil.extractEmail(token);         // or getEmailFromToken(token)
+            String role = jwtUtil.extractRole(token);           // or getRoleFromToken(token)
 
             Map<String, Object> response = new HashMap<>();
             response.put("valid", true);
@@ -113,7 +116,8 @@ public class AdminAuthController {
                 throw new RuntimeException("Invalid or expired token");
             }
 
-            String adminId = SimpleJwtUtil.extractUserId(token);
+            // USE jwtUtil HERE
+            String adminId = jwtUtil.extractUserId(token);      // or getUserIdFromToken(token)
             String newPassword = request.get("newPassword");
             String confirmPassword = request.get("confirmPassword");
 

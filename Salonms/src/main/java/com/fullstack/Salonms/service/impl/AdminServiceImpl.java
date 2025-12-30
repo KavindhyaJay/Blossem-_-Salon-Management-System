@@ -1,12 +1,13 @@
-// File: AdminServiceImpl.java (Updated)
+// File: AdminServiceImpl.java
 package com.fullstack.Salonms.service.impl;
 
 import com.fullstack.Salonms.model.Admin;
 import com.fullstack.Salonms.repository.AdminRepository;
+import com.fullstack.Salonms.security.JwtUtil;
 import com.fullstack.Salonms.service.AdminService;
 import com.fullstack.Salonms.util.PasswordUtil;
-import com.fullstack.Salonms.util.SimpleJwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -20,8 +21,15 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private AdminRepository adminRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public Admin createAdmin(Admin admin) {
+        // Check if admin already exists
         if (adminRepository.count() > 0) {
             Optional<Admin> existingAdmin = adminRepository.findByEmail(admin.getEmail());
             if (existingAdmin.isPresent()) {
@@ -29,10 +37,12 @@ public class AdminServiceImpl implements AdminService {
             }
         }
 
-        String hashedPassword = PasswordUtil.hashPassword(admin.getPasswordHash());
+        // Hash password using BCrypt
+        String hashedPassword = passwordEncoder.encode(admin.getPasswordHash());
         admin.setPasswordHash(hashedPassword);
         admin.setCreatedAt(new Date());
         admin.setUpdatedAt(new Date());
+        admin.setRole("ADMIN");
 
         return adminRepository.save(admin);
     }
@@ -47,21 +57,26 @@ public class AdminServiceImpl implements AdminService {
 
         Admin admin = adminOpt.get();
 
-        if (!PasswordUtil.verifyPassword(password, admin.getPasswordHash())) {
+        // Verify password using BCrypt
+        if (!passwordEncoder.matches(password, admin.getPasswordHash())) {
             throw new RuntimeException("Invalid email or password");
         }
 
+        // Update last login
         admin.setLastLogin(new Date());
         adminRepository.save(admin);
 
-        // Generate token using SimpleJwtUtil
-        String token = SimpleJwtUtil.generateToken(admin.getId(), admin.getEmail(), admin.getRole());
+        // Generate JWT token using JwtUtil (Spring Security + JJWT)
+        String token = jwtUtil.generateToken(admin.getId(), admin.getEmail(), admin.getRole());
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
         response.put("admin", admin);
         response.put("role", admin.getRole());
         response.put("message", "Login successful");
+
+        // Remove password hash from response
+        admin.setPasswordHash(null);
 
         return response;
     }
@@ -81,20 +96,23 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void changePassword(String adminId, String newPassword) {
         Admin admin = getAdminById(adminId);
-        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+
+        // Hash new password using BCrypt
+        String hashedPassword = passwordEncoder.encode(newPassword);
         admin.setPasswordHash(hashedPassword);
         admin.setUpdatedAt(new Date());
+
         adminRepository.save(admin);
     }
 
     @Override
     public boolean validateAdminToken(String token) {
         try {
-            if (!SimpleJwtUtil.validateToken(token)) {
+            if (!jwtUtil.validateToken(token)) {
                 return false;
             }
 
-            String role = SimpleJwtUtil.extractRole(token);
+            String role = jwtUtil.getRoleFromToken(token);
             return "ADMIN".equals(role);
 
         } catch (Exception e) {

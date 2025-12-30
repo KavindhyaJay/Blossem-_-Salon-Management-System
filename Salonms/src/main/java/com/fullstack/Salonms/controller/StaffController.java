@@ -23,19 +23,33 @@ public class StaffController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Staff> getStaffById(@PathVariable String id) {
-        Optional<Staff> staff = staffService.getById(id); // use getById
+        Optional<Staff> staff = staffService.getById(id);
         return staff.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-
     @PostMapping
-    public Staff createStaff(@RequestBody Staff staff) {
+    public ResponseEntity<Staff> createStaff(@RequestBody Staff staff) {
+        try {
+            // ⭐ Set role if not provided
+            if (staff.getRole() == null || staff.getRole().isEmpty()) {
+                staff.setRole("STAFF");
+            }
 
-        return staffService.createStaff(staff);
+            Staff createdStaff = staffService.createStaff(staff);
+            return ResponseEntity.ok(createdStaff);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Staff> updateStaff(@PathVariable String id, @RequestBody Staff staff) {
+        // ⭐ Ensure role is preserved when updating
+        Staff existingStaff = staffService.getById(id).orElse(null);
+        if (existingStaff != null && staff.getRole() == null) {
+            staff.setRole(existingStaff.getRole()); // Keep existing role
+        }
+
         Staff updated = staffService.updateStaff(id, staff);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

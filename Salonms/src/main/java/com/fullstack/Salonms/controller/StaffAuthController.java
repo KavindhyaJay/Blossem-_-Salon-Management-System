@@ -34,6 +34,11 @@ public class StaffAuthController {
             com.fullstack.Salonms.model.Staff staff = (com.fullstack.Salonms.model.Staff) loginResponse.get("staff");
             staff.setPasswordHash(null);
 
+            // ⭐ Ensure role is included in response
+            if (!loginResponse.containsKey("role")) {
+                loginResponse.put("role", "STAFF"); // Default role
+            }
+
             return ResponseEntity.ok(loginResponse);
 
         } catch (RuntimeException e) {
@@ -76,6 +81,7 @@ public class StaffAuthController {
             details.put("email", staff.getEmail());
             details.put("name", staff.getName());
             details.put("status", staff.getStatus());
+            details.put("role", staff.getRole()); // ⭐ Include role
             details.put("hasPassword", staff.getPasswordHash() != null);
             details.put("hasActivated", staff.getHasActivated());
             details.put("specialization", staff.getSpecialization());
