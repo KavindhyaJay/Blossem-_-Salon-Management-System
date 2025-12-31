@@ -252,7 +252,7 @@ const DashboardHome = ({ user }) => {
                   </div>
                 </div>
                 <div className={`status-badge status-${appt.status || 'pending'}`}>
-                  {appt.status || 'Pending'}
+                  {appt.status || 'PENDING'}
                 </div>
               </div>
             ))}
