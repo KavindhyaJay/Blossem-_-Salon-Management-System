@@ -15,15 +15,13 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  AlertCircle,
-  Bug,
-  Key,
-  Database
+  AlertCircle
 } from 'lucide-react';
 import axios from 'axios';
-import './StaffManagement.css';
+import './StaffManagement.css'; // Make sure this matches your CSS file name
 
 const StaffManagement = () => {
+  // ========== STATE VARIABLES ==========
   const [staffMembers, setStaffMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,8 +31,6 @@ const StaffManagement = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [debugMode, setDebugMode] = useState(false);
-  const [debugLogs, setDebugLogs] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,142 +41,92 @@ const StaffManagement = () => {
 
   const API_BASE_URL = 'http://localhost:8081';
 
-  // Add debug log
-  const addDebugLog = (message, type = 'info') => {
-    const timestamp = new Date().toLocaleTimeString();
-    setDebugLogs(prev => [...prev, { timestamp, message, type }]);
-    console.log(`[${timestamp}] ${message}`);
-  };
-
-  // Fetch staff from backend
+  // ========== FUNCTIONS ==========
+  // Clean fetch function
   const fetchStaff = async () => {
     setLoading(true);
     setError('');
-    addDebugLog('🔍 Starting to fetch staff data...');
     
     try {
-      // 1. Get token and clean it
       let token = localStorage.getItem('token');
-      addDebugLog(`📋 Token exists: ${!!token}`);
       
       if (!token) {
-        throw new Error('No authentication token found in localStorage');
+        throw new Error('No authentication token found');
       }
       
-      // Clean token (remove quotes if any)
+      // Clean token
       let cleanToken = token;
       if (token.startsWith('"') && token.endsWith('"')) {
         cleanToken = token.substring(1, token.length - 1);
-        addDebugLog('🧹 Removed quotes from token');
       }
       
-      addDebugLog(`📏 Token length: ${cleanToken.length} characters`);
-      addDebugLog(`🔑 Token preview: ${cleanToken.substring(0, 30)}...`);
-      
-      // 2. Create headers
       const headers = {
         'Authorization': `Bearer ${cleanToken}`,
         'Content-Type': 'application/json'
       };
       
-      addDebugLog(`🌐 Making GET request to: ${API_BASE_URL}/api/staff`);
-      addDebugLog(`📨 Headers: ${JSON.stringify(headers)}`);
-      
-      // 3. Make the request with axios
       const response = await axios.get(`${API_BASE_URL}/api/staff`, {
         headers: headers,
         timeout: 10000,
         validateStatus: function (status) {
-          return status >= 200 && status < 500; // Accept 4xx errors too
+          return status >= 200 && status < 500;
         }
       });
       
-      addDebugLog(`📊 Response status: ${response.status}`);
-      addDebugLog(`📦 Response headers: ${JSON.stringify(response.headers)}`);
-      addDebugLog(`📦 Response data type: ${typeof response.data}`);
-      
-      // 4. Handle response
       if (response.status === 200) {
-        // Success!
         let staffData = response.data;
         
-        // Handle different response formats
         if (Array.isArray(staffData)) {
-          addDebugLog(`✅ Success! Received ${staffData.length} staff members`);
           setStaffMembers(staffData);
         } else if (staffData && Array.isArray(staffData.data)) {
-          // If response is wrapped in { data: [...] }
-          addDebugLog(`✅ Success! Received ${staffData.data.length} staff members (wrapped)`);
           setStaffMembers(staffData.data);
         } else if (staffData && typeof staffData === 'object') {
-          // Try to extract array from object
           const keys = Object.keys(staffData);
-          addDebugLog(`⚠️ Response is object with keys: ${keys.join(', ')}`);
-          
-          // Check if any key contains an array
           for (let key of keys) {
             if (Array.isArray(staffData[key])) {
-              addDebugLog(`✅ Found array in key "${key}" with ${staffData[key].length} items`);
               setStaffMembers(staffData[key]);
               break;
             }
           }
         } else {
-          addDebugLog(`⚠️ Unexpected response format: ${JSON.stringify(staffData).substring(0, 200)}...`);
           setStaffMembers([]);
         }
       } 
       else if (response.status === 401) {
         const errorMsg = response.data?.error || 'Token invalid or expired';
-        addDebugLog(`❌ Unauthorized: ${errorMsg}`);
         throw new Error(`Unauthorized: ${errorMsg}`);
       }
       else if (response.status === 403) {
         const errorMsg = response.data?.error || 'Admin access required';
-        addDebugLog(`❌ Forbidden: ${errorMsg}`);
         throw new Error(`Forbidden: ${errorMsg}`);
       }
       else if (response.status === 404) {
-        addDebugLog(`❌ Endpoint not found: /api/staff`);
         throw new Error('Endpoint not found: /api/staff');
       }
       else {
-        addDebugLog(`❌ Server error ${response.status}: ${JSON.stringify(response.data)}`);
-        throw new Error(`Server error ${response.status}: ${JSON.stringify(response.data)}`);
+        throw new Error(`Server error ${response.status}`);
       }
       
     } catch (err) {
-      console.error('❌ Detailed error in fetchStaff:', err);
-      addDebugLog(`❌ Error: ${err.message}`);
+      console.error('Error fetching staff:', err);
       
-      // Extract meaningful error message
       let errorMessage = 'Failed to load staff members';
       
       if (err.response) {
-        // Server responded with error
-        addDebugLog(`📊 Server response status: ${err.response.status}`);
-        addDebugLog(`📊 Server response data: ${JSON.stringify(err.response.data)}`);
-        
         if (err.response.data?.error) {
-          errorMessage = `Server: ${err.response.data.error}`;
+          errorMessage = err.response.data.error;
         } else if (err.response.data?.message) {
-          errorMessage = `Server: ${err.response.data.message}`;
-        } else {
-          errorMessage = `Server error ${err.response.status}: ${JSON.stringify(err.response.data)}`;
+          errorMessage = err.response.data.message;
         }
       } 
       else if (err.request) {
-        // Request made but no response
-        addDebugLog(`📡 No response received from server`);
-        errorMessage = 'No response from server. Check if backend is running on http://localhost:8081';
+        errorMessage = 'No response from server. Check if backend is running.';
       } 
       else if (err.message.includes('Network Error')) {
-        addDebugLog(`🌐 Network error detected`);
-        errorMessage = 'Network error. Check CORS or server connectivity';
+        errorMessage = 'Network error. Check server connectivity.';
       }
       else if (err.message.includes('timeout')) {
-        addDebugLog(`⏰ Request timeout`);
-        errorMessage = 'Request timeout. Server might be busy or not responding';
+        errorMessage = 'Request timeout. Server might be busy.';
       }
       else {
         errorMessage = err.message;
@@ -188,21 +134,17 @@ const StaffManagement = () => {
       
       setError(errorMessage);
       
-      // If unauthorized, clear storage and redirect
       if (errorMessage.includes('Unauthorized') || errorMessage.includes('token') || errorMessage.includes('401')) {
-        addDebugLog(`🔒 Token invalid, clearing localStorage`);
         localStorage.clear();
         setTimeout(() => {
           window.location.href = '/login';
         }, 2000);
       }
       
-      // Fallback to empty array
       setStaffMembers([]);
       
     } finally {
       setLoading(false);
-      addDebugLog('🏁 Finished fetching staff data');
     }
   };
 
@@ -226,7 +168,6 @@ const StaffManagement = () => {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address');
@@ -245,9 +186,7 @@ const StaffManagement = () => {
       });
       
       if (response.data) {
-        // Refresh staff list
         await fetchStaff();
-        // Reset form
         setFormData({
           name: '',
           email: '',
@@ -256,7 +195,7 @@ const StaffManagement = () => {
           status: 'PENDING_ACTIVATION'
         });
         setShowAddForm(false);
-        alert('✅ Staff member added successfully! An activation email will be sent to them.');
+        alert('✅ Staff member added successfully!');
       }
     } catch (err) {
       console.error('Error adding staff:', err);
@@ -306,7 +245,6 @@ const StaffManagement = () => {
       );
       
       if (response.data) {
-        // Refresh staff list
         await fetchStaff();
         setShowEditForm(false);
         setEditingStaff(null);
@@ -333,7 +271,6 @@ const StaffManagement = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      // Refresh staff list
       await fetchStaff();
       alert('🗑️ Staff member deleted successfully!');
     } catch (err) {
@@ -343,125 +280,41 @@ const StaffManagement = () => {
     }
   };
 
-  // Debug functions
-  const debugToken = async () => {
-    addDebugLog('=== TOKEN DEBUG START ===');
-    
-    const token = localStorage.getItem('token');
-    addDebugLog(`1. Token from localStorage: ${token}`);
-    
-    if (!token) {
-      addDebugLog('❌ No token found in localStorage');
-      return;
-    }
-    
-    // Clean token
-    let cleanToken = token;
-    if (token.startsWith('"') && token.endsWith('"')) {
-      cleanToken = token.substring(1, token.length - 1);
-      addDebugLog('🧹 Removed quotes from token');
-    }
-    
-    addDebugLog(`2. Clean token (first 50 chars): ${cleanToken.substring(0, 50)}...`);
-    addDebugLog(`3. Token length: ${cleanToken.length} characters`);
-    
-    // Try to decode the token (your custom JWT)
-    try {
-      const parts = cleanToken.split('.');
-      addDebugLog(`4. Token has ${parts.length} parts`);
-      
-      if (parts.length >= 2) {
-        // Decode payload (base64)
-        const payload = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-        addDebugLog(`5. Token payload: ${payload}`);
-        
-        try {
-          const payloadObj = JSON.parse(payload);
-          addDebugLog(`6. Parsed payload:`, 'success');
-          console.log('Parsed token payload:', payloadObj);
-          
-          // Check expiration
-          if (payloadObj.exp) {
-            const expDate = new Date(payloadObj.exp * 1000);
-            const now = new Date();
-            const isExpired = expDate < now;
-            addDebugLog(`7. Token expires: ${expDate.toLocaleString()} (${isExpired ? 'EXPIRED' : 'VALID'})`);
-          }
-        } catch (e) {
-          addDebugLog(`6. Cannot parse payload as JSON: ${e.message}`);
-        }
-      }
-    } catch (e) {
-      addDebugLog(`5. Cannot decode token: ${e.message}`);
-    }
-    
-    addDebugLog('=== TOKEN DEBUG END ===');
-  };
-
-  const testAPIWithoutToken = async () => {
-    addDebugLog('=== API TEST WITHOUT TOKEN ===');
-    
-    try {
-      addDebugLog(`Testing: ${API_BASE_URL}/api/staff (without token)`);
-      const response = await fetch(`${API_BASE_URL}/api/staff`);
-      addDebugLog(`Response status: ${response.status}`);
-      addDebugLog(`Response status text: ${response.statusText}`);
-      
-      const text = await response.text();
-      addDebugLog(`Response body: ${text.substring(0, 200)}...`);
-    } catch (e) {
-      addDebugLog(`Error: ${e.message}`);
-    }
-  };
-
-  const testPublicEndpoint = async () => {
-    addDebugLog('=== PUBLIC ENDPOINT TEST ===');
-    
-    try {
-      addDebugLog(`Testing: ${API_BASE_URL}/api/public/gallery`);
-      const response = await fetch(`${API_BASE_URL}/api/public/gallery`);
-      addDebugLog(`Response status: ${response.status}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        addDebugLog(`✅ Public endpoint works! Data: ${JSON.stringify(data).substring(0, 100)}...`);
-      } else {
-        addDebugLog(`❌ Public endpoint failed: ${response.status}`);
-      }
-    } catch (e) {
-      addDebugLog(`Error: ${e.message}`);
-    }
-  };
-
+  // Simple status badge without arrows
   const getStatusBadge = (status) => {
     const statusLower = status?.toLowerCase() || '';
     
     if (statusLower.includes('active')) {
       return (
-        <span className="status-badge active">
+        <span className="staff-status-badge active">
           <CheckCircle size={14} />
           Active
         </span>
       );
     } else if (statusLower.includes('pending')) {
       return (
-        <span className="status-badge pending">
+        <span className="staff-status-badge pending">
           <Clock size={14} />
           Pending
         </span>
       );
     } else if (statusLower.includes('inactive')) {
       return (
-        <span className="status-badge inactive">
+        <span className="staff-status-badge inactive">
           <XCircle size={14} />
           Inactive
         </span>
       );
     }
-    return <span className="status-badge unknown">{status || 'Unknown'}</span>;
+    return (
+      <span className="staff-status-badge inactive">
+        <XCircle size={14} />
+        {status || 'Unknown'}
+      </span>
+    );
   };
 
-  // Filter staff based on search and status filter
+  // Filter staff
   const filteredStaff = staffMembers.filter(staff => {
     const matchesSearch = 
       staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -475,20 +328,21 @@ const StaffManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // ========== RENDER ==========
   return (
-    <div className="staff-management">
-      <div className="section-header">
-        <div className="header-title">
-          <Users size={28} className="header-icon" />
+    <div className="staff-management-container">
+      <div className="staff-section-header">
+        <div className="staff-header-title">
+          <Users size={28} className="staff-header-icon" />
           <div>
             <h1>Staff Management</h1>
-            <p className="subtitle">Manage salon staff members and their details</p>
+            <p className="staff-subtitle">Manage salon staff members and their details</p>
           </div>
         </div>
         
-        <div className="header-actions">
+        <div className="staff-header-actions">
           <button 
-            className="btn-add"
+            className="staff-btn-add"
             onClick={() => {
               setFormData({
                 name: '',
@@ -507,94 +361,45 @@ const StaffManagement = () => {
           </button>
           
           <button 
-            className="btn-refresh"
+            className="staff-btn-refresh"
             onClick={fetchStaff}
             disabled={loading || saving}
           >
-            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+            <RefreshCw size={18} className={loading ? 'staff-spinning' : ''} />
             <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-          
-          <button 
-            className="btn-debug"
-            onClick={() => setDebugMode(!debugMode)}
-          >
-            <Bug size={18} />
-            <span>{debugMode ? 'Hide Debug' : 'Debug'}</span>
           </button>
         </div>
       </div>
 
-      {/* Debug Panel */}
-      {debugMode && (
-        <div className="debug-panel">
-          <div className="debug-header">
-            <h3><Bug size={20} /> Debug Tools</h3>
-            <button onClick={() => setDebugLogs([])}>Clear Logs</button>
-          </div>
-          
-          <div className="debug-actions">
-            <button onClick={debugToken} className="debug-btn">
-              <Key size={16} /> Debug Token
-            </button>
-            <button onClick={testAPIWithoutToken} className="debug-btn">
-              Test API Without Token
-            </button>
-            <button onClick={testPublicEndpoint} className="debug-btn">
-              Test Public Endpoint
-            </button>
-            <button onClick={fetchStaff} className="debug-btn">
-              <Database size={16} /> Force Reload Staff
-            </button>
-          </div>
-          
-          <div className="debug-logs">
-            <h4>Debug Logs:</h4>
-            <div className="logs-container">
-              {debugLogs.length === 0 ? (
-                <p className="no-logs">No logs yet. Click debug buttons above.</p>
-              ) : (
-                debugLogs.slice().reverse().map((log, index) => (
-                  <div key={index} className={`log-entry ${log.type}`}>
-                    <span className="log-time">[{log.timestamp}]</span>
-                    <span className="log-message">{log.message}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Error Display */}
       {error && (
-        <div className="error-alert">
+        <div className="staff-error-alert">
           <AlertCircle size={18} />
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close">×</button>
+          <button onClick={() => setError('')} className="staff-error-close">×</button>
         </div>
       )}
 
       {/* Controls */}
-      <div className="controls-container">
-        <div className="search-container">
-          <Search size={20} className="search-icon" />
+      <div className="staff-controls-container">
+        <div className="staff-search-container">
+          <Search size={20} className="staff-search-icon" />
           <input
             type="text"
             placeholder="Search by name, email, or specialization..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="staff-search-input"
             disabled={loading}
           />
         </div>
         
-        <div className="filter-container">
-          <Filter size={18} className="filter-icon" />
+        <div className="staff-filter-container">
+          <Filter size={18} className="staff-filter-icon" />
           <select 
             value={filterStatus} 
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="filter-select"
+            className="staff-filter-select"
             disabled={loading}
           >
             <option value="all">All Status</option>
@@ -605,9 +410,9 @@ const StaffManagement = () => {
         </div>
         
         <button 
-          className="btn-export"
+          className="staff-btn-export"
           onClick={() => {
-            // Export functionality
+            // Simple export functionality
             const csvData = filteredStaff.map(staff => ({
               ID: staff._id?.substring(0, 8) || 'N/A',
               Name: staff.name,
@@ -616,99 +421,113 @@ const StaffManagement = () => {
               Status: staff.status,
               Phone: staff.phone || 'N/A'
             }));
-            console.log('Export data:', csvData);
-            alert('CSV export would download ' + filteredStaff.length + ' staff members');
+            
+            // Create CSV content
+            const headers = Object.keys(csvData[0] || {}).join(',');
+            const rows = csvData.map(row => Object.values(row).join(','));
+            const csvContent = [headers, ...rows].join('\n');
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'staff_members.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
           }}
-          disabled={loading || saving}
+          disabled={loading || saving || filteredStaff.length === 0}
         >
           <Download size={18} />
-          <span>Export CSV</span>
+          <span>Export CSV ({filteredStaff.length})</span>
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
+      <div className="staff-stats-grid">
+        <div className="staff-stat-card">
+          <div className="staff-stat-header">
             <h3>Total Staff</h3>
-            <div className="stat-icon">👥</div>
+            <div className="staff-stat-icon">👥</div>
           </div>
-          <div className="stat-value">{staffMembers.length}</div>
-          <div className="stat-label">Members</div>
+          <div className="staff-stat-value">{staffMembers.length}</div>
+          <div className="staff-stat-label">Members</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="staff-stat-card">
+          <div className="staff-stat-header">
             <h3>Active</h3>
-            <div className="stat-icon">✅</div>
+            <div className="staff-stat-icon">✅</div>
           </div>
-          <div className="stat-value">
+          <div className="staff-stat-value">
             {staffMembers.filter(s => s.status?.toLowerCase().includes('active')).length}
           </div>
-          <div className="stat-label">Working</div>
+          <div className="staff-stat-label">Working</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="staff-stat-card">
+          <div className="staff-stat-header">
             <h3>Pending</h3>
-            <div className="stat-icon">⏳</div>
+            <div className="staff-stat-icon">⏳</div>
           </div>
-          <div className="stat-value">
+          <div className="staff-stat-value">
             {staffMembers.filter(s => s.status?.toLowerCase().includes('pending')).length}
           </div>
-          <div className="stat-label">Awaiting</div>
+          <div className="staff-stat-label">Awaiting</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="staff-stat-card">
+          <div className="staff-stat-header">
             <h3>Specializations</h3>
-            <div className="stat-icon">🎯</div>
+            <div className="staff-stat-icon">🎯</div>
           </div>
-          <div className="stat-value">
+          <div className="staff-stat-value">
             {[...new Set(staffMembers.map(s => s.specialization))].length}
           </div>
-          <div className="stat-label">Unique</div>
+          <div className="staff-stat-label">Unique</div>
         </div>
       </div>
 
       {/* Staff Table */}
-      <div className="table-container">
-        <div className="table-header">
+      <div className="staff-table-container">
+        <div className="staff-table-header">
           <h3>Staff Members ({filteredStaff.length})</h3>
-          <div className="table-info">
+          <div className="staff-table-info">
             Showing {filteredStaff.length} of {staffMembers.length} staff members
-            {loading && <span className="loading-indicator"> • Loading...</span>}
+            {loading && <span className="staff-loading-indicator"> • Loading...</span>}
           </div>
         </div>
         
-        <div className="table-wrapper">
-          <table className="staff-table">
+        <div className="staff-table-wrapper">
+          <table className="staff-management-table">
             <thead>
               <tr>
-                <th className="id-column">ID</th>
-                <th className="name-column">Staff Member</th>
-                <th className="email-column">Email</th>
-                <th className="specialization-column">Specialization</th>
-                <th className="phone-column">Phone</th>
-                <th className="status-column">Status</th>
-                <th className="actions-column">Actions</th>
+                <th className="staff-id-column">ID</th>
+                <th className="staff-name-column">Staff Member</th>
+                <th className="staff-email-column">Email</th>
+                <th className="staff-specialization-column">Specialization</th>
+                <th className="staff-phone-column">Phone</th>
+                <th className="staff-status-column">Status</th>
+                <th className="staff-actions-column">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && staffMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="loading-cell">
-                    <div className="loading-indicator">
-                      <div className="spinner"></div>
+                  <td colSpan="7" className="staff-loading-cell">
+                    <div className="staff-loading-indicator">
+                      <div className="staff-spinner"></div>
                       Loading staff data from database...
                     </div>
                   </td>
                 </tr>
               ) : filteredStaff.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="empty-cell">
-                    <div className="empty-state">
-                      <User size={48} className="empty-icon" />
+                  <td colSpan="7" className="staff-empty-cell">
+                    <div className="staff-empty-state">
+                      <User size={48} className="staff-empty-icon" />
                       <h4>No staff members found</h4>
                       <p>
                         {searchQuery || filterStatus !== 'all'
@@ -716,62 +535,52 @@ const StaffManagement = () => {
                           : "Click 'Add New Staff' to add your first staff member"
                         }
                       </p>
-                      {!searchQuery && filterStatus === 'all' && staffMembers.length === 0 && (
-                        <button 
-                          className="btn-add"
-                          onClick={() => setShowAddForm(true)}
-                          style={{ marginTop: '15px' }}
-                        >
-                          <UserPlus size={16} />
-                          Add Your First Staff Member
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
               ) : (
                 filteredStaff.map((staff) => (
-                  <tr key={staff._id || staff.id} className="table-row">
-                    <td className="id-column">
+                  <tr key={staff._id || staff.id} className="staff-table-row">
+                    <td className="staff-id-column">
                       <code>#{staff._id?.substring(0, 8) || staff.id?.substring(0, 8) || 'N/A'}</code>
                     </td>
-                    <td className="name-column">
-                      <div className="staff-info">
-                        <div className="staff-avatar">
+                    <td className="staff-name-column">
+                      <div className="staff-member-info">
+                        <div className="staff-member-avatar">
                           {staff.name?.charAt(0)?.toUpperCase() || 'S'}
                         </div>
-                        <div className="staff-details">
-                          <div className="staff-name">{staff.name || 'Unknown'}</div>
-                          <div className="staff-id">
+                        <div className="staff-member-details">
+                          <div className="staff-member-name">{staff.name || 'Unknown'}</div>
+                          <div className="staff-member-id">
                             ID: {staff._id?.substring(0, 8) || staff.id?.substring(0, 8) || 'N/A'}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="email-column">
-                      <div className="email-cell">
+                    <td className="staff-email-column">
+                      <div className="staff-email-cell">
                         <Mail size={16} />
                         <span>{staff.email || 'No email'}</span>
                       </div>
                     </td>
-                    <td className="specialization-column">
-                      <span className="specialization-tag">
+                    <td className="staff-specialization-column">
+                      <span className="staff-specialization-tag">
                         {staff.specialization || 'Not specified'}
                       </span>
                     </td>
-                    <td className="phone-column">
-                      <div className="phone-cell">
+                    <td className="staff-phone-column">
+                      <div className="staff-phone-cell">
                         <Phone size={16} />
                         <span>{staff.phone || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="status-column">
+                    <td className="staff-status-column">
                       {getStatusBadge(staff.status)}
                     </td>
-                    <td className="actions-column">
-                      <div className="action-buttons">
+                    <td className="staff-actions-column">
+                      <div className="staff-action-buttons">
                         <button 
-                          className="btn-edit"
+                          className="staff-btn-edit"
                           title="Edit staff member"
                           onClick={() => handleEditStaff(staff)}
                           disabled={saving}
@@ -780,7 +589,7 @@ const StaffManagement = () => {
                           <span>Edit</span>
                         </button>
                         <button 
-                          className="btn-delete"
+                          className="staff-btn-delete"
                           title="Delete staff member"
                           onClick={() => handleDeleteStaff(staff._id || staff.id)}
                           disabled={saving}
@@ -798,14 +607,14 @@ const StaffManagement = () => {
         </div>
       </div>
 
-      {/* Add Staff Form Modal */}
+      {/* Add/Edit Form Modal */}
       {(showAddForm || showEditForm) && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="staff-modal-overlay">
+          <div className="staff-modal-content">
+            <div className="staff-modal-header">
               <h2>{showEditForm ? 'Edit Staff Member' : 'Add New Staff Member'}</h2>
               <button 
-                className="modal-close"
+                className="staff-modal-close"
                 onClick={() => {
                   setShowAddForm(false);
                   setShowEditForm(false);
@@ -818,11 +627,11 @@ const StaffManagement = () => {
               </button>
             </div>
             
-            <form onSubmit={showEditForm ? handleUpdateStaff : handleAddStaff} className="staff-form">
-              <div className="form-grid">
-                <div className="form-group">
+            <form onSubmit={showEditForm ? handleUpdateStaff : handleAddStaff} className="staff-staff-form">
+              <div className="staff-form-grid">
+                <div className="staff-form-group">
                   <label>
-                    <span className="required">*</span> Full Name
+                    <span className="staff-required">*</span> Full Name
                   </label>
                   <input
                     type="text"
@@ -832,13 +641,13 @@ const StaffManagement = () => {
                     placeholder="Enter full name"
                     required
                     disabled={saving}
-                    className="form-input"
+                    className="staff-form-input"
                   />
                 </div>
                 
-                <div className="form-group">
+                <div className="staff-form-group">
                   <label>
-                    <span className="required">*</span> Email Address
+                    <span className="staff-required">*</span> Email Address
                   </label>
                   <input
                     type="email"
@@ -848,16 +657,16 @@ const StaffManagement = () => {
                     placeholder="Enter email address"
                     required
                     disabled={saving || showEditForm}
-                    className="form-input"
+                    className="staff-form-input"
                   />
                   {showEditForm && (
-                    <small className="form-note">Email cannot be changed</small>
+                    <small className="staff-form-note">Email cannot be changed</small>
                   )}
                 </div>
                 
-                <div className="form-group">
+                <div className="staff-form-group">
                   <label>
-                    <span className="required">*</span> Specialization
+                    <span className="staff-required">*</span> Specialization
                   </label>
                   <select
                     name="specialization"
@@ -865,7 +674,7 @@ const StaffManagement = () => {
                     onChange={handleInputChange}
                     required
                     disabled={saving}
-                    className="form-select"
+                    className="staff-form-select"
                   >
                     <option value="">Select specialization</option>
                     <option value="Hair Stylist">Hair Stylist</option>
@@ -879,7 +688,7 @@ const StaffManagement = () => {
                   </select>
                 </div>
                 
-                <div className="form-group">
+                <div className="staff-form-group">
                   <label>Phone Number</label>
                   <input
                     type="tel"
@@ -888,35 +697,35 @@ const StaffManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Enter phone number (optional)"
                     disabled={saving}
-                    className="form-input"
+                    className="staff-form-input"
                   />
                 </div>
                 
-                <div className="form-group">
+                <div className="staff-form-group">
                   <label>Status</label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
                     disabled={saving}
-                    className="form-select"
+                    className="staff-form-select"
                   >
                     <option value="PENDING_ACTIVATION">Pending Activation</option>
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                   </select>
                   {!showEditForm && (
-                    <small className="form-note">
+                    <small className="staff-form-note">
                       Pending Activation will require staff to activate via email
                     </small>
                   )}
                 </div>
               </div>
               
-              <div className="form-actions">
+              <div className="staff-form-actions">
                 <button 
                   type="button" 
-                  className="btn-cancel"
+                  className="staff-btn-cancel"
                   onClick={() => {
                     setShowAddForm(false);
                     setShowEditForm(false);
@@ -929,12 +738,12 @@ const StaffManagement = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="btn-save"
+                  className="staff-btn-save"
                   disabled={saving}
                 >
                   {saving ? (
                     <>
-                      <div className="spinner-small"></div>
+                      <div className="staff-spinner-small"></div>
                       Saving...
                     </>
                   ) : (

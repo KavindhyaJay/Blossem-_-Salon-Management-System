@@ -1,23 +1,92 @@
-// src/components/staff/Dashboard.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/components/staff/Dashboard.jsx - UPDATED MODULAR
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import Header from '../common/Header';
-import Sidebar from '../common/Sidebar';
+import HorizontalNavbar from '../common/HorizontalNavbar';
+import StaffAppointments from './StaffAppointments';
+import StaffPhotos from './StaffPhotos';
+import StaffProfile from './StaffProfile';
+import StaffServices from './StaffServices';
+import DashboardHome from './DashboardHome';
+import './StaffDashboard.css';
 
 const StaffDashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-    if (!userData || userData.role !== 'STAFF') {
-      navigate('/login');
-      return;
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+
+  // Get auth token
+  const getAuthToken = useCallback(() => {
+    return localStorage.getItem('token') || 
+           localStorage.getItem('staffToken') || 
+           localStorage.getItem('authToken');
+  }, []);
+
+  // Fetch staff profile
+  const fetchStaffProfile = useCallback(async () => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/api/staff/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          alert('Your account is deactivated. Contact admin.');
+          localStorage.clear();
+          navigate('/login');
+          return;
+        }
+        throw new Error('Failed to fetch profile');
+      }
+
+      const userData = await response.json();
+      const formattedUser = {
+        ...userData,
+        role: 'STAFF',
+        name: userData.name || 'Staff Member'
+      };
+      
+      localStorage.setItem('user', JSON.stringify(formattedUser));
+      setUser(formattedUser);
+      return formattedUser;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
     }
-    setUser(userData);
-    setLoading(false);
-  }, [navigate]);
+  }, [API_BASE_URL, getAuthToken, navigate]);
+
+  // Initialize dashboard
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      setLoading(true);
+      
+      // Check if user exists in localStorage
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (!storedUser || storedUser.role !== 'STAFF') {
+        navigate('/login');
+        return;
+      }
+      
+      // Always fetch fresh user data
+      const freshUser = await fetchStaffProfile();
+      if (!freshUser) {
+        navigate('/login');
+        return;
+      }
+      
+      setUser(freshUser);
+      setLoading(false);
+    };
+
+    initializeDashboard();
+  }, [fetchStaffProfile, navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -26,48 +95,26 @@ const StaffDashboard = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading staff dashboard...</p>
+      <div className="staff-loading-container">
+        <div className="staff-loading-spinner"></div>
+        <p className="staff-loading-text">Loading your dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-container">
-      <Header user={user} onLogout={handleLogout} />
-      <Sidebar role={user?.role} />
+    <div className="staff-dashboard-container">
+      <Header user={user} onLogout={handleLogout} theme="dark" />
+      <HorizontalNavbar role={user?.role} />
       
-      <main className="main-content">
-        <div className="content-header">
-          <h2>Staff Dashboard</h2>
-          <p>Welcome, {user?.name || 'Staff Member'}!</p>
-        </div>
-        
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-header">
-              <h3>Today's Appointments</h3>
-              <div className="stat-icon">📅</div>
-            </div>
-            <div className="stat-value">5</div>
-            <p className="stat-desc">Next: 2:00 PM</p>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-header">
-              <h3>Photos Uploaded</h3>
-              <div className="stat-icon">📸</div>
-            </div>
-            <div className="stat-value">24</div>
-            <p className="stat-desc">This month</p>
-          </div>
-        </div>
-        
-        <div style={{ padding: '30px', textAlign: 'center', background: 'white', borderRadius: '12px' }}>
-          <h3>Staff Features Coming Soon</h3>
-          <p>Photo upload, schedule management, and more!</p>
-        </div>
+      <main className="staff-main-content">
+        <Routes>
+          <Route path="/" element={<DashboardHome user={user} />} />
+          <Route path="/schedule" element={<StaffAppointments user={user} />} />
+          <Route path="/photos" element={<StaffPhotos user={user} />} />
+          <Route path="/services" element={<StaffServices user={user} />} />
+          <Route path="/profile" element={<StaffProfile user={user} />} />
+        </Routes>
       </main>
     </div>
   );

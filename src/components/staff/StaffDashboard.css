@@ -1,0 +1,53 @@
+/* src/components/staff/StaffDashboard.css */
+.staff-dashboard-container {
+  min-height: 100vh;
+  background: #0a0a0a;
+}
+
+.staff-main-content {
+  padding: 20px;
+  min-height: calc(100vh - 140px);
+}
+
+/* Loading State */
+.staff-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0a0a0a;
+}
+
+.staff-loading-spinner {
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: staff-spin 1s linear infinite;
+}
+
+@keyframes staff-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.staff-loading-text {
+  margin-top: 20px;
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+/* Responsive Padding */
+@media (max-width: 768px) {
+  .staff-main-content {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-main-content {
+    padding: 10px;
+  }
+}

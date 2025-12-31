@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../common/Header';
-import Sidebar from '../common/Sidebar';
+import Sidebar from '../common/HorizontalNavbar';
 
 const ReceptionDashboard = () => {
   const [user, setUser] = useState(null);

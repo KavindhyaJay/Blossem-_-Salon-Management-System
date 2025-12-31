@@ -1,4 +1,4 @@
-// src/components/admin/ReceptionManagement.jsx
+// src/components/admin/ReceptionManagement.jsx - GREEN AND BLACK VERSION
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
@@ -17,12 +17,10 @@ import {
   XCircle,
   AlertCircle,
   Calendar,
-  Shield,
-  Briefcase,
-  Bell
+  Shield
 } from 'lucide-react';
 import axios from 'axios';
-import './ReceptionManagement.css'; // We'll create this CSS file
+import './ReceptionManagement.css';
 
 const ReceptionManagement = () => {
   const [receptionists, setReceptionists] = useState([]);
@@ -35,8 +33,6 @@ const ReceptionManagement = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingReceptionist, setEditingReceptionist] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [debugMode, setDebugMode] = useState(false);
-  const [debugLogs, setDebugLogs] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,23 +43,14 @@ const ReceptionManagement = () => {
 
   const API_BASE_URL = 'http://localhost:8081';
 
-  // Add debug log
-  const addDebugLog = (message, type = 'info') => {
-    const timestamp = new Date().toLocaleTimeString();
-    setDebugLogs(prev => [...prev.slice(-19), { timestamp, message, type }]); // Keep last 20 logs
-    console.log(`[${timestamp}] ${message}`);
-  };
-
   // Fetch receptionists from backend
   const fetchReceptionists = async () => {
     setLoading(true);
     setError('');
-    addDebugLog('🔍 Starting to fetch receptionists...');
     
     try {
       // Get token from localStorage
       let token = localStorage.getItem('token');
-      addDebugLog(`📋 Token exists: ${!!token}`);
       
       if (!token) {
         throw new Error('No authentication token found in localStorage');
@@ -73,7 +60,6 @@ const ReceptionManagement = () => {
       let cleanToken = token;
       if (token.startsWith('"') && token.endsWith('"')) {
         cleanToken = token.substring(1, token.length - 1);
-        addDebugLog('🧹 Removed quotes from token');
       }
       
       // Create headers
@@ -81,9 +67,6 @@ const ReceptionManagement = () => {
         'Authorization': `Bearer ${cleanToken}`,
         'Content-Type': 'application/json'
       };
-      
-      addDebugLog(`🌐 Making GET request to: ${API_BASE_URL}/api/reception`);
-      addDebugLog(`📨 Headers: ${JSON.stringify(headers)}`);
       
       // Make the request with axios
       const response = await axios.get(`${API_BASE_URL}/api/reception`, {
@@ -94,58 +77,45 @@ const ReceptionManagement = () => {
         }
       });
       
-      addDebugLog(`📊 Response status: ${response.status}`);
-      
       // Handle response
       if (response.status === 200) {
         let receptionData = response.data;
         
         // Handle different response formats
         if (Array.isArray(receptionData)) {
-          addDebugLog(`✅ Success! Received ${receptionData.length} receptionists`);
           setReceptionists(receptionData);
         } else if (receptionData && Array.isArray(receptionData.data)) {
-          addDebugLog(`✅ Success! Received ${receptionData.data.length} receptionists (wrapped)`);
           setReceptionists(receptionData.data);
         } else if (receptionData && typeof receptionData === 'object') {
           // Try to extract array from object
           const keys = Object.keys(receptionData);
-          addDebugLog(`⚠️ Response is object with keys: ${keys.join(', ')}`);
-          
           for (let key of keys) {
             if (Array.isArray(receptionData[key])) {
-              addDebugLog(`✅ Found array in key "${key}" with ${receptionData[key].length} items`);
               setReceptionists(receptionData[key]);
               break;
             }
           }
         } else {
-          addDebugLog(`⚠️ Unexpected response format`);
           setReceptionists([]);
         }
       } 
       else if (response.status === 401) {
         const errorMsg = response.data?.error || 'Token invalid or expired';
-        addDebugLog(`❌ Unauthorized: ${errorMsg}`);
         throw new Error(`Unauthorized: ${errorMsg}`);
       }
       else if (response.status === 403) {
         const errorMsg = response.data?.error || 'Admin access required';
-        addDebugLog(`❌ Forbidden: ${errorMsg}`);
         throw new Error(`Forbidden: ${errorMsg}`);
       }
       else if (response.status === 404) {
-        addDebugLog(`❌ Endpoint not found: /api/reception`);
         throw new Error('Endpoint not found: /api/reception');
       }
       else {
-        addDebugLog(`❌ Server error ${response.status}`);
         throw new Error(`Server error ${response.status}`);
       }
       
     } catch (err) {
-      console.error('❌ Error in fetchReceptionists:', err);
-      addDebugLog(`❌ Error: ${err.message}`);
+      console.error('Error in fetchReceptionists:', err);
       
       let errorMessage = 'Failed to load receptionists';
       
@@ -170,7 +140,6 @@ const ReceptionManagement = () => {
       
       // If unauthorized, clear storage and redirect
       if (errorMessage.includes('Unauthorized') || errorMessage.includes('token') || errorMessage.includes('401')) {
-        addDebugLog(`🔒 Token invalid, clearing localStorage`);
         localStorage.clear();
         setTimeout(() => {
           window.location.href = '/login';
@@ -182,7 +151,6 @@ const ReceptionManagement = () => {
       
     } finally {
       setLoading(false);
-      addDebugLog('🏁 Finished fetching receptionists');
     }
   };
 
@@ -323,42 +291,6 @@ const ReceptionManagement = () => {
     }
   };
 
-  // Debug functions
-  const debugToken = async () => {
-    addDebugLog('=== TOKEN DEBUG START ===');
-    
-    const token = localStorage.getItem('token');
-    addDebugLog(`Token from localStorage: ${token ? 'Exists' : 'Missing'}`);
-    
-    if (!token) {
-      addDebugLog('❌ No token found');
-      return;
-    }
-    
-    // Clean token
-    let cleanToken = token;
-    if (token.startsWith('"') && token.endsWith('"')) {
-      cleanToken = token.substring(1, token.length - 1);
-      addDebugLog('🧹 Removed quotes from token');
-    }
-    
-    addDebugLog(`Token length: ${cleanToken.length} characters`);
-    addDebugLog(`Token preview: ${cleanToken.substring(0, 30)}...`);
-    
-    // Try to decode JWT
-    try {
-      const parts = cleanToken.split('.');
-      if (parts.length >= 2) {
-        const payload = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-        addDebugLog(`Token payload: ${payload.substring(0, 100)}...`);
-      }
-    } catch (e) {
-      addDebugLog(`Cannot decode token: ${e.message}`);
-    }
-    
-    addDebugLog('=== TOKEN DEBUG END ===');
-  };
-
   const getStatusBadge = (status) => {
     const statusLower = status?.toLowerCase() || '';
     
@@ -482,52 +414,8 @@ const ReceptionManagement = () => {
             <RefreshCw size={18} className={loading ? 'spinning' : ''} />
             <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
-          
-          {process.env.NODE_ENV === 'development' && (
-            <button 
-              className="btn-debug"
-              onClick={() => setDebugMode(!debugMode)}
-            >
-              <span>{debugMode ? 'Hide Debug' : 'Debug'}</span>
-            </button>
-          )}
         </div>
       </div>
-
-      {/* Debug Panel */}
-      {debugMode && (
-        <div className="debug-panel">
-          <div className="debug-header">
-            <h3>🔧 Debug Tools</h3>
-            <button onClick={() => setDebugLogs([])}>Clear Logs</button>
-          </div>
-          
-          <div className="debug-actions">
-            <button onClick={debugToken} className="debug-btn">
-              🔑 Debug Token
-            </button>
-            <button onClick={fetchReceptionists} className="debug-btn">
-              🔄 Force Reload
-            </button>
-          </div>
-          
-          <div className="debug-logs">
-            <h4>Debug Logs:</h4>
-            <div className="logs-container">
-              {debugLogs.length === 0 ? (
-                <p className="no-logs">No logs yet. Click debug buttons above.</p>
-              ) : (
-                debugLogs.slice().reverse().map((log, index) => (
-                  <div key={index} className={`log-entry ${log.type}`}>
-                    <span className="log-time">[{log.timestamp}]</span>
-                    <span className="log-message">{log.message}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Error Display */}
       {error && (
