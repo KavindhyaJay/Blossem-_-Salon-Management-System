@@ -1,4 +1,4 @@
-// File: ReceptionController.java (Add @PreAuthorize)
+// File: ReceptionController.java 
 package com.fullstack.Salonms.controller;
 
 import com.fullstack.Salonms.model.Reception;
