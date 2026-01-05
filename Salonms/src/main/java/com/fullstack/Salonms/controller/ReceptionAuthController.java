@@ -1,4 +1,4 @@
-// File: ReceptionAuthController.java (Updated for Spring Security JWT)
+// File: ReceptionAuthController.java 
 package com.fullstack.Salonms.controller;
 
 import com.fullstack.Salonms.model.Reception;
