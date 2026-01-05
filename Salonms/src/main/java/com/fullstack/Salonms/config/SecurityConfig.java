@@ -49,5 +49,5 @@ public class SecurityConfig implements WebMvcConfigurer {
         return new CorsFilter(corsConfigurationSource());
     }
 
-    // We'll handle JWT filter via WebMvcConfigurer instead
+    
 }
