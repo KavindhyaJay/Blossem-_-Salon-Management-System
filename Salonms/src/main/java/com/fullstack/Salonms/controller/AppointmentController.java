@@ -40,4 +40,5 @@ public class AppointmentController {
         List<Appointment> appointments = appointmentService.getAppointmentsByDate(date);
         return new ResponseEntity<>(appointments, HttpStatus.OK);
     }
+
 }
