@@ -24,7 +24,7 @@ public class AdminPhotoController {
     private StaffPhotoService staffPhotoService;
 
     @Autowired
-    private StaffPhotoRepository staffPhotoRepository;  // ADD THIS LINE
+    private StaffPhotoRepository staffPhotoRepository;  
 
     // Admin gets all photos (with filters)
     @GetMapping
@@ -144,7 +144,7 @@ public class AdminPhotoController {
     @GetMapping("/pending-count")
     public ResponseEntity<?> getPendingCount() {
         try {
-            // ✅ FIXED: Now staffPhotoRepository is available
+            // FIXED staffPhotoRepository 
             long pendingCount = staffPhotoRepository.countByStatus("PENDING");
             Map<String, Long> response = new HashMap<>();
             response.put("pendingCount", pendingCount);
