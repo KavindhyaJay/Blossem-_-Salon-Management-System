@@ -6,7 +6,7 @@ const Header = ({ onAdd }) => {
     <header className="app-header">
       <div className="header-left">
         <div className="brand">
-          <h1>🌿 Salon Reception System</h1>
+          <h1>🌿 Salon Blossom Reception System</h1>
           <p className="tag">Manage Appointments & Customer Arrivals</p>
         </div>
       </div>

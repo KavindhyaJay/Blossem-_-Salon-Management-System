@@ -99,8 +99,8 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  background: var(--bg-white);
-  color: var(--text-dark);
+  background: #ffffff;
+  color: #111827;
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 90px;

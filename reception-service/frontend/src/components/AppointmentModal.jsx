@@ -26,6 +26,23 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
 
   const [servicesInput, setServicesInput] = useState('');
 
+  const isValueFilled = (value) => {
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+    return Boolean(value);
+  };
+
+  const getInputClasses = (value) => `form-input${isValueFilled(value) ? ' filled' : ''}`;
+  const getTextareaClasses = (value) => `form-textarea${isValueFilled(value) ? ' filled' : ''}`;
+  const getSelectClasses = (value, defaultValue = '') => {
+    const filled = isValueFilled(value) && value !== defaultValue;
+    return `form-select${filled ? ' filled' : ''}`;
+  };
+
   useEffect(() => {
     if (appointment) {
       setFormData({
@@ -135,7 +152,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <input
                 type="email"
                 name="email"
-                className="form-input"
+                className={getInputClasses(formData.email)}
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -144,17 +161,17 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Customer Name</label>
+              <label className="form-label">Customer Name *</label>
               <input
                 type="text"
                 name="customerName"
-                className="form-input"
+                className={getInputClasses(formData.customerName)}
                 value={formData.customerName}
                 onChange={handleChange}
-                placeholder="Will be fetched from customer collection"
-                readOnly
+                placeholder="Enter customer full name"
+                required
               />
-              <small className="form-hint">Auto-filled from customer collection</small>
+              <small className="form-hint">Enter the exact name provided by the customer</small>
             </div>
           </div>
 
@@ -163,7 +180,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <label className="form-label">Services *</label>
               <input
                 type="text"
-                className="form-input"
+                className={getInputClasses(servicesInput)}
                 value={servicesInput}
                 onChange={handleServicesChange}
                 placeholder="Hair cut, Hair Color, Treatment (comma separated)"
@@ -177,7 +194,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <input
                 type="text"
                 name="staff"
-                className="form-input"
+                className={getInputClasses(formData.staff)}
                 value={formData.staff}
                 onChange={handleChange}
                 placeholder="Staff name"
@@ -191,7 +208,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <input
                 type="date"
                 name="date"
-                className="form-input"
+                className={getInputClasses(formData.date)}
                 value={formData.date}
                 onChange={handleChange}
                 required
@@ -203,7 +220,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <input
                 type="text"
                 name="time"
-                className="form-input"
+                className={getInputClasses(formData.time)}
                 value={formData.time}
                 onChange={handleChange}
                 placeholder="e.g., 4:00 PM"
@@ -218,7 +235,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <label className="form-label">Payment Status</label>
               <select
                 name="payment"
-                className="form-select"
+                className={getSelectClasses(formData.payment, 'Pending')}
                 value={formData.payment}
                 onChange={handleChange}
               >
@@ -232,7 +249,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
               <input
                 type="text"
                 name="amount"
-                className="form-input"
+                className={getInputClasses(formData.amount)}
                 value={formData.amount}
                 onChange={handleChange}
                 placeholder="e.g., 2000"
@@ -246,7 +263,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 <label className="form-label">Customer Arrived</label>
                 <select
                   name="customerArrived"
-                  className="form-select"
+                  className={getSelectClasses(formData.customerArrived, 'No')}
                   value={formData.customerArrived}
                   onChange={handleChange}
                 >
@@ -259,7 +276,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 <label className="form-label">Payment Checked</label>
                 <select
                   name="receptionPaymentChecked"
-                  className="form-select "
+                  className={getSelectClasses(formData.receptionPaymentChecked, 'No')}
                   value={formData.receptionPaymentChecked}
                   onChange={handleChange}
                 >
@@ -274,7 +291,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             <label className="form-label">Reception Notes</label>
             <textarea
               name="receptionNotes"
-              className="form-textarea"
+              className={getTextareaClasses(formData.receptionNotes)}
               value={formData.receptionNotes}
               onChange={handleChange}
               placeholder="Additional notes..."

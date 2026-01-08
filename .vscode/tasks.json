@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "run frontend",
+			"type": "shell",
+			"command": "cd \"C:\\Users\\BMS ABHIMANI\\Desktop\\Blossem-_-Salon-Management-System\\reception-service\\frontend\"; npm start",
+			"isBackground": true
+		},
+		{
+			"label": "run frontend",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"cd \"C:\\Users\\BMS ABHIMANI\\Desktop\\Blossem-_-Salon-Management-System\\reception-service\\frontend\"; npm start"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "run frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"C:\\Users\\BMS ABHIMANI\\Desktop\\Blossem-_-Salon-Management-System\\reception-service\\frontend",
+				"start"
+			],
+			"isBackground": true
+		}
+	]
+}

@@ -136,6 +136,15 @@ form {
   background: rgba(0, 214, 126, 0.05);
 }
 
+.form-input.filled,
+.form-select.filled,
+.form-textarea.filled {
+  background: #ffffff;
+  color: #111827;
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 15px rgba(0, 214, 126, 0.12);
+}
+
 .form-input:read-only {
   background: var(--bg-card);
   color: var(--text-muted);

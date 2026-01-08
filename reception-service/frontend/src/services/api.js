@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8081/api/reception_appointments",
+  baseURL: "http://localhost:8083/api",
   headers: { "Content-Type": "application/json" },
 });
 
