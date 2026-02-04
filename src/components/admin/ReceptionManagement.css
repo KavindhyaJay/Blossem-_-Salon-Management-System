@@ -179,7 +179,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: #222222;
   z-index: 1;
 }
 
@@ -187,7 +187,7 @@
   width: 100%;
   padding: 14px 16px 14px 44px;
   background: #0a0a0a;
-  border: 1px solid #333;
+  border: 1px solid #3f3f3f;
   border-radius: 8px;
   color: #fff;
   font-size: 14px;
@@ -196,8 +196,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #1b5e20;
-  box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .search-input::placeholder {
@@ -254,7 +254,7 @@
 
 .stat-card {
   background: #111;
-  border: 2px solid #1b5e20; /* DARK GREEN BORDER */
+  border: 2px solid #4b0404; /* DARK GREEN BORDER */
   border-radius: 12px;
   padding: 24px;
   transition: all 0.3s ease;
@@ -275,7 +275,7 @@
 .stat-card:hover {
   transform: translateY(-4px);
   border-color: #388e3c;
-  box-shadow: 0 8px 24px rgba(27, 94, 32, 0.3);
+  box-shadow: 0 8px 24px rgba(24, 247, 39, 0.863);
 }
 
 .stat-header {
@@ -374,7 +374,7 @@
   text-align: left;
   font-weight: 600;
   font-size: 14px;
-  color: #1b5e20;
+  color: #0c5e11;
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 1px solid #222;
@@ -399,7 +399,7 @@
 
 .id-column code {
   background: rgba(27, 94, 32, 0.1);
-  color: #66bb6a;
+  color: #19791e;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -437,7 +437,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  background: linear-gradient(135deg, #15571a, #107a16);
   color: white;
   display: flex;
   align-items: center;

@@ -1,4 +1,4 @@
-// src/components/admin/ReceptionManagement.jsx - GREEN AND BLACK VERSION
+// src/components/admin/ReceptionManagement.jsx 
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
