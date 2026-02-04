@@ -46,7 +46,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="stat-value">--</div>
-            <p className="stat-desc">Loading data...</p>
+            <p className="stat-desc"></p>
           </div>
           
           <div className="stat-card">
@@ -57,7 +57,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="stat-value">--</div>
-            <p className="stat-desc">Loading data...</p>
+            <p className="stat-desc"></p>
           </div>
           
           <div className="stat-card">
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="stat-value">--</div>
-            <p className="stat-desc">Loading data...</p>
+            <p className="stat-desc"></p>
           </div>
           
           <div className="stat-card">
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="stat-value">--</div>
-            <p className="stat-desc">Loading data...</p>
+            <p className="stat-desc"></p>
           </div>
         </div>
       </main>
