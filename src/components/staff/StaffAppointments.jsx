@@ -1,4 +1,4 @@
-// src/components/staff/StaffAppointments.jsx - FIXED WITH DEBUGGING
+// src/components/staff/StaffAppointments.jsx - WITHOUT DEBUG INFO
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Calendar as CalendarIcon, 
@@ -14,8 +14,7 @@ import {
   Search,
   CalendarDays,
   Phone,
-  DollarSign,
-  AlertCircle
+  DollarSign
 } from 'lucide-react';
 import './StaffAppointments.css';
 
@@ -26,7 +25,6 @@ const StaffAppointments = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [debugInfo, setDebugInfo] = useState('');
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
 
@@ -93,15 +91,10 @@ const StaffAppointments = ({ user }) => {
     if (!date) return;
     
     setLoading(true);
-    setDebugInfo(`Fetching for date: ${formatDate(date)}`);
     
     try {
       const token = getAuthToken();
       const dateStr = formatDate(date);
-      
-      console.log('🔍 Fetching appointments for:', dateStr);
-      console.log('🔑 Token exists:', !!token);
-      console.log('🌐 API Base URL:', API_BASE_URL);
       
       // Primary endpoint - staff-specific appointments
       const primaryEndpoint = `${API_BASE_URL}/api/staff/appointments`;
@@ -120,12 +113,8 @@ const StaffAppointments = ({ user }) => {
           }
         });
         
-        console.log('📡 Response status:', response.status);
-        
         if (response.ok) {
           data = await response.json();
-          console.log('✅ Success from staff endpoint:', data);
-          setDebugInfo('✅ Fetched from /api/staff/appointments');
         } else {
           // Try alternative endpoint format
           const altResponse = await fetch(`${API_BASE_URL}/api/appointments?staffId=${user?.id || 'current'}&date=${dateStr}`, {
@@ -137,21 +126,14 @@ const StaffAppointments = ({ user }) => {
           
           if (altResponse.ok) {
             data = await altResponse.json();
-            console.log('✅ Success from alternative endpoint:', data);
-            setDebugInfo('✅ Fetched from /api/appointments with staffId');
           } else {
             throw new Error(`API responded with ${altResponse.status}: ${altResponse.statusText}`);
           }
         }
       } catch (apiError) {
-        console.error('❌ API Error:', apiError.message);
-        setDebugInfo(`❌ API Error: ${apiError.message}`);
-        
         // Fallback to mock data for development
-        console.log('🔄 Using mock data for development');
         const mockData = generateMockAppointments(dateStr);
         data = { appointments: mockData };
-        setDebugInfo('🔄 Using mock data (development mode)');
       }
       
       // Process the data
@@ -179,19 +161,13 @@ const StaffAppointments = ({ user }) => {
           return parseInt(timeA) - parseInt(timeB);
         });
         
-        console.log('📊 Processed appointments:', sortedAppointments);
         setAppointments(sortedAppointments);
-        setDebugInfo(prev => `${prev} | Found ${sortedAppointments.length} appointments`);
       }
       
     } catch (error) {
-      console.error('💥 Fetch error:', error);
-      setDebugInfo(`💥 Error: ${error.message}`);
-      
       // Fallback to mock data
       const mockData = generateMockAppointments(formatDate(date));
       setAppointments(mockData);
-      setDebugInfo(`🔄 Using mock data due to error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -216,7 +192,6 @@ const StaffAppointments = ({ user }) => {
   };
 
   const handleDateClick = (date) => {
-    console.log('📅 Date clicked:', formatDate(date));
     setSelectedDate(date);
   };
 
@@ -384,14 +359,6 @@ const StaffAppointments = ({ user }) => {
           </h1>
           <p className="subtitle">Manage your daily schedule and appointments</p>
         </div>
-        
-        {/* Debug info - remove in production */}
-        {debugInfo && (
-          <div className="debug-info">
-            <AlertCircle size={14} />
-            <span>{debugInfo}</span>
-          </div>
-        )}
       </div>
 
       {/* Search Bars */}
@@ -538,7 +505,7 @@ const StaffAppointments = ({ user }) => {
         {loading ? (
           <div className="loading-state">
             <div className="spinner"></div>
-            <p>Loading appointments from server...</p>
+            <p>Loading appointments...</p>
           </div>
         ) : filteredAppointments.length === 0 ? (
           <div className="empty-state">

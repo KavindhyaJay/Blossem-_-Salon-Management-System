@@ -1,4 +1,4 @@
-// src/components/admin/AppointmentsManager.jsx - COMPLETE FIXED VERSION
+// src/components/admin/AppointmentsManager.jsx - UPDATED WITH LKR
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar as CalendarIcon, Filter, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import './AppointmentsManager.css';
@@ -30,11 +30,11 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     return `${year}-${month}-${day}`;
   }, []);
 
-  // Format amount to Indian Rupees - wrapped in useCallback
-  const formatRupees = useCallback((amount) => {
-    return new Intl.NumberFormat('en-IN', {
+  // Format amount to Sri Lankan Rupees (LKR) - UPDATED
+  const formatLKR = useCallback((amount) => {
+    return new Intl.NumberFormat('en-LK', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'LKR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
@@ -292,10 +292,12 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           <div className="stat-card">
             <div className="stat-header">
               <h3>Revenue</h3>
-              <div className="stat-icon">₹</div>
+              {/* UPDATED: Changed ₹ to Rs. */}
+              <div className="stat-icon">Rs.</div>
             </div>
             <div className="stat-value revenue">
-              {formatRupees(stats.revenue)}
+              {/* UPDATED: Changed formatRupees to formatLKR */}
+              {formatLKR(stats.revenue)}
             </div>
             <div className="stat-subtitle">Earnings</div>
           </div>
@@ -403,7 +405,8 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                       {userRole === 'admin' && <th>Staff</th>}
                       <th>Time</th>
                       <th>Status</th>
-                      <th>Amount</th>
+                      {/* UPDATED: Changed Amount column heading */}
+                      <th>Amount (LKR)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -432,7 +435,8 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                           </span>
                         </td>
                         <td className="amount-cell">
-                          {formatRupees(appointment.amount)}
+                          {/* UPDATED: Changed formatRupees to formatLKR */}
+                          {formatLKR(appointment.amount)}
                         </td>
                       </tr>
                     ))}

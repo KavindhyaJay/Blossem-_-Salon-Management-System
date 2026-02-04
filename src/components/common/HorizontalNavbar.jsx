@@ -1,4 +1,3 @@
-// Alternative simpler version
 import React from 'react';
 import { 
   Home, 
@@ -7,8 +6,8 @@ import {
   Image,
   UserCheck,
   User,
-  DollarSign,
-  Scissors
+  DollarSign
+  // Removed: Scissors (no longer needed)
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -19,7 +18,7 @@ const HorizontalNavbar = ({ role }) => {
     { icon: <UserCheck />, label: 'Reception', path: '/admin-dashboard/reception' },
     { icon: <Calendar />, label: 'Appointments', path: '/admin-dashboard/appointments' },
     { icon: <Image />, label: 'Photos', path: '/admin-dashboard/photos' },
-    { icon: <Scissors />, label: 'Services', path: '/admin-dashboard/services' },
+    // REMOVED: Services option
     { icon: <DollarSign />, label: 'Revenue', path: '/admin-dashboard/revenue' },
   ];
 
@@ -27,7 +26,6 @@ const HorizontalNavbar = ({ role }) => {
     { icon: <Home />, label: 'Dashboard', path: '/staff-dashboard' },
     { icon: <Calendar />, label: 'Schedule', path: '/staff-dashboard/schedule' },
     { icon: <Image />, label: 'Photos', path: '/staff-dashboard/photos' },
-    { icon: <Scissors />, label: 'Services', path: '/staff-dashboard/services' },
     { icon: <User />, label: 'Profile', path: '/staff-dashboard/profile' },
   ];
 
@@ -35,7 +33,6 @@ const HorizontalNavbar = ({ role }) => {
     { icon: <Home />, label: 'Dashboard', path: '/reception-dashboard' },
     { icon: <Calendar />, label: 'Bookings', path: '/reception-dashboard/bookings' },
     { icon: <Users />, label: 'Customers', path: '/reception-dashboard/customers' },
-    { icon: <Scissors />, label: 'Services', path: '/reception-dashboard/services' },
     { icon: <User />, label: 'Profile', path: '/reception-dashboard/profile' },
   ];
 
