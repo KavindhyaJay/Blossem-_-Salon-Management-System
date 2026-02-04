@@ -862,3 +862,108 @@
     flex-direction: column;
   }
 }
+/* Add these styles to your existing CSS file */
+
+/* Debug info */
+.debug-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+.debug-info svg {
+  flex-shrink: 0;
+}
+
+/* Make appointment indicator more visible */
+.appointment-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Improve empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px dashed #334155;
+}
+
+.empty-state svg {
+  color: #3b82f6;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.empty-state h4 {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.empty-state .hint {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Improve loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.loading-state .spinner {
+  border: 3px solid rgba(59, 130, 246, 0.1);
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-state p {
+  color: #94a3b8;
+  font-size: 1rem;
+}

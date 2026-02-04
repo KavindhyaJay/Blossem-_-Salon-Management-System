@@ -672,3 +672,276 @@
 .view-btn {
   display: none;
 }
+
+/* Add these styles to your existing CSS file */
+
+/* Debug info */
+.debug-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+.debug-info svg {
+  flex-shrink: 0;
+}
+
+/* Make appointment indicator more visible */
+.appointment-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Improve empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px dashed #334155;
+}
+
+.empty-state svg {
+  color: #3b82f6;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.empty-state h4 {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.empty-state .hint {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Improve loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.loading-state .spinner {
+  border: 3px solid rgba(59, 130, 246, 0.1);
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-state p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+/* Add/Update these styles in your AppointmentsManager.css */
+
+/* Calendar Container - Make it centered */
+.calendar-container {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 1px solid #333;
+  max-width: 800px; /* Limit maximum width */
+  margin-left: auto;
+  margin-right: auto; /* Center the calendar */
+}
+
+/* Calendar Grid - Adjust for centered layout */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin: 20px 0;
+  max-width: 100%; /* Ensure it fits within container */
+}
+
+/* Calendar Day - Adjust for centered layout */
+.calendar-day {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 5px;
+  min-height: 70px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Calendar Header - Adjust for centered layout */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Calendar Controls - Adjust for centered layout */
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Calendar Month Display - Adjust for centered layout */
+.calendar-month-display {
+  color: #ff4444;
+  font-weight: bold;
+  font-size: 1.1rem;
+  min-width: 180px;
+  text-align: center;
+  margin: 0 10px;
+}
+
+/* Calendar Title - Adjust for centered layout */
+.calendar-title {
+  color: #ff4444;
+  font-size: 1.5rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Calendar Day Header - Adjust for centered layout */
+.calendar-day-header {
+  text-align: center;
+  padding: 12px 5px;
+  font-weight: bold;
+  color: #ff4444;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Selected Date Info - Adjust for centered layout */
+.selected-date-info {
+  text-align: center;
+  margin-top: 25px;
+  padding: 20px;
+  background: #222;
+  border-radius: 8px;
+  border: 1px solid #444;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Make the calendar more compact if needed */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+  
+  .calendar-day {
+    min-height: 60px;
+    padding: 8px 3px;
+  }
+  
+  .day-number {
+    font-size: 0.9rem;
+  }
+  
+  .calendar-month-display {
+    font-size: 1rem;
+    min-width: 140px;
+  }
+  
+  .calendar-title {
+    font-size: 1.3rem;
+  }
+  
+  .calendar-day-header {
+    font-size: 0.8rem;
+    padding: 10px 3px;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .calendar-day {
+    min-height: 50px;
+    padding: 6px 2px;
+  }
+  
+  .day-number {
+    font-size: 0.8rem;
+  }
+  
+  .calendar-month-display {
+    font-size: 0.9rem;
+    min-width: 120px;
+  }
+  
+  .calendar-title {
+    font-size: 1.1rem;
+  }
+  
+  .calendar-day-header {
+    font-size: 0.7rem;
+    padding: 8px 2px;
+  }
+  
+  .calendar-controls {
+    gap: 10px;
+  }
+  
+  .calendar-nav-btn {
+    width: 30px;
+    height: 30px;
+  }
+}
