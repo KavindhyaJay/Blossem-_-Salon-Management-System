@@ -31,6 +31,15 @@ const AllDataDisplay = () => {
         fetchAllData();
     }, []);
 
+    const formatCurrency = (value) => {
+        if (value === null || value === undefined || value === '') return '-';
+        const numeric = Number(value);
+        if (Number.isFinite(numeric)) {
+            return numeric.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+        }
+        return value;
+    };
+
     // Filter appointments based on filter and search
     const getFilteredAppointments = () => {
         let filtered = appointments;
@@ -41,7 +50,7 @@ const AllDataDisplay = () => {
         } else if (filter === 'pending') {
             filtered = filtered.filter(a => a.customerArrived === 'No');
         } else if (filter === 'unpaid') {
-            filtered = filtered.filter(a => a.receptionPaymentChecked === 'No');
+            filtered = filtered.filter(a => a.paymentChecked === 'No');
         }
 
         // Filter by search term
@@ -63,7 +72,7 @@ const AllDataDisplay = () => {
         total: appointments.length,
         arrived: appointments.filter(a => a.customerArrived === 'Yes').length,
         pending: appointments.filter(a => a.customerArrived === 'No').length,
-        unpaid: appointments.filter(a => a.receptionPaymentChecked === 'No').length,
+        unpaid: appointments.filter(a => a.paymentChecked === 'No').length,
         paidCount: appointments.filter(a => a.payment === 'Paid').length,
     };
 
@@ -205,6 +214,7 @@ const AllDataDisplay = () => {
                                 <th>Date</th>
                                 <th>Time</th>
                                 <th>Staff</th>
+                                <th>Total Payment</th>
                                 <th>Payment</th>
                                 <th>Arrived</th>
                                 <th>Payment Checked</th>
@@ -224,6 +234,7 @@ const AllDataDisplay = () => {
                                     <td className="date">{formatDate(apt.date)}</td>
                                     <td className="time">{apt.time || '-'}</td>
                                     <td className="staff">{apt.staff || '-'}</td>
+                                    <td className="total-payment">{formatCurrency(apt.totalPayment)}</td>
                                     <td className="payment">
                                         <span className={`badge ${apt.payment === 'Paid' ? 'paid' : 'pending'}`}>
                                             {apt.payment || 'Pending'}
@@ -235,11 +246,11 @@ const AllDataDisplay = () => {
                                         </span>
                                     </td>
                                     <td className="payment-checked">
-                                        <span className={`status ${apt.receptionPaymentChecked === 'Yes' ? 'yes' : 'no'}`}>
-                                            {apt.receptionPaymentChecked === 'Yes' ? '✓ Yes' : '✗ No'}
+                                        <span className={`status ${apt.paymentChecked === 'Yes' ? 'yes' : 'no'}`}>
+                                            {apt.paymentChecked === 'Yes' ? '✓ Yes' : '✗ No'}
                                         </span>
                                     </td>
-                                    <td className="notes">{apt.notes || '-'}</td>
+                                    <td className="notes">{apt.receptionNotes || apt.notes || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -285,6 +296,10 @@ const AllDataDisplay = () => {
                                     <span className="value">{apt.staff || '-'}</span>
                                 </div>
                                 <div className="card-field">
+                                    <span className="label">💵 Total Payment:</span>
+                                    <span className="value">{formatCurrency(apt.totalPayment)}</span>
+                                </div>
+                                <div className="card-field">
                                     <span className="label">💰 Payment:</span>
                                     <span className={`value badge ${apt.payment === 'Paid' ? 'paid' : 'pending'}`}>
                                         {apt.payment || 'Pending'}
@@ -292,14 +307,14 @@ const AllDataDisplay = () => {
                                 </div>
                                 <div className="card-field">
                                     <span className="label">✔️ Payment Checked:</span>
-                                    <span className={`value ${apt.receptionPaymentChecked === 'Yes' ? 'yes' : 'no'}`}>
-                                        {apt.receptionPaymentChecked === 'Yes' ? 'Yes' : 'No'}
+                                    <span className={`value ${apt.paymentChecked === 'Yes' ? 'yes' : 'no'}`}>
+                                        {apt.paymentChecked === 'Yes' ? 'Yes' : 'No'}
                                     </span>
                                 </div>
-                                {apt.notes && (
+                                {(apt.receptionNotes || apt.notes) && (
                                     <div className="card-field">
                                         <span className="label">📝 Notes:</span>
-                                        <span className="value">{apt.notes}</span>
+                                        <span className="value">{apt.receptionNotes || apt.notes}</span>
                                     </div>
                                 )}
                             </div>

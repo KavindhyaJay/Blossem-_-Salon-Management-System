@@ -1,7 +1,12 @@
 package com.blossem.reception_service.model;
 
+import java.math.BigDecimal;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "bookings")
 public class Booking {
@@ -10,18 +15,23 @@ public class Booking {
     private String id;
 
     private String email; // email to link with customer collection and reception collection
-    private String customerName;
     private String[] services;
     private String date;
     private String time;
     private String staff;
-    private String payment; // optional free-text amount
+    private String payment; // optional free-text amount or status
 
-    private BookingStatus bookingStatus = BookingStatus.CUSTOMER_NOT_ARRIVED;
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @JsonProperty("total_payment")
+    @Field("totalPayment")
+    private BigDecimal totalPayment; // numeric amount synced to external collection
 
-    public Booking() {
-    }
+    @JsonProperty("customer_arrived")
+    @Field("customer_arrived")
+    private String customerArrived; // "Yes" or "No"
+
+    @JsonProperty("payment_checked")
+    @Field("payment_checked")
+    private String paymentChecked; // "Yes" or "No"
 
     public String getId() {
         return id;
@@ -37,14 +47,6 @@ public class Booking {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
     }
 
     public String[] getServices() {
@@ -87,19 +89,33 @@ public class Booking {
         this.payment = payment;
     }
 
-    public BookingStatus getBookingStatus() {
-        return bookingStatus;
+    @JsonProperty("total_payment")
+    public BigDecimal getTotalPayment() {
+        return totalPayment;
     }
 
-    public void setBookingStatus(BookingStatus bookingStatus) {
-        this.bookingStatus = bookingStatus;
+    @JsonProperty("total_payment")
+    public void setTotalPayment(BigDecimal totalPayment) {
+        this.totalPayment = totalPayment;
     }
 
-    public PaymentStatus getPaymentStatus() {
-        return paymentStatus;
+    @JsonProperty("customer_arrived")
+    public String getCustomerArrived() {
+        return customerArrived;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
+    @JsonProperty("customer_arrived")
+    public void setCustomerArrived(String customerArrived) {
+        this.customerArrived = customerArrived;
+    }
+
+    @JsonProperty("payment_checked")
+    public String getPaymentChecked() {
+        return paymentChecked;
+    }
+
+    @JsonProperty("payment_checked")
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
     }
 }

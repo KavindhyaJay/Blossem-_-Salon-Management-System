@@ -1,7 +1,6 @@
 package com.blossem.reception_service.controller;
 
 import com.blossem.reception_service.DTO.ReceptionAppointmentRequest;
-import com.blossem.reception_service.model.PaymentStatus;
 import com.blossem.reception_service.model.ReceptionAppointment;
 import com.blossem.reception_service.service.ReceptionService;
 import org.springframework.web.bind.annotation.*;
@@ -97,8 +96,16 @@ public class ReceptionController {
      */
     @PostMapping("/booking/{bookingId}/payment")
     public ReceptionAppointment updatePayment(@PathVariable String bookingId,
-            @RequestParam PaymentStatus status) {
+            @RequestParam String status) {
         return service.updatePaymentStatusByBookingId(bookingId, status);
+    }
+
+    /**
+     * Bulk-sync reception appointments from the bookings collection.
+     */
+    @PostMapping("/sync-from-bookings")
+    public ReceptionService.SyncSummary syncFromBookings() {
+        return service.syncBookingsIntoReception();
     }
 
     @DeleteMapping("/{id}")

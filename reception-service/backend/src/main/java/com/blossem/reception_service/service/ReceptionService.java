@@ -4,16 +4,17 @@ import com.blossem.reception_service.DTO.ReceptionAppointmentRequest;
 import com.blossem.reception_service.model.Booking;
 import com.blossem.reception_service.model.Customer;
 import com.blossem.reception_service.model.ReceptionAppointment;
-import com.blossem.reception_service.model.BookingStatus;
-import com.blossem.reception_service.model.PaymentStatus;
 import com.blossem.reception_service.repository.BookingRepository;
 import com.blossem.reception_service.repository.CustomerRepository;
 import com.blossem.reception_service.repository.ReceptionAppointmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -67,30 +68,33 @@ public class ReceptionService {
         String customerName = fetchCustomerName(req.getEmail(), req.getCustomerName());
         String paymentStatus = req.getPayment() != null ? req.getPayment()
                 : (req.getAmount() != null ? req.getAmount() : "Pending");
+        BigDecimal totalPayment = parseAmount(req.getAmount());
 
         String bookingId = req.getBookingId();
+        Booking linkedBooking;
 
         // Create booking if not provided
         if (bookingId == null || bookingId.isBlank()) {
             Booking newBooking = new Booking();
             newBooking.setEmail(req.getEmail()); // Save email in booking collection for linking
-            newBooking.setCustomerName(customerName);
             newBooking.setServices(req.getServices());
             newBooking.setDate(req.getDate());
             newBooking.setTime(req.getTime());
             newBooking.setStaff(req.getStaff());
             newBooking.setPayment(paymentStatus);
-            newBooking.setBookingStatus(BookingStatus.CUSTOMER_NOT_ARRIVED);
-            // Map payment status
-            if (paymentStatus != null && (paymentStatus.equalsIgnoreCase("Paid") || paymentStatus.equals("Yes"))) {
-                newBooking.setPaymentStatus(PaymentStatus.PAID);
-            } else {
-                newBooking.setPaymentStatus(PaymentStatus.PENDING);
+            newBooking.setTotalPayment(totalPayment);
+            linkedBooking = bookingRepo.save(newBooking);
+            bookingId = linkedBooking.getId();
+        } else {
+            Optional<Booking> existingBookingOpt = bookingRepo.findById(bookingId);
+            if (existingBookingOpt.isEmpty()) {
+                throw new RuntimeException("Provided bookingId not found: " + bookingId);
             }
-            Booking savedBooking = bookingRepo.save(newBooking);
-            bookingId = savedBooking.getId();
-        } else if (!bookingRepo.existsById(bookingId)) {
-            throw new RuntimeException("Provided bookingId not found: " + bookingId);
+            linkedBooking = existingBookingOpt.get();
+            if (totalPayment != null) {
+                linkedBooking.setTotalPayment(totalPayment);
+                bookingRepo.save(linkedBooking);
+            }
         }
 
         // Create reception appointment
@@ -103,12 +107,24 @@ public class ReceptionService {
         ap.setTime(req.getTime());
         ap.setStaff(req.getStaff());
         ap.setPayment(paymentStatus);
+        BigDecimal appointmentTotal = totalPayment != null
+                ? totalPayment
+                : (linkedBooking != null ? linkedBooking.getTotalPayment() : null);
+        ap.setTotalPayment(appointmentTotal);
         ap.setReceptionNotes(req.getReceptionNotes());
-        ap.setCustomerArrived(req.getCustomerArrived() != null ? req.getCustomerArrived() : "No");
-        ap.setReceptionPaymentChecked(
-                req.getReceptionPaymentChecked() != null ? req.getReceptionPaymentChecked() : "No");
+        String customerArrived = req.getCustomerArrived() != null ? req.getCustomerArrived() : "No";
+        String paymentChecked = req.getReceptionPaymentChecked() != null ? req.getReceptionPaymentChecked() : "No";
+        ap.setCustomerArrived(customerArrived);
+        ap.setPaymentChecked(paymentChecked);
         ap.setCreatedAt(Instant.now());
         ap.setUpdatedAt(Instant.now());
+
+        // Sync customer_arrived and payment_checked to booking
+        if (linkedBooking != null) {
+            linkedBooking.setCustomerArrived(customerArrived);
+            linkedBooking.setPaymentChecked(paymentChecked);
+            bookingRepo.save(linkedBooking);
+        }
 
         return repo.save(ap);
     }
@@ -135,14 +151,16 @@ public class ReceptionService {
         }
 
         // Fetch customer name from customer collection using email
-        String customerName = b.getCustomerName();
+        String customerName = null;
         if (emailToUse != null && !emailToUse.isBlank()) {
             try {
-                customerName = fetchCustomerName(emailToUse, b.getCustomerName());
+                customerName = fetchCustomerName(emailToUse, emailToUse);
             } catch (Exception e) {
-                // Use booking's customer name if customer not found
-                System.err.println("Customer not found with email: " + emailToUse + ", using booking name");
+                customerName = emailToUse;
             }
+        }
+        if (customerName == null || customerName.isBlank()) {
+            customerName = "Customer";
         }
 
         ReceptionAppointment ap = new ReceptionAppointment();
@@ -154,19 +172,13 @@ public class ReceptionService {
         ap.setTime(b.getTime());
         ap.setStaff(b.getStaff());
         ap.setPayment(b.getPayment());
+        ap.setTotalPayment(b.getTotalPayment());
         ap.setReceptionNotes(null);
-        // Map booking status to customerArrived
-        if (b.getBookingStatus() == BookingStatus.CUSTOMER_ARRIVED) {
-            ap.setCustomerArrived("Yes");
-        } else {
-            ap.setCustomerArrived("No");
-        }
-        // Map payment status to receptionPaymentChecked
-        if (b.getPaymentStatus() == PaymentStatus.PAID) {
-            ap.setReceptionPaymentChecked("Yes");
-        } else {
-            ap.setReceptionPaymentChecked("No");
-        }
+        ap.setCustomerArrived(b.getCustomerArrived() != null ? b.getCustomerArrived() : "No");
+        ap.setPaymentChecked(
+                b.getPaymentChecked() != null ? b.getPaymentChecked()
+                        : ("Paid".equalsIgnoreCase(b.getPayment()) || "Yes".equalsIgnoreCase(b.getPayment()) ? "Yes"
+                                : "No"));
         ap.setCreatedAt(Instant.now());
         ap.setUpdatedAt(Instant.now());
 
@@ -197,11 +209,15 @@ public class ReceptionService {
         } else if (req.getAmount() != null) {
             existing.setPayment(req.getAmount());
         }
+        BigDecimal amountValue = parseAmount(req.getAmount());
+        if (amountValue != null) {
+            existing.setTotalPayment(amountValue);
+        }
         if (req.getCustomerArrived() != null) {
             existing.setCustomerArrived(req.getCustomerArrived());
         }
         if (req.getReceptionPaymentChecked() != null) {
-            existing.setReceptionPaymentChecked(req.getReceptionPaymentChecked());
+            existing.setPaymentChecked(req.getReceptionPaymentChecked());
         }
         existing.setReceptionNotes(req.getReceptionNotes());
         existing.setUpdatedAt(Instant.now());
@@ -215,7 +231,6 @@ public class ReceptionService {
                 if (req.getEmail() != null && !req.getEmail().equals(booking.getEmail())) {
                     booking.setEmail(req.getEmail());
                 }
-                booking.setCustomerName(customerName);
                 booking.setServices(req.getServices());
                 booking.setDate(req.getDate());
                 booking.setTime(req.getTime());
@@ -225,21 +240,14 @@ public class ReceptionService {
                 } else if (req.getAmount() != null) {
                     booking.setPayment(req.getAmount());
                 }
-                // Map customerArrived to BookingStatus
-                if (existing.getCustomerArrived() != null) {
-                    if (existing.getCustomerArrived().equalsIgnoreCase("Yes")) {
-                        booking.setBookingStatus(BookingStatus.CUSTOMER_ARRIVED);
-                    } else {
-                        booking.setBookingStatus(BookingStatus.CUSTOMER_NOT_ARRIVED);
-                    }
+                if (amountValue != null) {
+                    booking.setTotalPayment(amountValue);
                 }
-                // Map receptionPaymentChecked to PaymentStatus
-                if (existing.getReceptionPaymentChecked() != null) {
-                    if (existing.getReceptionPaymentChecked().equalsIgnoreCase("Yes")) {
-                        booking.setPaymentStatus(PaymentStatus.PAID);
-                    } else {
-                        booking.setPaymentStatus(PaymentStatus.PENDING);
-                    }
+                if (req.getCustomerArrived() != null) {
+                    booking.setCustomerArrived(req.getCustomerArrived());
+                }
+                if (req.getReceptionPaymentChecked() != null) {
+                    booking.setPaymentChecked(req.getReceptionPaymentChecked());
                 }
                 bookingRepo.save(booking);
             }
@@ -248,22 +256,28 @@ public class ReceptionService {
         return repo.save(existing);
     }
 
+    private BigDecimal parseAmount(String amount) {
+        if (amount == null) {
+            return null;
+        }
+        String sanitized = amount.replaceAll("[^0-9.]", "");
+        if (sanitized.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(sanitized);
+        } catch (NumberFormatException ex) {
+            System.err.println("Ignoring invalid amount: " + amount);
+            return null;
+        }
+    }
+
     // Mark customer as arrived by reception appointment ID
     @Transactional
     public ReceptionAppointment markArrivedById(String id, String staffEmail) {
         ReceptionAppointment ap = getById(id);
         ap.setCustomerArrived("Yes");
         ap.setUpdatedAt(Instant.now());
-
-        // Update Booking collection if bookingId exists
-        if (ap.getBookingId() != null && !ap.getBookingId().isBlank()) {
-            Optional<Booking> bookingOpt = bookingRepo.findById(ap.getBookingId());
-            if (bookingOpt.isPresent()) {
-                Booking booking = bookingOpt.get();
-                booking.setBookingStatus(BookingStatus.CUSTOMER_ARRIVED);
-                bookingRepo.save(booking);
-            }
-        }
 
         ReceptionAppointment savedAp = repo.save(ap);
 
@@ -286,8 +300,6 @@ public class ReceptionService {
     public ReceptionAppointment markArrivedByBookingId(String bookingId, String staffEmail) {
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
-        booking.setBookingStatus(BookingStatus.CUSTOMER_ARRIVED);
-        bookingRepo.save(booking);
 
         Optional<ReceptionAppointment> maybeAp = repo.findByBookingId(bookingId);
         ReceptionAppointment ap;
@@ -295,30 +307,53 @@ public class ReceptionService {
         if (maybeAp.isPresent()) {
             ap = maybeAp.get();
             ap.setCustomerArrived("Yes");
+            ap.setTotalPayment(booking.getTotalPayment());
             ap.setUpdatedAt(Instant.now());
         } else {
             // create new reception appointment if not exist
             ap = new ReceptionAppointment();
             ap.setBookingId(booking.getId());
-            // Use email from booking collection
-            ap.setEmail(booking.getEmail());
-            ap.setCustomerName(booking.getCustomerName());
+            String bookingEmail = booking.getEmail();
+            ap.setEmail(bookingEmail);
+            String customerName;
+            if (bookingEmail != null && !bookingEmail.isBlank()) {
+                try {
+                    customerName = fetchCustomerName(bookingEmail, bookingEmail);
+                } catch (RuntimeException ex) {
+                    customerName = bookingEmail;
+                }
+            } else {
+                customerName = "Customer";
+            }
+            ap.setCustomerName(customerName);
             ap.setServices(booking.getServices());
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
             ap.setPayment(booking.getPayment());
+            ap.setTotalPayment(booking.getTotalPayment());
             ap.setCustomerArrived("Yes");
-            if (booking.getPaymentStatus() == PaymentStatus.PAID) {
-                ap.setReceptionPaymentChecked("Yes");
-            } else {
-                ap.setReceptionPaymentChecked("No");
-            }
+            ap.setPaymentChecked(
+                    booking.getPaymentChecked() != null ? booking.getPaymentChecked()
+                            : ("Paid".equalsIgnoreCase(booking.getPayment())
+                                    || "Yes".equalsIgnoreCase(booking.getPayment())
+                                            ? "Yes"
+                                            : "No"));
             ap.setCreatedAt(Instant.now());
             ap.setUpdatedAt(Instant.now());
         }
 
         ReceptionAppointment savedAp = repo.save(ap);
+
+        // Sync with Booking collection if bookingId exists
+        if (savedAp.getBookingId() != null && !savedAp.getBookingId().isBlank()) {
+            Optional<Booking> bookingOpt = bookingRepo.findById(savedAp.getBookingId());
+            if (bookingOpt.isPresent()) {
+                Booking booking2 = bookingOpt.get();
+                booking2.setCustomerArrived("Yes");
+                bookingRepo.save(booking2);
+            }
+        }
 
         // Notify staff via email
         if (staffEmail != null && !staffEmail.isBlank()) {
@@ -338,7 +373,13 @@ public class ReceptionService {
     @Transactional
     public ReceptionAppointment updatePaymentCheckById(String id, String paymentChecked) {
         ReceptionAppointment ap = getById(id);
-        ap.setReceptionPaymentChecked(paymentChecked);
+        String normalizedCheck = normalizePaymentChecked(paymentChecked);
+        ap.setPaymentChecked(normalizedCheck);
+        if ("Yes".equalsIgnoreCase(normalizedCheck)) {
+            ap.setPayment("Paid");
+        } else if (shouldResetToPending(ap.getPayment())) {
+            ap.setPayment("Pending");
+        }
         ap.setUpdatedAt(Instant.now());
 
         // Update Booking collection if bookingId exists
@@ -346,11 +387,11 @@ public class ReceptionService {
             Optional<Booking> bookingOpt = bookingRepo.findById(ap.getBookingId());
             if (bookingOpt.isPresent()) {
                 Booking booking = bookingOpt.get();
-                if (paymentChecked != null && paymentChecked.equalsIgnoreCase("Yes")) {
-                    booking.setPaymentStatus(PaymentStatus.PAID);
+                booking.setPaymentChecked(normalizedCheck);
+                if ("Yes".equalsIgnoreCase(normalizedCheck)) {
                     booking.setPayment("Paid");
-                } else {
-                    booking.setPaymentStatus(PaymentStatus.PENDING);
+                } else if (shouldResetToPending(booking.getPayment())) {
+                    booking.setPayment("Pending");
                 }
                 bookingRepo.save(booking);
             }
@@ -361,49 +402,45 @@ public class ReceptionService {
 
     // Update payment status by booking ID
     @Transactional
-    public ReceptionAppointment updatePaymentStatusByBookingId(String bookingId, PaymentStatus newStatus) {
+    public ReceptionAppointment updatePaymentStatusByBookingId(String bookingId, String newPaymentValue) {
+        String paymentValue = normalizePaymentValue(newPaymentValue);
+        if (paymentValue == null) {
+            throw new IllegalArgumentException("payment value must not be blank");
+        }
+
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
-        booking.setPaymentStatus(newStatus);
-        if (newStatus == PaymentStatus.PAID) {
-            booking.setPayment("Paid");
-        } else {
-            booking.setPayment("Pending");
-        }
+        booking.setPayment(paymentValue);
         bookingRepo.save(booking);
 
         Optional<ReceptionAppointment> maybeAp = repo.findByBookingId(bookingId);
         ReceptionAppointment ap;
+        boolean paid = isPaidValue(paymentValue);
 
         if (maybeAp.isPresent()) {
             ap = maybeAp.get();
-            if (newStatus == PaymentStatus.PAID) {
-                ap.setReceptionPaymentChecked("Yes");
-                ap.setPayment("Paid");
-            } else {
-                ap.setReceptionPaymentChecked("No");
-                ap.setPayment("Pending");
-            }
+            ap.setPaymentChecked(paid ? "Yes" : "No");
+            ap.setPayment(paymentValue);
+            ap.setTotalPayment(booking.getTotalPayment());
             ap.setUpdatedAt(Instant.now());
         } else {
             // create minimal reception appointment if missing
             ap = new ReceptionAppointment();
             ap.setBookingId(booking.getId());
-            ap.setEmail(booking.getEmail()); // Use email from booking collection
-            ap.setCustomerName(booking.getCustomerName());
+            String bookingEmail = booking.getEmail();
+            ap.setEmail(bookingEmail);
+            ap.setCustomerName(fetchCustomerName(bookingEmail, bookingEmail));
             ap.setServices(booking.getServices());
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
-            ap.setPayment(booking.getPayment());
-            if (newStatus == PaymentStatus.PAID) {
-                ap.setReceptionPaymentChecked("Yes");
-            } else {
-                ap.setReceptionPaymentChecked("No");
-            }
+            ap.setPayment(paymentValue);
+            ap.setTotalPayment(booking.getTotalPayment());
+            ap.setPaymentChecked(paid ? "Yes" : "No");
             ap.setCustomerArrived("No");
-            ap.setCreatedAt(Instant.now());
-            ap.setUpdatedAt(Instant.now());
+            Instant now = Instant.now();
+            ap.setCreatedAt(now);
+            ap.setUpdatedAt(now);
         }
 
         return repo.save(ap);
@@ -421,5 +458,168 @@ public class ReceptionService {
 
         // Delete from Reception collection
         repo.deleteById(id);
+    }
+
+    /**
+     * Backfill/sync reception appointments from all existing bookings.
+     * Creates missing entries and refreshes existing ones with booking data.
+     */
+    @Transactional
+    public SyncSummary syncBookingsIntoReception() {
+        List<Booking> bookings = bookingRepo.findAll();
+        int created = 0;
+        int updated = 0;
+
+        for (Booking booking : bookings) {
+            if (booking.getId() == null || booking.getId().isBlank()) {
+                continue; // skip malformed booking records
+            }
+
+            Optional<ReceptionAppointment> existingOpt = repo.findByBookingId(booking.getId());
+            if (existingOpt.isPresent()) {
+                ReceptionAppointment ap = existingOpt.get();
+                boolean changed = applyBookingSnapshotToReception(booking, ap);
+                if (changed) {
+                    ap.setUpdatedAt(Instant.now());
+                    repo.save(ap);
+                    updated++;
+                }
+            } else {
+                createFromExistingBooking(booking.getId(), booking.getEmail());
+                created++;
+            }
+        }
+
+        return new SyncSummary(bookings.size(), created, updated);
+    }
+
+    private String normalizePaymentValue(String paymentValue) {
+        if (paymentValue == null) {
+            return null;
+        }
+        String trimmed = paymentValue.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (trimmed.equalsIgnoreCase("PAID")) {
+            return "Paid";
+        }
+        if (trimmed.equalsIgnoreCase("PENDING")) {
+            return "Pending";
+        }
+        return trimmed;
+    }
+
+    private boolean isPaidValue(String paymentValue) {
+        if (paymentValue == null) {
+            return false;
+        }
+        String trimmed = paymentValue.trim();
+        return trimmed.equalsIgnoreCase("Paid") || trimmed.equalsIgnoreCase("Yes");
+    }
+
+    private boolean shouldResetToPending(String currentPayment) {
+        if (currentPayment == null) {
+            return true;
+        }
+        String trimmed = currentPayment.trim();
+        return trimmed.isEmpty() || trimmed.equalsIgnoreCase("Paid") || trimmed.equalsIgnoreCase("Pending");
+    }
+
+    private String normalizePaymentChecked(String paymentChecked) {
+        if (paymentChecked == null) {
+            return "No";
+        }
+        return paymentChecked.equalsIgnoreCase("Yes") ? "Yes" : "No";
+    }
+
+    private boolean applyBookingSnapshotToReception(Booking booking, ReceptionAppointment ap) {
+        boolean changed = false;
+
+        if (!Objects.equals(ap.getBookingId(), booking.getId())) {
+            ap.setBookingId(booking.getId());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getEmail(), booking.getEmail())) {
+            ap.setEmail(booking.getEmail());
+            changed = true;
+        }
+        if (!Arrays.equals(ap.getServices(), booking.getServices())) {
+            ap.setServices(cloneServices(booking.getServices()));
+            changed = true;
+        }
+        if (!Objects.equals(ap.getDate(), booking.getDate())) {
+            ap.setDate(booking.getDate());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getTime(), booking.getTime())) {
+            ap.setTime(booking.getTime());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getStaff(), booking.getStaff())) {
+            ap.setStaff(booking.getStaff());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getPayment(), booking.getPayment())) {
+            ap.setPayment(booking.getPayment());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getTotalPayment(), booking.getTotalPayment())) {
+            ap.setTotalPayment(booking.getTotalPayment());
+            changed = true;
+        }
+
+        String arrivedValue = determineCustomerArrivedValue(booking.getCustomerArrived());
+        if (!Objects.equals(ap.getCustomerArrived(), arrivedValue)) {
+            ap.setCustomerArrived(arrivedValue);
+            changed = true;
+        }
+
+        String paymentCheckedValue = derivePaymentCheckedFromBooking(booking);
+        if (!Objects.equals(ap.getPaymentChecked(), paymentCheckedValue)) {
+            ap.setPaymentChecked(paymentCheckedValue);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private String[] cloneServices(String[] services) {
+        return services == null ? null : services.clone();
+    }
+
+    private String determineCustomerArrivedValue(String customerArrived) {
+        return (customerArrived == null || customerArrived.isBlank()) ? "No" : customerArrived;
+    }
+
+    private String derivePaymentCheckedFromBooking(Booking booking) {
+        if (booking.getPaymentChecked() != null && !booking.getPaymentChecked().isBlank()) {
+            return normalizePaymentChecked(booking.getPaymentChecked());
+        }
+        return isPaidValue(booking.getPayment()) ? "Yes" : "No";
+    }
+
+    public static class SyncSummary {
+        private final int bookingsProcessed;
+        private final int appointmentsCreated;
+        private final int appointmentsUpdated;
+
+        public SyncSummary(int bookingsProcessed, int appointmentsCreated, int appointmentsUpdated) {
+            this.bookingsProcessed = bookingsProcessed;
+            this.appointmentsCreated = appointmentsCreated;
+            this.appointmentsUpdated = appointmentsUpdated;
+        }
+
+        public int getBookingsProcessed() {
+            return bookingsProcessed;
+        }
+
+        public int getAppointmentsCreated() {
+            return appointmentsCreated;
+        }
+
+        public int getAppointmentsUpdated() {
+            return appointmentsUpdated;
+        }
     }
 }

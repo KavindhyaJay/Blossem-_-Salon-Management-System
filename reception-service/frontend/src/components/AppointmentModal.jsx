@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AppointmentModal.css';
-import { useCreateAppointmentsMutation, useUpdateAppointmentMutation } from '../redux/Query';
+import { createBooking as createBookingApi, updateBooking as updateBookingApi } from '../services/bookingService';
+import { receptionService } from '../services/receptionService';
 
 const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
   const [formData, setFormData] = useState({
@@ -15,14 +16,14 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     customerArrived: 'No',
     receptionPaymentChecked: 'No',
     receptionNotes: '',
+    bookingId: '',
   });
 
-  // Redux mutations
-  const [createAppointment, { isLoading: isCreateLoading, isError: isCreateError, error: createError }] = useCreateAppointmentsMutation();
-  const [updateAppointment, { isLoading: isUpdateLoading, isError: isUpdateError, error: updateError }] = useUpdateAppointmentMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isBookingSyncing, setIsBookingSyncing] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
 
-  const isLoading = isCreateLoading || isUpdateLoading;
-  const isError = isCreateError || isUpdateError;
+  const isLoading = isSubmitting || isBookingSyncing;
 
   const [servicesInput, setServicesInput] = useState('');
 
@@ -53,10 +54,11 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
         time: appointment.time || '',
         staff: appointment.staff || '',
         payment: appointment.payment || 'Pending',
-        amount: appointment.amount || '',
+        amount: appointment.totalPayment ?? appointment.amount ?? '',
         customerArrived: appointment.customerArrived || 'No',
-        receptionPaymentChecked: appointment.receptionPaymentChecked || 'No',
+        receptionPaymentChecked: appointment.paymentChecked || appointment.receptionPaymentChecked || 'No',
         receptionNotes: appointment.receptionNotes || '',
+        bookingId: appointment.bookingId || '',
       });
       setServicesInput((appointment.services || []).join(', '));
     } else {
@@ -72,9 +74,11 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
         customerArrived: 'No',
         receptionPaymentChecked: 'No',
         receptionNotes: '',
+        bookingId: '',
       });
       setServicesInput('');
     }
+    setBookingError(null);
   }, [appointment, isOpen]);
 
   const handleChange = (e) => {
@@ -95,35 +99,80 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     }));
   };
 
+  const parseAmountValue = (value) => {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    const cleaned = value.toString().replace(/[^0-9.]/g, '');
+    if (!cleaned) {
+      return null;
+    }
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const normalizedServices = formData.services.filter((s) => s);
     const dataToSave = {
       ...formData,
-      services: formData.services.filter((s) => s),
+      services: normalizedServices,
+    };
+
+    const bookingPayload = {
+      customerName: formData.customerName,
+      email: formData.email,
+      services: normalizedServices,
+      date: formData.date,
+      time: formData.time,
+      staff: formData.staff,
+      payment: formData.payment,
+      totalPayment: parseAmountValue(formData.amount),
+      createReceptionAppointment: false,
     };
 
     try {
-      if (appointment) {
-        // Update existing appointment
-        console.log('📝 Updating appointment:', appointment._id);
-        await updateAppointment({
-          id: appointment._id || appointment.id,
-          ...dataToSave
-        }).unwrap();
-        console.log('✅ Appointment updated successfully');
+      setBookingError(null);
+      setIsBookingSyncing(true);
+      setIsSubmitting(true);
+
+      let bookingId = formData.bookingId || appointment?.bookingId || null;
+
+      if (bookingId) {
+        await updateBookingApi(bookingId, bookingPayload);
       } else {
-        // Create new appointment
-        console.log('📝 Creating new appointment:', dataToSave);
-        await createAppointment(dataToSave).unwrap();
-        console.log('✅ Appointment created successfully');
+        const bookingResponse = await createBookingApi(bookingPayload);
+        const bookingData = bookingResponse?.data ?? bookingResponse;
+        bookingId = bookingData?.id || bookingData?._id;
       }
 
-      // Call parent callback after successful save
-      onSave(dataToSave);
+      if (!bookingId) {
+        throw new Error('Booking ID missing after syncing booking collection');
+      }
+
+      setFormData((prev) => ({ ...prev, bookingId }));
+
+      const payload = {
+        ...dataToSave,
+        bookingId,
+      };
+
+      if (appointment) {
+        await receptionService.updateAppointment(appointment.id || appointment._id, payload);
+      } else {
+        await receptionService.createAppointment(payload);
+      }
+
+      onSave(payload);
       onClose();
     } catch (error) {
       console.error('❌ Error saving appointment:', error);
-      alert('Failed to save appointment: ' + (error?.message || 'Unknown error'));
+      const message = error?.response?.data?.message || error?.message || 'Unknown error';
+      setBookingError(message);
+      alert('Failed to save appointment: ' + message);
+    } finally {
+      setIsBookingSyncing(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -139,9 +188,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
 
-        {isError && (
+        {bookingError && (
           <div className="error-message">
-            ❌ Error: {createError?.message || updateError?.message || 'Failed to save appointment'}
+            ❌ Error: {bookingError}
           </div>
         )}
 
@@ -245,47 +294,46 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Amount</label>
+              <label className="form-label">Total Payment</label>
               <input
                 type="text"
                 name="amount"
                 className={getInputClasses(formData.amount)}
                 value={formData.amount}
                 onChange={handleChange}
-                placeholder="e.g., 2000"
+                placeholder="e.g., 16000"
               />
+              <small className="form-hint">This value is saved into the booking collection.</small>
             </div>
           </div>
 
-          {appointment && (
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Customer Arrived</label>
-                <select
-                  name="customerArrived"
-                  className={getSelectClasses(formData.customerArrived, 'No')}
-                  value={formData.customerArrived}
-                  onChange={handleChange}
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Payment Checked</label>
-                <select
-                  name="receptionPaymentChecked"
-                  className={getSelectClasses(formData.receptionPaymentChecked, 'No')}
-                  value={formData.receptionPaymentChecked}
-                  onChange={handleChange}
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Customer Arrived</label>
+              <select
+                name="customerArrived"
+                className={getSelectClasses(formData.customerArrived, 'No')}
+                value={formData.customerArrived}
+                onChange={handleChange}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
             </div>
-          )}
+
+            <div className="form-group">
+              <label className="form-label">Payment Checked</label>
+              <select
+                name="receptionPaymentChecked"
+                className={getSelectClasses(formData.receptionPaymentChecked, 'No')}
+                value={formData.receptionPaymentChecked}
+                onChange={handleChange}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </div>
 
           <div className="form-group">
             <label className="form-label">Reception Notes</label>

@@ -13,6 +13,14 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
         return services.join(', ');
     };
 
+    const formatCurrency = (value) => {
+        if (value === null || value === undefined || value === '') return '-';
+        const numeric = Number(value);
+        return Number.isFinite(numeric)
+            ? numeric.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })
+            : value;
+    };
+
     return (
         <div className="table-container">
             <table className="table">
@@ -24,6 +32,7 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
                         <th>Date</th>
                         <th>Time</th>
                         <th>Staff</th>
+                        <th>Total Payment</th>
                         <th>Payment</th>
                         <th>Arrived</th>
                         <th>Payment Checked</th>
@@ -61,6 +70,7 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
                                 <td>{formatDate(appointment.date)}</td>
                                 <td>{appointment.time || '-'}</td>
                                 <td>{appointment.staff || '-'}</td>
+                                <td>{formatCurrency(appointment.totalPayment ?? appointment.amount)}</td>
                                 <td>
                                     <span className={`badge ${appointment.payment === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
                                         {appointment.payment || 'Pending'}
@@ -79,7 +89,7 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
                                 <td>
                                     <select
                                         className="status-select"
-                                        value={appointment.receptionPaymentChecked || 'No'}
+                                        value={appointment.paymentChecked || 'No'}
                                         onChange={(e) => onUpdatePaymentCheck(appointment.id, e.target.value)}
                                     >
                                         <option value="No">No</option>

@@ -2,7 +2,11 @@ package com.blossem.reception_service.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Document(collection = "reception_appointments")
@@ -19,8 +23,19 @@ public class ReceptionAppointment {
     private String time;
     private String staff;
     private String payment; // payment status from booking (e.g., "Paid", "Pending")
+
+    @JsonProperty("total_payment")
+    @Field("totalPayment")
+    private BigDecimal totalPayment; // numeric total kept in sync with booking
+
+    @JsonProperty("customer_arrived")
+    @Field("customer_arrived")
     private String customerArrived; // "Yes" or "No"
-    private String receptionPaymentChecked; // "Yes" or "No"
+
+    @JsonProperty("payment_checked")
+    @Field("payment_checked")
+    private String paymentChecked; // "Yes" or "No"
+
     private String receptionNotes;
 
     private Instant createdAt = Instant.now();
@@ -101,6 +116,16 @@ public class ReceptionAppointment {
         this.payment = payment;
     }
 
+    @JsonProperty("total_payment")
+    public BigDecimal getTotalPayment() {
+        return totalPayment;
+    }
+
+    @JsonProperty("total_payment")
+    public void setTotalPayment(BigDecimal totalPayment) {
+        this.totalPayment = totalPayment;
+    }
+
     public String getCustomerArrived() {
         return customerArrived;
     }
@@ -109,12 +134,14 @@ public class ReceptionAppointment {
         this.customerArrived = customerArrived;
     }
 
-    public String getReceptionPaymentChecked() {
-        return receptionPaymentChecked;
+    @JsonProperty("payment_checked")
+    public String getPaymentChecked() {
+        return paymentChecked;
     }
 
-    public void setReceptionPaymentChecked(String receptionPaymentChecked) {
-        this.receptionPaymentChecked = receptionPaymentChecked;
+    @JsonProperty("payment_checked")
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
     }
 
     public String getReceptionNotes() {

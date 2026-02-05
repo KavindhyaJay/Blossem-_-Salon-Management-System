@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import AppointmentTable from "../components/AppointmentTable";
 import AppointmentModal from "../components/AppointmentModal";
 import AllDataDisplay from "../components/AllDataDisplay";
+import BookingCalendar from "../components/BookingCalendar";
 import { receptionService } from "../services/receptionService";
 import "../styles/main.css";
 
@@ -12,6 +13,21 @@ export default function ReceptionDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [syncStatus, setSyncStatus] = useState({ running: false, summary: null, error: null, timestamp: null });
+
+  const normalizeDateKey = (value) => {
+    if (!value) return null;
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().split("T")[0];
+  };
+
+  const appointmentsForSelectedDate = useMemo(() => {
+    const key = normalizeDateKey(selectedDate);
+    if (!key) return [];
+    return appointments.filter((appointment) => normalizeDateKey(appointment.date) === key);
+  }, [appointments, selectedDate]);
 
   // Load all appointments
   const loadAppointments = async () => {
@@ -30,15 +46,33 @@ export default function ReceptionDashboard() {
     }
   };
 
+  const performSync = async ({ reload = true } = {}) => {
+    if (syncStatus.running) {
+      return;
+    }
+    try {
+      setSyncStatus((prev) => ({ ...prev, running: true, error: null }));
+      const summary = await receptionService.syncFromBookings();
+      setSyncStatus({ running: false, summary, error: null, timestamp: new Date() });
+      if (reload) {
+        await loadAppointments();
+      }
+    } catch (err) {
+      console.error("❌ Error syncing with bookings:", err);
+      setSyncStatus({ running: false, summary: null, error: "Failed to sync with bookings.", timestamp: null });
+      if (reload) {
+        await loadAppointments();
+      }
+    }
+  };
+
   useEffect(() => {
-    // Load appointments on component mount
-    loadAppointments();
+    // Initial sync pulls fresh booking data before loading appointments
+    performSync();
 
-    // Refresh data every 10 seconds for real-time updates
     const interval = setInterval(loadAppointments, 10000);
-
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
     };
   }, []);
 
@@ -54,22 +88,12 @@ export default function ReceptionDashboard() {
     setModalOpen(true);
   };
 
-  // Handle save appointment (create or update)
-  const handleSave = async (appointmentData) => {
-    try {
-      setError(null);
-      if (editingAppointment) {
-        await receptionService.updateAppointment(editingAppointment.id, appointmentData);
-      } else {
-        await receptionService.createAppointment(appointmentData);
-      }
-      setModalOpen(false);
-      setEditingAppointment(null);
-      await loadAppointments();
-    } catch (err) {
-      console.error("Error saving appointment:", err);
-      setError(err.response?.data?.message || "Failed to save appointment. Please try again.");
-    }
+  // Handle save callback from modal (modal already persists changes via RTK Query)
+  const handleSave = async () => {
+    setError(null);
+    setModalOpen(false);
+    setEditingAppointment(null);
+    await loadAppointments();
   };
 
   // Handle delete appointment
@@ -128,6 +152,21 @@ export default function ReceptionDashboard() {
     }
   };
 
+  const handleCalendarDateClick = (date) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const selectedDateLabel = selectedDate
+    ? selectedDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+    : "Select a date";
+
   return (
     <div className="dashboard-container">
       <Header onAdd={handleAdd} />
@@ -141,7 +180,31 @@ export default function ReceptionDashboard() {
 
       <main className="dashboard-main">
         <div className="dashboard-header">
-          <h1>Reception Appointments</h1>
+          <div className="dashboard-header__row">
+            <h1>Reception Appointments</h1>
+            <div className="sync-controls">
+              <button
+                className={`sync-btn ${syncStatus.running ? 'syncing' : ''}`}
+                onClick={() => performSync()}
+                disabled={syncStatus.running}
+              >
+                {syncStatus.running ? 'Syncing…' : 'Sync with Bookings'}
+              </button>
+              <div className="sync-meta">
+                {syncStatus.running && <span className="sync-status-msg">Ensuring collections stay in sync…</span>}
+                {!syncStatus.running && syncStatus.summary && (
+                  <span className="sync-status-msg">
+                    Synced {syncStatus.summary.bookingsProcessed} bookings ·
+                    {` ${syncStatus.summary.appointmentsCreated} new / ${syncStatus.summary.appointmentsUpdated} updated`}
+                    {syncStatus.timestamp && ` · ${syncStatus.timestamp.toLocaleTimeString()}`}
+                  </span>
+                )}
+                {syncStatus.error && (
+                  <span className="sync-status-error">{syncStatus.error}</span>
+                )}
+              </div>
+            </div>
+          </div>
           <div className="stats-container">
             <div className="stat-card">
               <span className="stat-label">Total</span>
@@ -156,11 +219,71 @@ export default function ReceptionDashboard() {
             <div className="stat-card">
               <span className="stat-label">Pending Payment</span>
               <span className="stat-value">
-                {appointments.filter(a => a.receptionPaymentChecked === "No").length}
+                {appointments.filter(a => a.paymentChecked === "No").length}
               </span>
             </div>
           </div>
         </div>
+
+        <section className="calendar-section">
+          <div className="calendar-card">
+            <div className="calendar-card__header">
+              <div>
+                <p className="calendar-eyebrow">Calendar</p>
+                <h2>Check daily bookings</h2>
+                <p className="calendar-subtitle">Tap a date to see who is scheduled.</p>
+              </div>
+            </div>
+            <BookingCalendar
+              bookings={appointments}
+              onDateClick={handleCalendarDateClick}
+              height={360}
+            />
+          </div>
+
+          <div className="daily-card">
+            <div className="daily-card__header">
+              <div>
+                <p className="calendar-eyebrow">Selected date</p>
+                <h3>{selectedDateLabel}</h3>
+              </div>
+              {selectedDate && (
+                <span className="daily-count">
+                  {appointmentsForSelectedDate.length} {appointmentsForSelectedDate.length === 1 ? "booking" : "bookings"}
+                </span>
+              )}
+            </div>
+            <div className="daily-card__body">
+              {!selectedDate ? (
+                <p className="daily-empty">Select a date to preview appointments.</p>
+              ) : appointmentsForSelectedDate.length === 0 ? (
+                <p className="daily-empty">No appointments booked for this day.</p>
+              ) : (
+                <ul className="daily-list">
+                  {appointmentsForSelectedDate.map((apt) => (
+                    <li key={apt.id || apt._id} className="daily-list__item">
+                      <div className="daily-time">{apt.time || "All day"}</div>
+                      <div className="daily-details">
+                        <p className="daily-name">{apt.customerName || "Unknown client"}</p>
+                        <p className="daily-services">
+                          {Array.isArray(apt.services) ? apt.services.join(", ") : apt.services || "Service TBD"}
+                        </p>
+                        <div className="daily-tags">
+                          <span className={`tag ${apt.customerArrived === "Yes" ? "success" : "pending"}`}>
+                            {apt.customerArrived === "Yes" ? "Arrived" : "Not arrived"}
+                          </span>
+                          <span className={`tag ${apt.paymentChecked === "Yes" ? "success" : "warning"}`}>
+                            {apt.paymentChecked === "Yes" ? "Payment checked" : "Payment pending"}
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
 
         <div className="table-wrapper">
           {loading ? (
