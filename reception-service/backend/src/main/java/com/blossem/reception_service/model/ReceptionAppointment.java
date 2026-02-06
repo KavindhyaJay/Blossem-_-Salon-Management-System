@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Document(collection = "reception_appointments")
@@ -26,7 +25,7 @@ public class ReceptionAppointment {
 
     @JsonProperty("total_payment")
     @Field("totalPayment")
-    private BigDecimal totalPayment; // numeric total kept in sync with booking
+    private double totalPayment; // numeric total kept in sync with booking
 
     @JsonProperty("customer_arrived")
     @Field("customer_arrived")
@@ -117,12 +116,12 @@ public class ReceptionAppointment {
     }
 
     @JsonProperty("total_payment")
-    public BigDecimal getTotalPayment() {
+    public double getTotalPayment() {
         return totalPayment;
     }
 
     @JsonProperty("total_payment")
-    public void setTotalPayment(BigDecimal totalPayment) {
+    public void setTotalPayment(double totalPayment) {
         this.totalPayment = totalPayment;
     }
 

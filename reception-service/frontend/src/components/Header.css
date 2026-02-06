@@ -1,12 +1,12 @@
 .app-header {
-    background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #00d67e 100%);
-    color: white;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, #050505 35%, #1a0000 65%, var(--primary-red) 100%);
+    color: #ffeef3;
     padding: 24px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 8px 32px rgba(0, 214, 126, 0.15);
-    border-bottom: 3px solid var(--primary-green);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    border-bottom: 3px solid var(--primary-red);
 }
 
 .header-left {
@@ -21,7 +21,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: linear-gradient(135deg, #ffffff 0%, #00d67e 100%);
+    background: linear-gradient(135deg, #ffdee5 0%, var(--primary-red) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -30,10 +30,10 @@
 
 .brand .tag {
     font-size: 13px;
-    opacity: 0.85;
+    opacity: 0.9;
     margin: 6px 0 0 0;
     font-weight: 500;
-    color: #a0aec0;
+    color: #ffe3ec;
     letter-spacing: 0.3px;
 }
 
@@ -44,9 +44,9 @@
 }
 
 .btn-add {
-    background: linear-gradient(135deg, #00d67e 0%, #00a65e 100%);
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
     border: none;
-    color: #0f1419;
+    color: #fff1f4;
     padding: 12px 24px;
     border-radius: 10px;
     font-size: 14px;
@@ -56,15 +56,15 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 214, 126, 0.2);
+    box-shadow: 0 4px 15px rgba(255, 23, 68, 0.25);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .btn-add:hover {
-    background: linear-gradient(135deg, #26e891 0%, #00d67e 100%);
+    background: linear-gradient(135deg, var(--primary-red-light) 0%, var(--primary-red) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 214, 126, 0.3);
+    box-shadow: 0 6px 20px rgba(255, 46, 99, 0.45);
 }
 
 .btn-add:active {

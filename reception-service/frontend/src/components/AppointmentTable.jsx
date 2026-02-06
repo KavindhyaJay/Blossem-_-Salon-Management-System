@@ -45,8 +45,8 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
                             <td colSpan="10" className="empty-state">
                                 <div className="empty-message">
                                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 11L12 14L22 4" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M9 11L12 14L22 4" stroke="var(--primary-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16" stroke="var(--primary-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                     <p>No appointments found</p>
                                     <span>Click "Add Appointment" to create a new one</span>

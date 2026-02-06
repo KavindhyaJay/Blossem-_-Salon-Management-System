@@ -11,10 +11,12 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  background: #08090f;
+  color: var(--text-dark);
 }
 
 .table thead {
-  background: linear-gradient(135deg, #1a1f2e 0%, #252b3e 100%);
+  background: linear-gradient(135deg, #050505 0%, #1a0000 55%, #360000 100%);
   border-bottom: 3px solid var(--primary-green);
 }
 
@@ -26,22 +28,24 @@
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 1px;
-  background: linear-gradient(to right, transparent, rgba(0, 214, 126, 0.05), transparent);
+  background: linear-gradient(to right, transparent, rgba(255, 23, 68, 0.05), transparent);
 }
 
 .table td {
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-dark);
+  background: #08090f;
 }
 
 .table tbody tr {
   transition: all 0.3s ease;
   border-bottom: 1px solid var(--border-color);
+  background: #08090f;
 }
 
 .table tbody tr:hover {
-  background-color: rgba(0, 214, 126, 0.08);
+  background-color: rgba(255, 23, 68, 0.12);
   border-left: 4px solid var(--primary-green);
   padding-left: 4px;
 }
@@ -54,7 +58,7 @@
 .customer-name strong {
   color: var(--primary-green-light);
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(0, 214, 126, 0.1);
+  text-shadow: 0 0 10px rgba(255, 23, 68, 0.1);
 }
 
 /* Services List */
@@ -62,7 +66,7 @@
   color: var(--text-muted);
   font-size: 13px;
   max-width: 200px;
-  background: rgba(0, 214, 126, 0.05);
+  background: rgba(255, 23, 68, 0.05);
   padding: 6px 10px;
   border-radius: 6px;
   border-left: 3px solid var(--primary-green);
@@ -81,9 +85,9 @@
 }
 
 .badge-success {
-  background: rgba(0, 214, 126, 0.15);
+  background: rgba(255, 23, 68, 0.15);
   color: var(--primary-green-light);
-  border: 1px solid rgba(0, 214, 126, 0.3);
+  border: 1px solid rgba(255, 23, 68, 0.3);
 }
 
 .badge-warning {
@@ -99,8 +103,8 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  background: #ffffff;
-  color: #111827;
+  background: var(--white);
+  color: var(--text-dark);
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 90px;
@@ -108,14 +112,14 @@
 
 .status-select:hover {
   border-color: var(--primary-green);
-  box-shadow: 0 0 8px rgba(0, 214, 126, 0.15);
+  box-shadow: 0 0 8px rgba(255, 23, 68, 0.15);
 }
 
 .status-select:focus {
   outline: none;
   border-color: var(--primary-green);
-  box-shadow: 0 0 12px rgba(0, 214, 126, 0.25);
-  background: rgba(0, 214, 126, 0.05);
+  box-shadow: 0 0 12px rgba(255, 23, 68, 0.25);
+  background: rgba(255, 23, 68, 0.05);
 }
 
 /* Action Buttons */
@@ -143,7 +147,7 @@
 }
 
 .btn-edit:hover {
-  background: rgba(0, 214, 126, 0.1);
+  background: rgba(255, 23, 68, 0.1);
   color: var(--primary-green-light);
 }
 
@@ -179,7 +183,7 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-dark);
-  text-shadow: 0 0 10px rgba(0, 214, 126, 0.1);
+  text-shadow: 0 0 10px rgba(255, 23, 68, 0.1);
 }
 
 .empty-message span {

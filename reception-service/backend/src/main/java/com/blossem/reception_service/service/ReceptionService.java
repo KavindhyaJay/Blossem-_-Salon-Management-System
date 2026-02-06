@@ -110,7 +110,7 @@ public class ReceptionService {
         BigDecimal appointmentTotal = totalPayment != null
                 ? totalPayment
                 : (linkedBooking != null ? linkedBooking.getTotalPayment() : null);
-        ap.setTotalPayment(appointmentTotal);
+        ap.setTotalPayment(toDouble(appointmentTotal));
         ap.setReceptionNotes(req.getReceptionNotes());
         String customerArrived = req.getCustomerArrived() != null ? req.getCustomerArrived() : "No";
         String paymentChecked = req.getReceptionPaymentChecked() != null ? req.getReceptionPaymentChecked() : "No";
@@ -172,7 +172,7 @@ public class ReceptionService {
         ap.setTime(b.getTime());
         ap.setStaff(b.getStaff());
         ap.setPayment(b.getPayment());
-        ap.setTotalPayment(b.getTotalPayment());
+        ap.setTotalPayment(toDouble(b.getTotalPayment()));
         ap.setReceptionNotes(null);
         ap.setCustomerArrived(b.getCustomerArrived() != null ? b.getCustomerArrived() : "No");
         ap.setPaymentChecked(
@@ -211,7 +211,7 @@ public class ReceptionService {
         }
         BigDecimal amountValue = parseAmount(req.getAmount());
         if (amountValue != null) {
-            existing.setTotalPayment(amountValue);
+            existing.setTotalPayment(amountValue.doubleValue());
         }
         if (req.getCustomerArrived() != null) {
             existing.setCustomerArrived(req.getCustomerArrived());
@@ -307,7 +307,7 @@ public class ReceptionService {
         if (maybeAp.isPresent()) {
             ap = maybeAp.get();
             ap.setCustomerArrived("Yes");
-            ap.setTotalPayment(booking.getTotalPayment());
+            ap.setTotalPayment(toDouble(booking.getTotalPayment()));
             ap.setUpdatedAt(Instant.now());
         } else {
             // create new reception appointment if not exist
@@ -331,7 +331,7 @@ public class ReceptionService {
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
             ap.setPayment(booking.getPayment());
-            ap.setTotalPayment(booking.getTotalPayment());
+            ap.setTotalPayment(toDouble(booking.getTotalPayment()));
             ap.setCustomerArrived("Yes");
             ap.setPaymentChecked(
                     booking.getPaymentChecked() != null ? booking.getPaymentChecked()
@@ -421,7 +421,7 @@ public class ReceptionService {
             ap = maybeAp.get();
             ap.setPaymentChecked(paid ? "Yes" : "No");
             ap.setPayment(paymentValue);
-            ap.setTotalPayment(booking.getTotalPayment());
+            ap.setTotalPayment(toDouble(booking.getTotalPayment()));
             ap.setUpdatedAt(Instant.now());
         } else {
             // create minimal reception appointment if missing
@@ -435,7 +435,7 @@ public class ReceptionService {
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
             ap.setPayment(paymentValue);
-            ap.setTotalPayment(booking.getTotalPayment());
+            ap.setTotalPayment(toDouble(booking.getTotalPayment()));
             ap.setPaymentChecked(paid ? "Yes" : "No");
             ap.setCustomerArrived("No");
             Instant now = Instant.now();
@@ -564,8 +564,8 @@ public class ReceptionService {
             ap.setPayment(booking.getPayment());
             changed = true;
         }
-        if (!Objects.equals(ap.getTotalPayment(), booking.getTotalPayment())) {
-            ap.setTotalPayment(booking.getTotalPayment());
+        if (!totalsMatch(ap.getTotalPayment(), booking.getTotalPayment())) {
+            ap.setTotalPayment(toDouble(booking.getTotalPayment()));
             changed = true;
         }
 
@@ -582,6 +582,17 @@ public class ReceptionService {
         }
 
         return changed;
+    }
+
+    private double toDouble(BigDecimal value) {
+        return value != null ? value.doubleValue() : 0.0;
+    }
+
+    private boolean totalsMatch(double appointmentTotal, BigDecimal bookingTotal) {
+        if (bookingTotal == null) {
+            return Double.compare(appointmentTotal, 0.0) == 0;
+        }
+        return Double.compare(appointmentTotal, bookingTotal.doubleValue()) == 0;
     }
 
     private String[] cloneServices(String[] services) {
