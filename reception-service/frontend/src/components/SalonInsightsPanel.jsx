@@ -1,15 +1,26 @@
 import React, { useMemo, useState } from "react";
 import "../styles/insightsPanel.css";
 
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 const normalizeDateKey = (value) => {
     if (!value) {
         return null;
     }
+
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (DATE_ONLY_PATTERN.test(trimmed)) {
+            return trimmed;
+        }
+    }
+
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) {
         return null;
     }
-    return date.toISOString().split("T")[0];
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return localDate.toISOString().split("T")[0];
 };
 
 const formatCurrency = (value) => {
