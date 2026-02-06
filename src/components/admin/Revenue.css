@@ -644,3 +644,339 @@
   border: 1px solid #333;
   z-index: 100;
 }
+/* Add these styles to Revenue.css */
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  gap: 5px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  padding: 8px 15px;
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background: #db3232;
+  color: white;
+}
+
+.view-toggle-btn:hover:not(.active) {
+  background: #252525;
+  color: #ccc;
+}
+
+/* Growth Indicators */
+.revenue-growth-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0;
+}
+
+.growth-value {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.growth-value.positive {
+  color: #4CAF50;
+}
+
+.growth-value.negative {
+  color: #F44336;
+}
+
+.growth-label {
+  font-size: 11px;
+  color: #888;
+}
+
+.growth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 10px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.growth-badge.positive {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.growth-badge.negative {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+/* Table Growth Indicators */
+.growth-indicator {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.growth-indicator.positive {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.growth-indicator.negative {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Table Footer */
+.revenue-table tfoot {
+  background: #252525;
+  border-top: 2px solid #333;
+}
+
+.revenue-table tfoot td {
+  font-weight: 600;
+  color: white;
+}
+
+.revenue-table tfoot .total-footer {
+  color: #db3232;
+  font-size: 16px;
+}
+
+/* Period Name */
+.period-name {
+  min-width: 120px;
+}
+
+/* Service Metrics */
+.service-metrics {
+  margin-top: 10px;
+}
+
+.service-bookings {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.service-average {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Appointments Info */
+.appointments-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Service Cell */
+.service-cell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Booking ID */
+.booking-id {
+  font-family: monospace;
+  color: #2196F3;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .revenue-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .view-toggle {
+    width: 100%;
+  }
+  
+  .view-toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .revenue-table {
+    font-size: 12px;
+  }
+  
+  .revenue-table th,
+  .revenue-table td {
+    padding: 10px 8px;
+  }
+  
+  .period-name {
+    min-width: 80px;
+  }
+}
+/* Add these styles to Revenue.css */
+
+/* Payment Verification Styles */
+.payment-verified-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 6px;
+  color: #4CAF50;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.verified-payments-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #4CAF50;
+  margin: 8px 0;
+}
+
+.payment-verification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-verification-badge.verified {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.payment-verification-badge.not-verified {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.payment-checked-info {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #888;
+  font-style: italic;
+}
+
+/* Payments Info */
+.payments-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.verified-payments-count {
+  min-width: 120px;
+}
+
+.total-appointments {
+  font-size: 11px;
+  color: #888;
+}
+
+.verified-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4CAF50;
+}
+
+/* Payment Verification Info Box */
+.payment-verification-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(76, 175, 80, 0.05);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.payment-verification-info code {
+  background: rgba(76, 175, 80, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #4CAF50;
+  margin: 0 4px;
+}
+
+/* Transaction Count with Verification */
+.transaction-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Service Bookings with Verification */
+.service-bookings {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4CAF50;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+/* Revenue Stats Card Verification */
+.revenue-stat-card .verified-payments-info {
+  margin-bottom: 8px;
+}
+
+/* Loading State */
+.revenue-loading p {
+  color: #4CAF50;
+}
+
+/* Empty State with Verification */
+.revenue-empty-state .revenue-empty-icon {
+  color: #4CAF50;
+}
+
+/* Updated Revenue Header */
+.content-header.revenue-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Transaction Table Verification Column */
+.revenue-table td .payment-verification-badge {
+  display: block;
+  margin-bottom: 4px;
+}

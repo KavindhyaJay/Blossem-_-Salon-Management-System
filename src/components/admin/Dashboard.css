@@ -1,9 +1,9 @@
-/* src/components/admin/Dashboard.css - WITH admin- PREFIX */
+/* src/components/admin/Dashboard.css - UPDATED FOR STATS ONLY */
 .admin-dashboard {
   padding: 20px;
 }
 
-/* Content Header - Match Revenue header style */
+/* Content Header */
 .admin-content-header {
   display: flex;
   justify-content: space-between;
@@ -29,10 +29,51 @@
   font-size: 14px;
 }
 
-/* Stats Grid - Updated to match Revenue.css pattern */
+/* Dashboard Controls */
+.admin-dashboard-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.admin-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(219, 50, 50, 0.1);
+  border: 1px solid #db3232;
+  color: #db3232;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-refresh-btn:hover:not(:disabled) {
+  background: rgba(219, 50, 50, 0.2);
+  transform: translateY(-2px);
+}
+
+.admin-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Stats Grid - MAIN CONTENT */
 .admin-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
@@ -42,20 +83,26 @@
   border: 1px solid #333;
   border-radius: 12px;
   padding: 20px;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  transition: all 0.3s ease;
   position: relative;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .admin-stat-card:hover {
   transform: translateY(-5px);
-  border-color: #db3232;
+  border-color: #333;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Stat Header */
 .admin-stat-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .admin-stat-header h3 {
@@ -73,44 +120,143 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(219, 50, 50, 0.1);
   border-radius: 8px;
+}
+
+/* Icon Colors */
+.revenue-icon {
+  background: rgba(219, 50, 50, 0.1);
   color: #db3232;
 }
 
+.appointments-icon {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.staff-icon {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.photos-icon {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+}
+
+.monthly-icon {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9C27B0;
+}
+
+.weekly-icon {
+  background: rgba(103, 58, 183, 0.1);
+  color: #673AB7;
+}
+
+.customers-icon {
+  background: rgba(255, 87, 34, 0.1);
+  color: #FF5722;
+}
+
+.completed-icon {
+  background: rgba(0, 150, 136, 0.1);
+  color: #009688;
+}
+
+/* Stat Value */
 .admin-stat-value {
   color: white;
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 5px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1;
 }
 
-/* Add color variations like Revenue component */
+/* Stat Values Color */
 .admin-stat-card:nth-child(1) .admin-stat-value {
-  color: #db3232; /* Total Revenue - red */
+  color: #db3232;
 }
 
 .admin-stat-card:nth-child(2) .admin-stat-value {
-  color: #4CAF50; /* Today's Appointments - green */
+  color: #4CAF50;
 }
 
 .admin-stat-card:nth-child(3) .admin-stat-value {
-  color: #2196F3; /* Active Staff - blue */
+  color: #2196F3;
 }
 
 .admin-stat-card:nth-child(4) .admin-stat-value {
-  color: #FF9800; /* Pending Photos - orange */
+  color: #FF9800;
 }
 
-/* Add currency symbol for revenue card */
-.admin-stat-card:nth-child(1) .admin-stat-value::before {
-  content: 'Rs. ';
-  font-size: 0.7em;
-  opacity: 0.8;
-  margin-right: 2px;
+.admin-stat-card:nth-child(5) .admin-stat-value {
+  color: #9C27B0;
 }
 
+.admin-stat-card:nth-child(6) .admin-stat-value {
+  color: #673AB7;
+}
+
+.admin-stat-card:nth-child(7) .admin-stat-value {
+  color: #FF5722;
+}
+
+.admin-stat-card:nth-child(8) .admin-stat-value {
+  color: #009688;
+}
+
+/* Trend indicators */
+.admin-stat-trend {
+  margin: 5px 0;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trend-up {
+  color: #4CAF50;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trend-down {
+  color: #F44336;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Staff Breakdown */
+.admin-staff-breakdown {
+  display: flex;
+  gap: 8px;
+  margin: 5px 0;
+  font-size: 12px;
+}
+
+.staff-active {
+  color: #4CAF50;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+.staff-inactive {
+  color: #888;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: rgba(136, 136, 136, 0.1);
+  border-radius: 4px;
+}
+
+/* Stat Description */
 .admin-stat-desc {
   color: #888;
   font-size: 13px;
@@ -118,7 +264,7 @@
   line-height: 1.4;
 }
 
-/* Loading States - Match Revenue loading style */
+/* Loading States */
 .admin-loading-container {
   padding: 60px 20px;
   text-align: center;
@@ -140,31 +286,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Empty State (if needed later) */
-.admin-empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: #888;
-}
-
-.admin-empty-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-  opacity: 0.5;
-}
-
-.admin-empty-state h4 {
-  color: white;
-  margin: 0 0 10px 0;
-  font-size: 18px;
-}
-
-.admin-empty-state p {
-  margin: 0;
-  font-size: 14px;
-}
-
-/* Responsive Design - Match Revenue responsiveness */
+/* Responsive Design */
 @media (max-width: 768px) {
   .admin-content-header {
     flex-direction: column;
@@ -172,8 +294,22 @@
     gap: 15px;
   }
   
+  .admin-dashboard-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
   .admin-stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .admin-stat-card {
+    height: auto;
+    min-height: 160px;
+  }
+  
+  .admin-stat-value {
+    font-size: 28px;
   }
 }
 
@@ -183,7 +319,7 @@
   }
   
   .admin-stat-value {
-    font-size: 28px;
+    font-size: 24px;
   }
   
   .admin-stat-icon {

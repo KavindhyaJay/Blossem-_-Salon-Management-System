@@ -1,4 +1,4 @@
-// src/components/admin/StaffManagement.jsx - UPDATED VERSION WITH MULTI-SELECT
+// src/components/admin/StaffManagement.jsx - UPDATED WITH admin- PREFIX
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
@@ -32,16 +32,14 @@ const StaffManagement = () => {
   const [editingStaff, setEditingStaff] = useState(null);
   const [saving, setSaving] = useState(false);
   
-  // Updated: specializations is now an array
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    specializations: [], // Changed from specialization to specializations (array)
+    specializations: [],
     phone: '',
     status: 'PENDING_ACTIVATION'
   });
 
-  // Available specializations for multi-select
   const availableSpecializations = [
     'Hair Stylist',
     'Color Specialist',
@@ -63,7 +61,6 @@ const StaffManagement = () => {
   const API_BASE_URL = 'http://localhost:8081';
 
   // ========== FUNCTIONS ==========
-  // Clean fetch function
   const fetchStaff = async () => {
     setLoading(true);
     setError('');
@@ -75,7 +72,6 @@ const StaffManagement = () => {
         throw new Error('No authentication token found');
       }
       
-      // Clean token
       let cleanToken = token;
       if (token.startsWith('"') && token.endsWith('"')) {
         cleanToken = token.substring(1, token.length - 1);
@@ -173,7 +169,6 @@ const StaffManagement = () => {
     fetchStaff();
   }, []);
 
-  // Handle input change for regular fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -182,18 +177,15 @@ const StaffManagement = () => {
     }));
   };
 
-  // Handle specialization toggle (for checkbox/multi-select)
   const handleSpecializationToggle = (specialization) => {
     setFormData(prev => {
       const currentSpecs = [...prev.specializations];
       if (currentSpecs.includes(specialization)) {
-        // Remove if already selected
         return {
           ...prev,
           specializations: currentSpecs.filter(s => s !== specialization)
         };
       } else {
-        // Add if not selected
         return {
           ...prev,
           specializations: [...currentSpecs, specialization]
@@ -202,7 +194,6 @@ const StaffManagement = () => {
     });
   };
 
-  // Handle multi-select dropdown change
   const handleMultiSelectChange = (e) => {
     const options = e.target.options;
     const selectedValues = [];
@@ -217,7 +208,6 @@ const StaffManagement = () => {
     }));
   };
 
-  // Handle adding staff - convert array to comma-separated string
   const handleAddStaff = async (e) => {
     e.preventDefault();
     
@@ -232,14 +222,13 @@ const StaffManagement = () => {
       return;
     }
 
-    // Convert array to comma-separated string for backend
     const dataToSend = {
       name: formData.name,
       email: formData.email,
-      specialization: formData.specializations.join(', '), // Convert array to string
+      specialization: formData.specializations.join(', '),
       phone: formData.phone,
       status: formData.status,
-      role: 'STAFF' // Added role as per backend requirement
+      role: 'STAFF'
     };
 
     try {
@@ -274,11 +263,9 @@ const StaffManagement = () => {
     }
   };
 
-  // Handle editing staff - parse comma-separated string to array
   const handleEditStaff = (staff) => {
     setEditingStaff(staff);
     
-    // Parse comma-separated string back to array
     const specializations = staff.specialization 
       ? staff.specialization.split(',').map(s => s.trim()).filter(s => s.length > 0)
       : [];
@@ -294,7 +281,6 @@ const StaffManagement = () => {
     setError('');
   };
 
-  // Handle updating staff - convert array to comma-separated string
   const handleUpdateStaff = async (e) => {
     e.preventDefault();
     
@@ -305,14 +291,13 @@ const StaffManagement = () => {
       return;
     }
 
-    // Convert array to comma-separated string for backend
     const dataToSend = {
       name: formData.name,
       email: formData.email,
-      specialization: formData.specializations.join(', '), // Convert array to string
+      specialization: formData.specializations.join(', '),
       phone: formData.phone,
       status: formData.status,
-      role: 'STAFF' // Added role as per backend requirement
+      role: 'STAFF'
     };
 
     try {
@@ -366,41 +351,39 @@ const StaffManagement = () => {
     }
   };
 
-  // Simple status badge without arrows
   const getStatusBadge = (status) => {
     const statusLower = status?.toLowerCase() || '';
     
     if (statusLower.includes('active')) {
       return (
-        <span className="staff-status-badge active">
+        <span className="admin-status-badge active">
           <CheckCircle size={14} />
           Active
         </span>
       );
     } else if (statusLower.includes('pending')) {
       return (
-        <span className="staff-status-badge pending">
+        <span className="admin-status-badge pending">
           <Clock size={14} />
           Pending
         </span>
       );
     } else if (statusLower.includes('inactive')) {
       return (
-        <span className="staff-status-badge inactive">
+        <span className="admin-status-badge inactive">
           <XCircle size={14} />
           Inactive
         </span>
       );
     }
     return (
-      <span className="staff-status-badge inactive">
+      <span className="admin-status-badge inactive">
         <XCircle size={14} />
         {status || 'Unknown'}
       </span>
     );
   };
 
-  // Filter staff
   const filteredStaff = staffMembers.filter(staff => {
     const matchesSearch = 
       staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -416,19 +399,19 @@ const StaffManagement = () => {
 
   // ========== RENDER ==========
   return (
-    <div className="staff-management-container">
-      <div className="staff-section-header">
-        <div className="staff-header-title">
-          <Users size={28} className="staff-header-icon" />
+    <div className="admin-staff-management">
+      <div className="admin-section-header">
+        <div className="admin-header-title">
+          <Users size={28} className="admin-header-icon" />
           <div>
             <h1>Staff Management</h1>
-            <p className="staff-subtitle">Manage salon staff members and their details</p>
+            <p className="admin-subtitle">Manage salon staff members and their details</p>
           </div>
         </div>
         
-        <div className="staff-header-actions">
+        <div className="admin-header-actions">
           <button 
-            className="staff-btn-add"
+            className="admin-btn-add"
             onClick={() => {
               setFormData({
                 name: '',
@@ -447,11 +430,11 @@ const StaffManagement = () => {
           </button>
           
           <button 
-            className="staff-btn-refresh"
+            className="admin-btn-refresh"
             onClick={fetchStaff}
             disabled={loading || saving}
           >
-            <RefreshCw size={18} className={loading ? 'staff-spinning' : ''} />
+            <RefreshCw size={18} className={loading ? 'admin-spinning' : ''} />
             <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
@@ -459,33 +442,33 @@ const StaffManagement = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="staff-error-alert">
+        <div className="admin-error-alert">
           <AlertCircle size={18} />
           <span>{error}</span>
-          <button onClick={() => setError('')} className="staff-error-close">×</button>
+          <button onClick={() => setError('')} className="admin-error-close">×</button>
         </div>
       )}
 
       {/* Controls */}
-      <div className="staff-controls-container">
-        <div className="staff-search-container">
-          <Search size={20} className="staff-search-icon" />
+      <div className="admin-controls-container">
+        <div className="admin-search-container">
+          <Search size={20} className="admin-search-icon" />
           <input
             type="text"
             placeholder="Search by name, email, or specialization..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="staff-search-input"
+            className="admin-search-input"
             disabled={loading}
           />
         </div>
         
-        <div className="staff-filter-container">
-          <Filter size={18} className="staff-filter-icon" />
+        <div className="admin-filter-container">
+          <Filter size={18} className="admin-filter-icon" />
           <select 
             value={filterStatus} 
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="staff-filter-select"
+            className="admin-filter-select"
             disabled={loading}
           >
             <option value="all">All Status</option>
@@ -496,7 +479,7 @@ const StaffManagement = () => {
         </div>
         
         <button 
-          className="staff-btn-export"
+          className="admin-btn-export"
           onClick={() => {
             const csvData = filteredStaff.map(staff => ({
               ID: staff._id?.substring(0, 8) || 'N/A',
@@ -529,88 +512,88 @@ const StaffManagement = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="staff-stats-grid">
-        <div className="staff-stat-card">
-          <div className="staff-stat-header">
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Total Staff</h3>
-            <div className="staff-stat-icon">👥</div>
+            <div className="admin-stat-icon">👥</div>
           </div>
-          <div className="staff-stat-value">{staffMembers.length}</div>
-          <div className="staff-stat-label">Members</div>
+          <div className="admin-stat-value">{staffMembers.length}</div>
+          <div className="admin-stat-label">Members</div>
         </div>
         
-        <div className="staff-stat-card">
-          <div className="staff-stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Active</h3>
-            <div className="staff-stat-icon">✅</div>
+            <div className="admin-stat-icon">✅</div>
           </div>
-          <div className="staff-stat-value">
+          <div className="admin-stat-value">
             {staffMembers.filter(s => s.status?.toLowerCase().includes('active')).length}
           </div>
-          <div className="staff-stat-label">Working</div>
+          <div className="admin-stat-label">Working</div>
         </div>
         
-        <div className="staff-stat-card">
-          <div className="staff-stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Pending</h3>
-            <div className="staff-stat-icon">⏳</div>
+            <div className="admin-stat-icon">⏳</div>
           </div>
-          <div className="staff-stat-value">
+          <div className="admin-stat-value">
             {staffMembers.filter(s => s.status?.toLowerCase().includes('pending')).length}
           </div>
-          <div className="staff-stat-label">Awaiting</div>
+          <div className="admin-stat-label">Awaiting</div>
         </div>
         
-        <div className="staff-stat-card">
-          <div className="staff-stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Specializations</h3>
-            <div className="staff-stat-icon">🎯</div>
+            <div className="admin-stat-icon">🎯</div>
           </div>
-          <div className="staff-stat-value">
+          <div className="admin-stat-value">
             {[...new Set(staffMembers.map(s => s.specialization))].length}
           </div>
-          <div className="staff-stat-label">Unique</div>
+          <div className="admin-stat-label">Unique</div>
         </div>
       </div>
 
       {/* Staff Table */}
-      <div className="staff-table-container">
-        <div className="staff-table-header">
+      <div className="admin-table-container">
+        <div className="admin-table-header">
           <h3>Staff Members ({filteredStaff.length})</h3>
-          <div className="staff-table-info">
+          <div className="admin-table-info">
             Showing {filteredStaff.length} of {staffMembers.length} staff members
-            {loading && <span className="staff-loading-indicator"> • Loading...</span>}
+            {loading && <span className="admin-loading-indicator"> • Loading...</span>}
           </div>
         </div>
         
-        <div className="staff-table-wrapper">
-          <table className="staff-management-table">
+        <div className="admin-table-wrapper">
+          <table className="admin-management-table">
             <thead>
               <tr>
-                <th className="staff-id-column">ID</th>
-                <th className="staff-name-column">Staff Member</th>
-                <th className="staff-email-column">Email</th>
-                <th className="staff-specialization-column">Specialization</th>
-                <th className="staff-phone-column">Phone</th>
-                <th className="staff-status-column">Status</th>
-                <th className="staff-actions-column">Actions</th>
+                <th className="admin-id-column">ID</th>
+                <th className="admin-name-column">Staff Member</th>
+                <th className="admin-email-column">Email</th>
+                <th className="admin-specialization-column">Specialization</th>
+                <th className="admin-phone-column">Phone</th>
+                <th className="admin-status-column">Status</th>
+                <th className="admin-actions-column">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && staffMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="staff-loading-cell">
-                    <div className="staff-loading-indicator">
-                      <div className="staff-spinner"></div>
+                  <td colSpan="7" className="admin-loading-cell">
+                    <div className="admin-loading-indicator">
+                      <div className="admin-spinner"></div>
                       Loading staff data from database...
                     </div>
                   </td>
                 </tr>
               ) : filteredStaff.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="staff-empty-cell">
-                    <div className="staff-empty-state">
-                      <User size={48} className="staff-empty-icon" />
+                  <td colSpan="7" className="admin-empty-cell">
+                    <div className="admin-empty-state">
+                      <User size={48} className="admin-empty-icon" />
                       <h4>No staff members found</h4>
                       <p>
                         {searchQuery || filterStatus !== 'all'
@@ -623,37 +606,37 @@ const StaffManagement = () => {
                 </tr>
               ) : (
                 filteredStaff.map((staff) => (
-                  <tr key={staff._id || staff.id} className="staff-table-row">
-                    <td className="staff-id-column">
+                  <tr key={staff._id || staff.id} className="admin-table-row">
+                    <td className="admin-id-column">
                       <code>#{staff._id?.substring(0, 8) || staff.id?.substring(0, 8) || 'N/A'}</code>
                     </td>
-                    <td className="staff-name-column">
-                      <div className="staff-member-info">
-                        <div className="staff-member-avatar">
+                    <td className="admin-name-column">
+                      <div className="admin-member-info">
+                        <div className="admin-member-avatar">
                           {staff.name?.charAt(0)?.toUpperCase() || 'S'}
                         </div>
-                        <div className="staff-member-details">
-                          <div className="staff-member-name">{staff.name || 'Unknown'}</div>
-                          <div className="staff-member-id">
+                        <div className="admin-member-details">
+                          <div className="admin-member-name">{staff.name || 'Unknown'}</div>
+                          <div className="admin-member-id">
                             ID: {staff._id?.substring(0, 8) || staff.id?.substring(0, 8) || 'N/A'}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="staff-email-column">
-                      <div className="staff-email-cell">
+                    <td className="admin-email-column">
+                      <div className="admin-email-cell">
                         <Mail size={16} />
                         <span>{staff.email || 'No email'}</span>
                       </div>
                     </td>
-                    <td className="staff-specialization-column">
-                      <div className="staff-specialization-tags">
+                    <td className="admin-specialization-column">
+                      <div className="admin-specialization-tags">
                         {staff.specialization ? 
                           staff.specialization.split(',')
                             .map(spec => spec.trim())
                             .filter(spec => spec.length > 0)
                             .map((spec, index) => (
-                              <span key={index} className="staff-specialization-badge">
+                              <span key={index} className="admin-specialization-badge">
                                 {spec}
                               </span>
                             ))
@@ -661,19 +644,19 @@ const StaffManagement = () => {
                         }
                       </div>
                     </td>
-                    <td className="staff-phone-column">
-                      <div className="staff-phone-cell">
+                    <td className="admin-phone-column">
+                      <div className="admin-phone-cell">
                         <Phone size={16} />
                         <span>{staff.phone || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="staff-status-column">
+                    <td className="admin-status-column">
                       {getStatusBadge(staff.status)}
                     </td>
-                    <td className="staff-actions-column">
-                      <div className="staff-action-buttons">
+                    <td className="admin-actions-column">
+                      <div className="admin-action-buttons">
                         <button 
-                          className="staff-btn-edit"
+                          className="admin-btn-edit"
                           title="Edit staff member"
                           onClick={() => handleEditStaff(staff)}
                           disabled={saving}
@@ -682,7 +665,7 @@ const StaffManagement = () => {
                           <span>Edit</span>
                         </button>
                         <button 
-                          className="staff-btn-delete"
+                          className="admin-btn-delete"
                           title="Delete staff member"
                           onClick={() => handleDeleteStaff(staff._id || staff.id)}
                           disabled={saving}
@@ -702,12 +685,12 @@ const StaffManagement = () => {
 
       {/* Add/Edit Form Modal with Multi-Select */}
       {(showAddForm || showEditForm) && (
-        <div className="staff-modal-overlay">
-          <div className="staff-modal-content">
-            <div className="staff-modal-header">
+        <div className="admin-modal-overlay">
+          <div className="admin-modal-content">
+            <div className="admin-modal-header">
               <h2>{showEditForm ? 'Edit Staff Member' : 'Add New Staff Member'}</h2>
               <button 
-                className="staff-modal-close"
+                className="admin-modal-close"
                 onClick={() => {
                   setShowAddForm(false);
                   setShowEditForm(false);
@@ -720,11 +703,11 @@ const StaffManagement = () => {
               </button>
             </div>
             
-            <form onSubmit={showEditForm ? handleUpdateStaff : handleAddStaff} className="staff-staff-form">
-              <div className="staff-form-grid">
-                <div className="staff-form-group">
+            <form onSubmit={showEditForm ? handleUpdateStaff : handleAddStaff} className="admin-staff-form">
+              <div className="admin-form-grid">
+                <div className="admin-form-group">
                   <label>
-                    <span className="staff-required">*</span> Full Name
+                    <span className="admin-required">*</span> Full Name
                   </label>
                   <input
                     type="text"
@@ -734,13 +717,13 @@ const StaffManagement = () => {
                     placeholder="Enter full name"
                     required
                     disabled={saving}
-                    className="staff-form-input"
+                    className="admin-form-input"
                   />
                 </div>
                 
-                <div className="staff-form-group">
+                <div className="admin-form-group">
                   <label>
-                    <span className="staff-required">*</span> Email Address
+                    <span className="admin-required">*</span> Email Address
                   </label>
                   <input
                     type="email"
@@ -750,32 +733,31 @@ const StaffManagement = () => {
                     placeholder="Enter email address"
                     required
                     disabled={saving || showEditForm}
-                    className="staff-form-input"
+                    className="admin-form-input"
                   />
                   {showEditForm && (
-                    <small className="staff-form-note">Email cannot be changed</small>
+                    <small className="admin-form-note">Email cannot be changed</small>
                   )}
                 </div>
                 
                 {/* Specializations Multi-Select */}
-                <div className="staff-form-group staff-multiselect-group">
+                <div className="admin-form-group admin-multiselect-group">
                   <label>
-                    <span className="staff-required">*</span> Specializations
+                    <span className="admin-required">*</span> Specializations
                     {formData.specializations.length > 0 && (
-                      <span className="staff-selected-count">
+                      <span className="admin-selected-count">
                         ({formData.specializations.length} selected)
                       </span>
                     )}
                   </label>
                   
-                  {/* Option 1: Multi-select dropdown (recommended) */}
                   <select
                     name="specializations"
                     value={formData.specializations}
                     onChange={handleMultiSelectChange}
                     required
                     disabled={saving}
-                    className="staff-form-multiselect"
+                    className="admin-form-multiselect"
                     multiple
                     size="6"
                   >
@@ -786,26 +768,26 @@ const StaffManagement = () => {
                       </option>
                     ))}
                   </select>
-                  <small className="staff-form-note">
+                  <small className="admin-form-note">
                     Hold Ctrl (Windows) or Cmd (Mac) to select multiple items
                   </small>
                   
                   {/* Selected specializations display */}
                   {formData.specializations.length > 0 && (
-                    <div className="staff-selected-specializations">
-                      <div className="staff-selected-header">
+                    <div className="admin-selected-specializations">
+                      <div className="admin-selected-header">
                         <strong>Selected Specializations:</strong>
-                        <span className="staff-selected-count-badge">
+                        <span className="admin-selected-count-badge">
                           {formData.specializations.length} selected
                         </span>
                       </div>
-                      <div className="staff-selected-chips">
+                      <div className="admin-selected-chips">
                         {formData.specializations.map(spec => (
-                          <span key={spec} className="staff-selected-chip">
+                          <span key={spec} className="admin-selected-chip">
                             {spec}
                             <button
                               type="button"
-                              className="staff-chip-remove"
+                              className="admin-chip-remove"
                               onClick={() => handleSpecializationToggle(spec)}
                               title="Remove"
                             >
@@ -816,27 +798,9 @@ const StaffManagement = () => {
                       </div>
                     </div>
                   )}
-                  
-                  {/* Option 2: Checkbox alternative (commented out) */}
-                  {/*
-                  <div className="staff-checkbox-container">
-                    {availableSpecializations.map((spec) => (
-                      <div key={spec} className="staff-checkbox-item">
-                        <input
-                          type="checkbox"
-                          id={`spec-${spec}`}
-                          checked={formData.specializations.includes(spec)}
-                          onChange={() => handleSpecializationToggle(spec)}
-                          disabled={saving}
-                        />
-                        <label htmlFor={`spec-${spec}`}>{spec}</label>
-                      </div>
-                    ))}
-                  </div>
-                  */}
                 </div>
                 
-                <div className="staff-form-group">
+                <div className="admin-form-group">
                   <label>Phone Number</label>
                   <input
                     type="tel"
@@ -845,35 +809,35 @@ const StaffManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Enter phone number (optional)"
                     disabled={saving}
-                    className="staff-form-input"
+                    className="admin-form-input"
                   />
                 </div>
                 
-                <div className="staff-form-group">
+                <div className="admin-form-group">
                   <label>Status</label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
                     disabled={saving}
-                    className="staff-form-select"
+                    className="admin-form-select"
                   >
                     <option value="PENDING_ACTIVATION">Pending Activation</option>
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                   </select>
                   {!showEditForm && (
-                    <small className="staff-form-note">
+                    <small className="admin-form-note">
                       Pending Activation will require staff to activate via email
                     </small>
                   )}
                 </div>
               </div>
               
-              <div className="staff-form-actions">
+              <div className="admin-form-actions">
                 <button 
                   type="button" 
-                  className="staff-btn-cancel"
+                  className="admin-btn-cancel"
                   onClick={() => {
                     setShowAddForm(false);
                     setShowEditForm(false);
@@ -886,12 +850,12 @@ const StaffManagement = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="staff-btn-save"
+                  className="admin-btn-save"
                   disabled={saving}
                 >
                   {saving ? (
                     <>
-                      <div className="staff-spinner-small"></div>
+                      <div className="admin-spinner-small"></div>
                       Saving...
                     </>
                   ) : (

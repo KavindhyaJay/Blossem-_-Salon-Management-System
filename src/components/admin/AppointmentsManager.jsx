@@ -1,4 +1,4 @@
-// src/components/admin/AppointmentsManager.jsx - FIXED VERSION (services array handling)
+// src/components/admin/AppointmentsManager.jsx - WITHOUT REVENUE STAT CARD
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar as CalendarIcon, Filter, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import './AppointmentsManager.css';
@@ -28,16 +28,6 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  }, []);
-
-  // Format amount to Sri Lankan Rupees (LKR) - UPDATED
-  const formatLKR = useCallback((amount) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
   }, []);
 
   // Helper function to format services array - NEW FUNCTION
@@ -253,11 +243,7 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     const confirmed = appointments.filter(a => a.status === 'confirmed').length;
     const cancelled = appointments.filter(a => a.status === 'cancelled').length;
     
-    const revenue = appointments
-      .filter(a => a.status === 'completed' || a.status === 'confirmed')
-      .reduce((sum, a) => sum + (a.amount || 0), 0);
-    
-    return { total, completed, pending, confirmed, cancelled, revenue };
+    return { total, completed, pending, confirmed, cancelled };
   }, [appointments]);
 
   // Load appointments on mount and when selectedDate changes
@@ -316,7 +302,7 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - REMOVED REVENUE CARD */}
       <div className="admina-stats-grid">
         <div className="admina-stat-card">
           <div className="admina-stat-header">
@@ -353,19 +339,6 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           <div className="admina-stat-value">{stats.confirmed}</div>
           <div className="admina-stat-subtitle">Booked</div>
         </div>
-        
-        {userRole === 'admin' && (
-          <div className="admina-stat-card">
-            <div className="admina-stat-header">
-              <h3>Revenue</h3>
-              <div className="admina-stat-icon">Rs.</div>
-            </div>
-            <div className="admina-stat-value">
-              {formatLKR(stats.revenue)}
-            </div>
-            <div className="admina-stat-subtitle">Earnings</div>
-          </div>
-        )}
       </div>
 
       {/* Calendar */}
@@ -512,7 +485,7 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                           )}
                         </td>
                         <td className="admina-amount-cell">
-                          {formatLKR(appointment.amount)}
+                          Rs. {appointment.amount?.toLocaleString() || '0'}
                         </td>
                       </tr>
                     ))}

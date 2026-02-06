@@ -1,4 +1,4 @@
-/* src/components/admin/AppointmentsManager.css - WITH admina- PREFIX & REVENUE STAT CARD STYLES */
+/* src/components/admin/AppointmentsManager.css - WITHOUT REVENUE CARD STYLES */
 
 .admina-appointments-manager {
   padding: 20px;
@@ -44,7 +44,7 @@
   align-items: center;
 }
 
-/* Stats Grid - UPDATED WITH REVENUE STYLES */
+/* Stats Grid - REMOVED REVENUE CARD */
 .admina-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -100,7 +100,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Color variations like Revenue component */
+/* Color variations - REMOVED REVENUE CARD COLOR */
 .admina-stat-card:nth-child(1) .admina-stat-value {
   color: #db3232; /* Total Appointments - Red */
 }
@@ -115,10 +115,6 @@
 
 .admina-stat-card:nth-child(4) .admina-stat-value {
   color: #2196F3; /* Confirmed - Blue */
-}
-
-.admina-stat-card:nth-child(5) .admina-stat-value {
-  color: #db3232; /* Revenue - Red */
 }
 
 .admina-stat-subtitle {
@@ -602,6 +598,37 @@
   border-color: #db3232;
 }
 
+/* Service Cell Styles */
+.admina-service-cell {
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.admina-service-list {
+  font-weight: 500;
+  color: #FF9800;
+  margin-bottom: 5px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.admina-service-count {
+  font-size: 0.8rem;
+  color: #888;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.admina-original-status {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #666;
+  font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .admina-appointments-header {
@@ -701,35 +728,4 @@
     padding: 10px 8px;
     font-size: 0.85rem;
   }
-}
-/* Add these styles to AppointmentsManager.css */
-
-.admina-service-cell {
-  min-width: 200px;
-  max-width: 250px;
-}
-
-.admina-service-list {
-  font-weight: 500;
-  color: #FF9800;
-  margin-bottom: 5px;
-  line-height: 1.4;
-  word-wrap: break-word;
-}
-
-.admina-service-count {
-  font-size: 0.8rem;
-  color: #888;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 2px 8px;
-  border-radius: 10px;
-  display: inline-block;
-  margin-top: 5px;
-}
-
-.admina-original-status {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  color: #666;
-  font-style: italic;
 }

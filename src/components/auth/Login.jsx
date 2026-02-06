@@ -1,3 +1,4 @@
+// src/components/Login.jsx - UPDATED: REMOVED PASSWORD DOTS DISPLAY
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -172,11 +173,6 @@ const Login = () => {
     return '#800c0c'; // Default red
   };
 
-  // Render password dots
-  const renderPasswordDots = () => {
-    return '•'.repeat(password.length);
-  };
-
   return (
     <div className="login-container">
       {/* Background pattern */}
@@ -257,15 +253,7 @@ const Login = () => {
                 <div className="input-border"></div>
               </div>
               
-              {/* Password Dots Display */}
-              {password.length > 0 && (
-                <div 
-                  className="password-dots"
-                  style={{ color: getRoleColor() }}
-                >
-                  {renderPasswordDots()}
-                </div>
-              )}
+              {/* REMOVED: Password Dots Display */}
             </div>
             
             <button 
@@ -303,6 +291,9 @@ const Login = () => {
               </span>
             </div>
             
+            <p className="hint-text">
+              Use your registered email and password
+            </p>
           </div>
         </div>
       </div>
