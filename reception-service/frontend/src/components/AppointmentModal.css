@@ -168,10 +168,39 @@ form {
   font-style: italic;
 }
 
+.form-group.has-error .form-label {
+  color: #ff4d6d;
+}
+
+.form-group.has-error .form-hint {
+  color: #ff9fb2;
+}
+
+.form-input.has-error,
+.form-select.has-error,
+.form-textarea.has-error {
+  border-color: #ff4d6d;
+  box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.25);
+  background: rgba(255, 77, 109, 0.05);
+}
+
+.form-error {
+  font-size: 12px;
+  color: #ff4d6d;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
 .service-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+}
+
+.service-grid.has-error {
+  border: 2px dashed #ff4d6d;
+  border-radius: 12px;
+  padding: 12px;
 }
 
 .service-option {

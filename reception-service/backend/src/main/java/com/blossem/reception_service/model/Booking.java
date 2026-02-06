@@ -1,10 +1,7 @@
 package com.blossem.reception_service.model;
 
-import java.math.BigDecimal;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,7 +20,7 @@ public class Booking {
 
     @JsonProperty("total_payment")
     @Field("totalPayment")
-    private BigDecimal totalPayment; // numeric amount synced to external collection
+    private Double totalPayment; // numeric amount synced to external collection
 
     @JsonProperty("customer_arrived")
     @Field("customer_arrived")
@@ -90,12 +87,12 @@ public class Booking {
     }
 
     @JsonProperty("total_payment")
-    public BigDecimal getTotalPayment() {
+    public Double getTotalPayment() {
         return totalPayment;
     }
 
     @JsonProperty("total_payment")
-    public void setTotalPayment(BigDecimal totalPayment) {
+    public void setTotalPayment(Double totalPayment) {
         this.totalPayment = totalPayment;
     }
 

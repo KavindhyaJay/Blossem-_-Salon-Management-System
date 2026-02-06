@@ -1,6 +1,6 @@
 import api from './api';
 
-const RESOURCE = '/reception_appointments';
+const RESOURCE = 'reception_appointments';
 
 const firstDefined = (...values) => values.find((value) => value !== undefined && value !== null);
 

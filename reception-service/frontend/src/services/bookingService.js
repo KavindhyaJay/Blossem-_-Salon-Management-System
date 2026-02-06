@@ -1,6 +1,6 @@
 import api from "./api";
 
-const RESOURCE = "/bookings";
+const RESOURCE = "bookings";
 
 export const fetchAll = () => api.get(RESOURCE);
 export const fetchByDate = (date) => api.get(`${RESOURCE}/date/${date}`);

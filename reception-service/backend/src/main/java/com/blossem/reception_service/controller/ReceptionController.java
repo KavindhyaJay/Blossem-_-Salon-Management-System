@@ -108,6 +108,11 @@ public class ReceptionController {
         return service.syncBookingsIntoReception();
     }
 
+    @PostMapping("/deduplicate")
+    public ReceptionService.DedupSummary deduplicate() {
+        return service.deduplicateAppointments();
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);

@@ -13,6 +13,9 @@ const SERVICE_OPTIONS = [
     { id: 'professional-makeup', label: 'Professional Makeup', price: 4000 },
 ];
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TIME_PATTERN = /^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/i;
+
 const formatCurrency = (value) => {
     const numeric = Number(value) || 0;
     return new Intl.NumberFormat('en-LK', {
@@ -39,6 +42,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isBookingSyncing, setIsBookingSyncing] = useState(false);
     const [bookingError, setBookingError] = useState(null);
+    const [errors, setErrors] = useState({});
 
     const priceMap = useMemo(
         () =>
@@ -70,6 +74,66 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
         return `form-select${filled ? ' filled' : ''}`;
     };
 
+    const clearFieldError = (field) => {
+        setErrors((prev) => {
+            if (!prev[field]) {
+                return prev;
+            }
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
+    const isDateInPast = (value) => {
+        if (!value) {
+            return true;
+        }
+        const selected = new Date(value);
+        const today = new Date();
+        selected.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return selected < today;
+    };
+
+    const validateForm = () => {
+        const validationErrors = {};
+        const emailValue = formData.email.trim();
+        const nameValue = formData.customerName.trim();
+        const timeValue = formData.time.trim();
+        const chosenServices = formData.services.filter(Boolean);
+
+        if (!emailValue) {
+            validationErrors.email = 'Email is required.';
+        } else if (!EMAIL_PATTERN.test(emailValue)) {
+            validationErrors.email = 'Enter a valid email address.';
+        }
+
+        if (!nameValue) {
+            validationErrors.customerName = 'Customer name is required.';
+        } else if (nameValue.length < 2) {
+            validationErrors.customerName = 'Name must be at least 2 characters.';
+        }
+
+        if (!formData.date) {
+            validationErrors.date = 'Select an appointment date.';
+        } else if (isDateInPast(formData.date)) {
+            validationErrors.date = 'Date cannot be in the past.';
+        }
+
+        if (!timeValue) {
+            validationErrors.time = 'Enter an appointment time.';
+        } else if (!TIME_PATTERN.test(timeValue)) {
+            validationErrors.time = 'Use the HH:MM AM/PM format (e.g., 04:30 PM).';
+        }
+
+        if (!chosenServices.length) {
+            validationErrors.services = 'Select at least one service to continue.';
+        }
+
+        return validationErrors;
+    };
+
     useEffect(() => {
         if (!isOpen) {
             return;
@@ -96,6 +160,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
         }
 
         setBookingError(null);
+        setErrors({});
     }, [appointment, isOpen]);
 
     const handleChange = (e) => {
@@ -104,6 +169,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             ...prev,
             [name]: value,
         }));
+        clearFieldError(name);
     };
 
     const handleServiceToggle = (serviceLabel) => {
@@ -119,6 +185,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 amount: calculateTotalFromServices(services),
             };
         });
+        if (errors.services) {
+            clearFieldError('services');
+        }
     };
 
     const parseAmountValue = (value) => {
@@ -141,11 +210,16 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const normalizedServices = formData.services.filter(Boolean);
-        if (!normalizedServices.length) {
-            setBookingError('Select at least one service.');
+        const validationErrors = validateForm();
+        if (Object.keys(validationErrors).length) {
+            setErrors(validationErrors);
+            setBookingError('Please fix the highlighted fields.');
             return;
         }
+        setErrors({});
+        setBookingError(null);
+
+        const normalizedServices = formData.services.filter(Boolean);
 
         const totalPayment = parseAmountValue(formData.amount) ?? 0;
 
@@ -158,6 +232,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             staff: formData.staff,
             payment: formData.payment,
             totalPayment,
+            createReceptionAppointment: false,
         };
 
         const receptionPayload = {
@@ -230,38 +305,40 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-row">
-                        <div className="form-group">
+                        <div className={`form-group${errors.email ? ' has-error' : ''}`}>
                             <label className="form-label">Email *</label>
                             <input
                                 type="email"
                                 name="email"
-                                className={getInputClasses(formData.email)}
+                                className={`${getInputClasses(formData.email)}${errors.email ? ' has-error' : ''}`}
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
                                 placeholder="customer@example.com"
                             />
+                            {errors.email && <span className="form-error">{errors.email}</span>}
                         </div>
 
-                        <div className="form-group">
+                        <div className={`form-group${errors.customerName ? ' has-error' : ''}`}>
                             <label className="form-label">Customer Name *</label>
                             <input
                                 type="text"
                                 name="customerName"
-                                className={getInputClasses(formData.customerName)}
+                                className={`${getInputClasses(formData.customerName)}${errors.customerName ? ' has-error' : ''}`}
                                 value={formData.customerName}
                                 onChange={handleChange}
                                 placeholder="Enter customer full name"
                                 required
                             />
                             <small className="form-hint">Enter the exact name provided by the customer</small>
+                            {errors.customerName && <span className="form-error">{errors.customerName}</span>}
                         </div>
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group full-width">
+                        <div className={`form-group full-width${errors.services ? ' has-error' : ''}`}>
                             <label className="form-label">Services *</label>
-                            <div className="service-grid">
+                            <div className={`service-grid${errors.services ? ' has-error' : ''}`}>
                                 {SERVICE_OPTIONS.map((option) => {
                                     const isSelected = formData.services.includes(option.label);
                                     return (
@@ -278,6 +355,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                                 })}
                             </div>
                             <small className="form-hint">Select one or more services to auto-calculate the total.</small>
+                            {errors.services && <span className="form-error">{errors.services}</span>}
                         </div>
                     </div>
 
@@ -294,32 +372,34 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                             />
                         </div>
 
-                        <div className="form-group">
+                        <div className={`form-group${errors.date ? ' has-error' : ''}`}>
                             <label className="form-label">Date *</label>
                             <input
                                 type="date"
                                 name="date"
-                                className={getInputClasses(formData.date)}
+                                className={`${getInputClasses(formData.date)}${errors.date ? ' has-error' : ''}`}
                                 value={formData.date}
                                 onChange={handleChange}
                                 required
                             />
+                            {errors.date && <span className="form-error">{errors.date}</span>}
                         </div>
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group">
+                        <div className={`form-group${errors.time ? ' has-error' : ''}`}>
                             <label className="form-label">Time *</label>
                             <input
                                 type="text"
                                 name="time"
-                                className={getInputClasses(formData.time)}
+                                className={`${getInputClasses(formData.time)}${errors.time ? ' has-error' : ''}`}
                                 value={formData.time}
                                 onChange={handleChange}
                                 placeholder="e.g., 4:00 PM"
                                 required
                             />
                             <small className="form-hint">Format: HH:MM AM/PM (e.g., 4:00 PM)</small>
+                            {errors.time && <span className="form-error">{errors.time}</span>}
                         </div>
 
                         <div className="form-group">

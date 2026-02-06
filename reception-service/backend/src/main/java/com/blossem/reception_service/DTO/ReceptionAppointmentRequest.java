@@ -2,6 +2,7 @@ package com.blossem.reception_service.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 
+
 public class ReceptionAppointmentRequest {
 
     private String bookingId; // optional: if omitted create booking first

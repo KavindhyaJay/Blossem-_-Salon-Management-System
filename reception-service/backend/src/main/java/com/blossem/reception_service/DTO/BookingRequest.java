@@ -1,7 +1,5 @@
 package com.blossem.reception_service.DTO;
 
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotBlank;
 
 public class BookingRequest {
@@ -21,7 +19,7 @@ public class BookingRequest {
 
     private String staff;
     private String payment; // optional
-    private BigDecimal totalPayment; // optional numeric amount
+    private Double totalPayment; // optional numeric amount
     private Boolean createReceptionAppointment = Boolean.TRUE;
 
     public BookingRequest() {
@@ -83,11 +81,11 @@ public class BookingRequest {
         this.payment = payment;
     }
 
-    public BigDecimal getTotalPayment() {
+    public Double getTotalPayment() {
         return totalPayment;
     }
 
-    public void setTotalPayment(BigDecimal totalPayment) {
+    public void setTotalPayment(Double totalPayment) {
         this.totalPayment = totalPayment;
     }
 
