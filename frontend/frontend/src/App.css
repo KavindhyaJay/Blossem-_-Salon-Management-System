@@ -124,8 +124,8 @@ body {
 .logo span { color: var(--primary-red); }
 
 .nav-links { display: flex; gap: 2rem; }
-.nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
-.nav-links a:hover { color: white; }
+.nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.5s; font-size: 20px; }
+.nav-links a:hover { color: rgb(150, 29, 29); }
 
 .main-content { flex: 1; display: flex; justify-content: center; padding-top: 2rem; }
 
@@ -196,8 +196,8 @@ h2 { font-size: 1.5rem; margin: 0; }
 .staff-card.selected img { border-color: var(--primary-red); }
 
 /* Progress Bar */
-.progress-container { background: var(--bg-card); padding: 1rem 0; display: flex; justify-content: center; gap: 5px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
-.progress-step { padding: 0.5rem 1.5rem; color: var(--text-muted); font-size: 0.85rem; border-bottom: 2px solid transparent; transition: 0.3s; }
+.progress-container { background: var(--bg-card); padding: 0.5rem 0.5rem; display: flex; justify-content: center; gap: 5px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.progress-step { padding: 0.5rem 1.5rem; color: var(--text-muted); font-size: 1.2rem; border-bottom: 2px solid transparent; transition: 0.3s; }
 .progress-step.active { color: white; border-color: var(--primary-red); }
 
 /* Calendar Mock */
