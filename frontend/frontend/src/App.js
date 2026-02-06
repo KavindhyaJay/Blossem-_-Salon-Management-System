@@ -67,7 +67,7 @@ function App() {
         <div className="nav-links">
           <a href="#about">About</a>
           <a href="#reviews">Reviews</a>
-          <a href="#location">Location</a>
+          <a href="#locations">Location</a>
         </div>
       </nav>
 
