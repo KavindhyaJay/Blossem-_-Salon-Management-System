@@ -13,6 +13,16 @@ const SERVICE_OPTIONS = [
     { id: 'professional-makeup', label: 'Professional Makeup', price: 4000 },
 ];
 
+const STAFF_OPTIONS = [
+    { id: 'raisin-cooper', name: 'Raisin Cooper', services: 'Facial, Professional Makeup' },
+    { id: 'risty-murphy', name: 'Risty Murphy', services: 'Spa treatment, Facial, Professional Makeup' },
+    { id: 'katherine-lopez', name: 'Katherine Lopez', services: 'Hair cut, Hair color' },
+    { id: 'tanya-dias', name: 'Tanya Dias', services: 'Nail art' },
+    { id: 'sydney-swean', name: 'Sydney Swean', services: 'Hair styling, Hair color' },
+    { id: 'jessica-grey', name: 'Jessica Grey', services: 'Hair styling, Hair cut' },
+    { id: 'john-smith', name: 'John Smith', services: 'Spa treatment' },
+];
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TIME_PATTERN = /^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/i;
 
@@ -52,6 +62,17 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             }, {}),
         []
     );
+
+    const staffOptions = useMemo(() => {
+        if (!formData.staff) {
+            return STAFF_OPTIONS;
+        }
+        const exists = STAFF_OPTIONS.some((option) => option.name === formData.staff);
+        if (exists) {
+            return STAFF_OPTIONS;
+        }
+        return [...STAFF_OPTIONS, { id: 'existing-staff', name: formData.staff, services: '(current selection)' }];
+    }, [formData.staff]);
 
     const calculateTotalFromServices = (services = []) =>
         services.reduce((sum, item) => sum + (priceMap[item] || 0), 0);
@@ -362,14 +383,19 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">Staff</label>
-                            <input
-                                type="text"
+                            <select
                                 name="staff"
-                                className={getInputClasses(formData.staff)}
+                                className={getSelectClasses(formData.staff)}
                                 value={formData.staff}
                                 onChange={handleChange}
-                                placeholder="Staff name"
-                            />
+                            >
+                                <option value="">Select a staff member</option>
+                                {staffOptions.map((option) => (
+                                    <option key={option.id} value={option.name}>
+                                        {`${option.name} – ${option.services}`}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className={`form-group${errors.date ? ' has-error' : ''}`}>

@@ -1,8 +1,8 @@
 :root {
-  --primary-red: #ff2e63;
-  --primary-red-dark: #d9204f;
-  --primary-red-light: #ff5b82;
-  --accent-red: #ff6b6b;
+  --primary-red: #ff5f84;
+  --primary-red-dark: #c13b55;
+  --primary-red-light: #ff97ad;
+  --accent-red: #ff8ba0;
 
   --black-primary: #020202;
   --black-secondary: #0b0b0f;
@@ -13,8 +13,8 @@
   --bg-card: #13131a;
   --panel-soft: rgba(255, 255, 255, 0.08);
   --panel-bright: rgba(255, 255, 255, 0.12);
-  --text-dark: #fff8fb;
-  --text-muted: #ffd2dd;
+  --text-dark: #fffdfd;
+  --text-muted: #f0cfd9;
   --border-color: rgba(255, 255, 255, 0.12);
   --error-red: #ff3b5f;
   --warning-yellow: #ffd166;
@@ -68,8 +68,11 @@ body {
 .dashboard-header h1 {
   font-size: 32px;
   font-weight: 800;
-  color: var(--primary-red);
   margin-bottom: 16px;
+  color: transparent;
+  background: linear-gradient(120deg, #fff6fa 0%, #ff829c 60%, #ffe7ed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .sync-controls {
@@ -89,12 +92,12 @@ body {
 .sync-inline-primary {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: #fff5f7;
 }
 
 .sync-inline-secondary {
   font-size: 13px;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .sync-inline-error {
@@ -177,8 +180,11 @@ body {
 .stat-value {
   font-size: 32px;
   font-weight: 800;
-  color: var(--primary-red);
-  text-shadow: 0 6px 18px rgba(255, 46, 99, 0.35);
+  color: transparent;
+  background: linear-gradient(120deg, #fff5f7, #ff93a9 70%, #ffd8e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: none;
 }
 
 .calendar-section {
@@ -202,7 +208,7 @@ body {
 .calendar-card__header h2 {
   font-size: 22px;
   font-weight: 700;
-  color: var(--text-dark);
+  color: #fff6f8;
   margin-bottom: 6px;
 }
 
@@ -231,12 +237,12 @@ body {
 .daily-card__header h3 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--primary-red);
+  color: #fff5f7;
 }
 
 .daily-count {
-  background: rgba(255, 46, 99, 0.18);
-  color: var(--primary-red-light);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe4ec;
   padding: 6px 12px;
   border-radius: 999px;
   font-size: 13px;
@@ -301,7 +307,7 @@ body {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: var(--text-dark);
+  color: #fffdfd;
 }
 
 .daily-services {
@@ -331,18 +337,18 @@ body {
 }
 
 .tag.success {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--primary-red-light);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffe4ea;
 }
 
 .tag.pending {
-  background: rgba(255, 46, 99, 0.18);
-  color: var(--text-dark);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff5f7;
 }
 
 .tag.warning {
-  background: rgba(255, 46, 99, 0.3);
-  color: var(--bg-white);
+  background: rgba(255, 135, 158, 0.25);
+  color: #fff5f7;
 }
 
 /* Error Banner */
