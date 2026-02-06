@@ -60,7 +60,7 @@ const servicesList = (services) => {
     return [];
 };
 
-export default function SalonInsightsPanel({ appointments = [], loading = false, onMarkArrived, onMarkPaymentStatus, activeView, onViewChange, defaultView = "today" }) {
+export default function SalonInsightsPanel({ appointments = [], loading = false, onMarkArrived, onMarkPaymentStatus, onUpdatePaymentCheck, activeView, onViewChange, defaultView = "today" }) {
     const isControlled = typeof activeView === "string";
     const [internalView, setInternalView] = useState(defaultView);
     const currentView = isControlled ? activeView : internalView;
@@ -132,6 +132,12 @@ export default function SalonInsightsPanel({ appointments = [], loading = false,
                     const rawPaymentStatus = apt.paymentStatus || apt.payment || "Pending";
                     const paymentLabel = typeof rawPaymentStatus === "string" && rawPaymentStatus.trim() ? rawPaymentStatus.trim() : "Pending";
                     const isPaid = paymentLabel.toLowerCase() === "paid";
+                    const rawPaymentChecked = apt.paymentChecked || apt.receptionPaymentChecked || "No";
+                    const normalizedPaymentChecked = typeof rawPaymentChecked === "string" && rawPaymentChecked.trim()
+                        ? rawPaymentChecked.trim()
+                        : "No";
+                    const isPaymentChecked = normalizedPaymentChecked.toLowerCase() === "yes";
+                    const paymentCheckedLabel = isPaymentChecked ? "Yes" : "No";
 
                     return (
                         <article key={appointmentId || apt.email} className={`insight-card ${arrived ? "insight-card--arrived" : ""}`}>
@@ -165,15 +171,42 @@ export default function SalonInsightsPanel({ appointments = [], loading = false,
                             </div>
 
                             <div className="insight-payments">
-                                <span className="insight-payments__label">Payment:</span>
-                                <span className={`payment-chip ${isPaid ? "is-paid" : "is-pending"}`}>
-                                    {isPaid ? "Paid" : "Pending"}
-                                </span>
-                                {!isPaid && onMarkPaymentStatus && (
-                                    <button type="button" className="payment-action" onClick={() => onMarkPaymentStatus(apt, "Paid")}>
-                                        Mark as Paid
-                                    </button>
-                                )}
+                                <div className="insight-payments__row">
+                                    <span className="insight-payments__label">Payment:</span>
+                                    <span className={`payment-chip ${isPaid ? "is-paid" : "is-pending"}`}>
+                                        {isPaid ? "Paid" : "Pending"}
+                                    </span>
+                                    {!isPaid && onMarkPaymentStatus && (
+                                        <button type="button" className="payment-action" onClick={() => onMarkPaymentStatus(apt, "Paid")}>
+                                            Mark as Paid
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="insight-payments__row">
+                                    <span className="insight-payments__label">Payment Checked:</span>
+                                    <span className={`payment-chip ${isPaymentChecked ? "is-paid" : "is-pending"}`}>
+                                        {isPaymentChecked ? "Yes" : "No"}
+                                    </span>
+                                    {appointmentId && onUpdatePaymentCheck && (
+                                        <div className="payment-check-toggle">
+                                            {["No", "Yes"].map((option) => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    className={`payment-check-toggle__btn ${paymentCheckedLabel === option ? "is-active" : ""}`}
+                                                    onClick={() => {
+                                                        if (paymentCheckedLabel === option) {
+                                                            return;
+                                                        }
+                                                        onUpdatePaymentCheck(appointmentId, option);
+                                                    }}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {!arrived && appointmentId && onMarkArrived && (

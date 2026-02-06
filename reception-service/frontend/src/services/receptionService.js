@@ -33,6 +33,14 @@ const normalizeAppointment = (raw = {}) => {
     const totalPayment = firstDefined(raw.totalPayment, raw.total_payment);
     const customerArrived = normalizeFlagValue(firstDefined(raw.customerArrived, raw.customer_arrived));
     const paymentStatus = normalizePaymentStatus(firstDefined(raw.paymentStatus, raw.payment));
+    const paymentChecked = normalizeFlagValue(
+        firstDefined(
+            raw.paymentChecked,
+            raw.payment_checked,
+            raw.receptionPaymentChecked,
+            raw.reception_payment_checked
+        )
+    );
     const notes = firstDefined(raw.receptionNotes, raw.reception_notes, raw.notes);
 
     return {
@@ -44,6 +52,8 @@ const normalizeAppointment = (raw = {}) => {
         customer_arrived: customerArrived,
         paymentStatus,
         payment: paymentStatus,
+        paymentChecked,
+        payment_checked: paymentChecked,
         receptionNotes: notes,
         notes,
     };
@@ -107,6 +117,14 @@ export const receptionService = {
     // Update payment status via booking id
     updatePaymentStatus: async (bookingId, status) => {
         const response = await api.post(`${RESOURCE}/booking/${bookingId}/payment?status=${encodeURIComponent(status)}`);
+        return normalizeResponse(response.data);
+    },
+
+    // Update receptionist payment check flag
+    updatePaymentCheck: async (appointmentId, paymentChecked) => {
+        const response = await api.post(
+            `${RESOURCE}/${appointmentId}/payment-check?paymentChecked=${encodeURIComponent(paymentChecked)}`
+        );
         return normalizeResponse(response.data);
     },
 };

@@ -23,6 +23,11 @@ public class Booking {
     @Field("payment")
     private String paymentStatus; // Paid or Pending indicator
 
+    @JsonProperty("paymentChecked")
+    @JsonAlias({ "payment_checked", "receptionPaymentChecked", "reception_payment_checked" })
+    @Field("paymentChecked")
+    private String paymentChecked = "No"; // "Yes" when receptionist verifies payment
+
     @JsonProperty("total_payment")
     @Field("totalPayment")
     private Double totalPayment; // numeric amount synced to external collection
@@ -87,6 +92,16 @@ public class Booking {
     @JsonProperty("paymentStatus")
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    @JsonProperty("paymentChecked")
+    public String getPaymentChecked() {
+        return paymentChecked;
+    }
+
+    @JsonProperty("paymentChecked")
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
     }
 
     @JsonProperty("total_payment")

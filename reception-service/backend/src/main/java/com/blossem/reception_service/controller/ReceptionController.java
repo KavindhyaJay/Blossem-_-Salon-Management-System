@@ -86,6 +86,15 @@ public class ReceptionController {
     }
 
     /**
+     * Update paymentChecked flag for a reception appointment by ID.
+     */
+    @PostMapping("/{id}/payment-check")
+    public ReceptionAppointment updatePaymentCheck(@PathVariable String id,
+            @RequestParam String paymentChecked) {
+        return service.updatePaymentChecked(id, paymentChecked);
+    }
+
+    /**
      * Bulk-sync reception appointments from the bookings collection.
      */
     @PostMapping("/sync-from-bookings")

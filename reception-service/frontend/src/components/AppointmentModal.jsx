@@ -43,6 +43,7 @@ const INITIAL_FORM_STATE = {
     time: '',
     staff: '',
     paymentStatus: 'Pending',
+    paymentChecked: 'No',
     amount: 0,
     bookingId: '',
 };
@@ -173,6 +174,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 time: appointment.time || '',
                 staff: appointment.staff || '',
                 paymentStatus: appointment.paymentStatus || appointment.payment || 'Pending',
+                paymentChecked: appointment.paymentChecked || appointment.receptionPaymentChecked || 'No',
                 amount: Number(resolvedAmount) || 0,
                 bookingId: appointment.bookingId || '',
             });
@@ -252,6 +254,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             time: formData.time,
             staff: formData.staff,
             paymentStatus: formData.paymentStatus,
+            paymentChecked: formData.paymentChecked,
             totalPayment,
             createReceptionAppointment: false,
         };
@@ -439,6 +442,19 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                                 <option value="Pending">Pending</option>
                                 <option value="Paid">Paid</option>
                             </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Payment Checked</label>
+                            <select
+                                name="paymentChecked"
+                                className={getSelectClasses(formData.paymentChecked, 'No')}
+                                value={formData.paymentChecked}
+                                onChange={handleChange}
+                            >
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                            <small className="form-hint">Reception toggles this once payment is verified.</small>
                         </div>
                     </div>
 

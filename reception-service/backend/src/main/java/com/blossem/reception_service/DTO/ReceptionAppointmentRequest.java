@@ -30,6 +30,10 @@ public class ReceptionAppointmentRequest {
     @JsonAlias({ "payment" })
     private String paymentStatus; // payment status (e.g., "Paid", "Pending")
 
+    @JsonProperty("paymentChecked")
+    @JsonAlias({ "payment_checked", "receptionPaymentChecked", "reception_payment_checked" })
+    private String paymentChecked; // receptionist verification flag
+
     private String customerArrived; // "Yes" or "No"
 
     public ReceptionAppointmentRequest() {
@@ -115,6 +119,16 @@ public class ReceptionAppointmentRequest {
     @JsonProperty("paymentStatus")
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    @JsonProperty("paymentChecked")
+    public String getPaymentChecked() {
+        return paymentChecked;
+    }
+
+    @JsonProperty("paymentChecked")
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
     }
 
     public String getCustomerArrived() {

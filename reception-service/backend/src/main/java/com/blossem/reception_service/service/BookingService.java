@@ -32,6 +32,7 @@ public class BookingService {
         b.setTime(req.getTime());
         b.setStaff(req.getStaff());
         b.setPaymentStatus(req.getPaymentStatus());
+        b.setPaymentChecked(normalizeYesNo(req.getPaymentChecked()));
         b.setTotalPayment(req.getTotalPayment());
         Booking savedBooking = bookingRepo.save(b);
 
@@ -64,6 +65,11 @@ public class BookingService {
         existing.setTime(req.getTime());
         existing.setStaff(req.getStaff());
         existing.setPaymentStatus(req.getPaymentStatus());
+        if (req.getPaymentChecked() != null) {
+            existing.setPaymentChecked(normalizeYesNo(req.getPaymentChecked()));
+        } else if (existing.getPaymentChecked() == null || existing.getPaymentChecked().isBlank()) {
+            existing.setPaymentChecked("No");
+        }
         existing.setTotalPayment(req.getTotalPayment());
         return bookingRepo.save(existing);
     }
@@ -78,6 +84,13 @@ public class BookingService {
 
     public Booking getById(String id) {
         return bookingRepo.findById(id).orElseThrow(() -> new RuntimeException("Booking not found: " + id));
+    }
+
+    private String normalizeYesNo(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return "No";
+        }
+        return value.trim().equalsIgnoreCase("Yes") ? "Yes" : "No";
     }
 
 }

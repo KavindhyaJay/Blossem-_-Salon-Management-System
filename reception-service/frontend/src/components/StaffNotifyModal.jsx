@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./AppointmentModal.css";
 import "./StaffNotifyModal.css";
+import { findStaffByName } from "../data/staffDirectory";
 
 const CUSTOM_OPTION = "__custom__";
 
@@ -22,6 +23,30 @@ const buildSummaryList = (appointment) => {
     ];
 };
 
+const buildEmailTemplate = (appointment) => {
+    if (!appointment) {
+        return "Customer Arrived!";
+    }
+
+    const services = Array.isArray(appointment.services) && appointment.services.length
+        ? appointment.services.join(", ")
+        : appointment.services || "Not specified";
+
+    const lines = [
+        "Customer Arrived!",
+        `Customer: ${appointment.customerName || "Walk-in client"}`,
+        `Email: ${appointment.email || "Not provided"}`,
+        `Services: ${services}`,
+        `Appointment: ${(appointment.date || "Date TBD")}${appointment.time ? ` at ${appointment.time}` : ""}`,
+    ];
+
+    if (appointment.staff) {
+        lines.push(`Assigned Staff: ${appointment.staff}`);
+    }
+
+    return lines.join("\n");
+};
+
 export default function StaffNotifyModal({
     isOpen,
     appointment,
@@ -32,6 +57,7 @@ export default function StaffNotifyModal({
 }) {
     const [selectedStaffId, setSelectedStaffId] = useState("");
     const [email, setEmail] = useState("");
+    const [emailContent, setEmailContent] = useState("");
     const [formError, setFormError] = useState("");
 
     const summaryItems = useMemo(() => buildSummaryList(appointment), [appointment]);
@@ -40,15 +66,26 @@ export default function StaffNotifyModal({
         if (!isOpen) {
             setSelectedStaffId("");
             setEmail("");
+            setEmailContent("");
             setFormError("");
             return;
         }
 
-        const normalizedName = appointment?.staff?.toLowerCase();
+        const staffName = typeof appointment?.staff === "string" ? appointment.staff.trim() : "";
+        const normalizedName = staffName.toLowerCase();
         const matched = staffOptions.find((staff) => normalizedName && staff.name.toLowerCase() === normalizedName);
+        const directoryStaff = normalizedName ? findStaffByName(staffName) : undefined;
         const initial = matched || staffOptions[0];
         setSelectedStaffId(initial?.id ?? "");
-        setEmail(initial?.email || appointment?.staffEmail || "");
+
+        const resolvedEmail = matched?.email
+            || directoryStaff?.email
+            || appointment?.staffEmail
+            || initial?.email
+            || "";
+
+        setEmail(resolvedEmail);
+        setEmailContent(buildEmailTemplate(appointment));
         setFormError("");
     }, [isOpen, appointment, staffOptions]);
 
@@ -80,7 +117,7 @@ export default function StaffNotifyModal({
             selectedStaff?.name ||
             appointment?.staff ||
             (email ? "Selected Staff" : "");
-        onSubmit?.({ staffEmail: email, staffName });
+        onSubmit?.({ staffEmail: email, staffName, emailContent });
     };
 
     return (
@@ -140,6 +177,20 @@ export default function StaffNotifyModal({
                             required
                         />
                         <p className="form-hint">We will email the arrival summary to this address.</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="email-content">
+                            Email content
+                        </label>
+                        <textarea
+                            id="email-content"
+                            className={`form-input ${emailContent ? "filled" : ""}`}
+                            rows={5}
+                            value={emailContent}
+                            onChange={(event) => setEmailContent(event.target.value)}
+                        />
+                        <p className="form-hint">A default "Customer Arrived" message is provided—tweak it before sending if needed.</p>
                     </div>
 
                     {formError && <p className="arrival-error">{formError}</p>}

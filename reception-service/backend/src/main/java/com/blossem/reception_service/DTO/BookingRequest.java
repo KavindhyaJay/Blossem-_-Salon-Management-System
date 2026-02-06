@@ -26,6 +26,10 @@ public class BookingRequest {
     @JsonAlias({ "payment" })
     private String paymentStatus; // optional
 
+    @JsonProperty("paymentChecked")
+    @JsonAlias({ "payment_checked", "receptionPaymentChecked", "reception_payment_checked" })
+    private String paymentChecked; // optional receptionist verification flag
+
     private Double totalPayment; // optional numeric amount
     private Boolean createReceptionAppointment = Boolean.TRUE;
 
@@ -88,6 +92,16 @@ public class BookingRequest {
     @JsonProperty("paymentStatus")
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    @JsonProperty("paymentChecked")
+    public String getPaymentChecked() {
+        return paymentChecked;
+    }
+
+    @JsonProperty("paymentChecked")
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
     }
 
     public Double getTotalPayment() {

@@ -225,7 +225,7 @@ export default function ReceptionDashboard() {
 
   const closeArrivalPrompt = () => setArrivalPrompt({ open: false, appointment: null });
 
-  const handleArrivalSubmit = async ({ staffEmail, staffName }) => {
+  const handleArrivalSubmit = async ({ staffEmail, staffName, emailContent }) => {
     if (!arrivalPrompt.appointment) {
       return;
     }
@@ -233,14 +233,24 @@ export default function ReceptionDashboard() {
     try {
       setSendingArrival(true);
       setError(null);
-      const appointmentId = arrivalPrompt.appointment.id;
+      const appointmentId = arrivalPrompt.appointment.id || arrivalPrompt.appointment._id;
+      if (!appointmentId) {
+        setError("Unable to update appointment because no identifier was found.");
+        return;
+      }
       await receptionService.markArrived(appointmentId, staffEmail);
 
-      if (staffName && staffName !== (arrivalPrompt.appointment.staff || "")) {
+      const note = emailContent?.trim();
+      const priorStaff = arrivalPrompt.appointment.staff || "";
+      const resolvedStaff = staffName || priorStaff;
+      const staffChanged = resolvedStaff && resolvedStaff !== priorStaff;
+
+      if (staffChanged || note) {
         await receptionService.updateAppointment(appointmentId, {
           ...arrivalPrompt.appointment,
-          staff: staffName,
+          staff: resolvedStaff,
           customerArrived: "Yes",
+          receptionNotes: note || arrivalPrompt.appointment.receptionNotes,
         });
       }
 
