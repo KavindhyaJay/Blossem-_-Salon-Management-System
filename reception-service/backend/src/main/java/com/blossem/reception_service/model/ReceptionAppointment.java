@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
@@ -21,7 +22,10 @@ public class ReceptionAppointment {
     private String date;
     private String time;
     private String staff;
-    private String payment; // payment status from booking (e.g., "Paid", "Pending")
+    @JsonProperty("paymentStatus")
+    @JsonAlias({ "payment" })
+    @Field("payment")
+    private String paymentStatus; // payment status from booking (e.g., "Paid", "Pending")
 
     @JsonProperty("total_payment")
     @Field("totalPayment")
@@ -30,10 +34,6 @@ public class ReceptionAppointment {
     @JsonProperty("customer_arrived")
     @Field("customer_arrived")
     private String customerArrived; // "Yes" or "No"
-
-    @JsonProperty("payment_checked")
-    @Field("payment_checked")
-    private String paymentChecked; // "Yes" or "No"
 
     private String receptionNotes;
 
@@ -107,12 +107,14 @@ public class ReceptionAppointment {
         this.staff = staff;
     }
 
-    public String getPayment() {
-        return payment;
+    @JsonProperty("paymentStatus")
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
-    public void setPayment(String payment) {
-        this.payment = payment;
+    @JsonProperty("paymentStatus")
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     @JsonProperty("total_payment")
@@ -131,16 +133,6 @@ public class ReceptionAppointment {
 
     public void setCustomerArrived(String customerArrived) {
         this.customerArrived = customerArrived;
-    }
-
-    @JsonProperty("payment_checked")
-    public String getPaymentChecked() {
-        return paymentChecked;
-    }
-
-    @JsonProperty("payment_checked")
-    public void setPaymentChecked(String paymentChecked) {
-        this.paymentChecked = paymentChecked;
     }
 
     public String getReceptionNotes() {

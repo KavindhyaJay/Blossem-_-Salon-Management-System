@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "bookings")
@@ -17,7 +18,10 @@ public class Booking {
     private String date;
     private String time;
     private String staff;
-    private String payment; // optional free-text amount or status
+    @JsonProperty("paymentStatus")
+    @JsonAlias({ "payment" })
+    @Field("payment")
+    private String paymentStatus; // Paid or Pending indicator
 
     @JsonProperty("total_payment")
     @Field("totalPayment")
@@ -26,10 +30,6 @@ public class Booking {
     @JsonProperty("customer_arrived")
     @Field("customer_arrived")
     private String customerArrived; // "Yes" or "No"
-
-    @JsonProperty("payment_checked")
-    @Field("payment_checked")
-    private String paymentChecked; // "Yes" or "No"
 
     public String getId() {
         return id;
@@ -79,12 +79,14 @@ public class Booking {
         this.staff = staff;
     }
 
-    public String getPayment() {
-        return payment;
+    @JsonProperty("paymentStatus")
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
-    public void setPayment(String payment) {
-        this.payment = payment;
+    @JsonProperty("paymentStatus")
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     @JsonProperty("total_payment")
@@ -107,13 +109,4 @@ public class Booking {
         this.customerArrived = customerArrived;
     }
 
-    @JsonProperty("payment_checked")
-    public String getPaymentChecked() {
-        return paymentChecked;
-    }
-
-    @JsonProperty("payment_checked")
-    public void setPaymentChecked(String paymentChecked) {
-        this.paymentChecked = paymentChecked;
-    }
 }

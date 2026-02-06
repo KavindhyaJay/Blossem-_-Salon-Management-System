@@ -42,7 +42,7 @@ const INITIAL_FORM_STATE = {
     date: '',
     time: '',
     staff: '',
-    payment: 'Pending',
+    paymentStatus: 'Pending',
     amount: 0,
     bookingId: '',
 };
@@ -172,7 +172,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                 date: appointment.date || '',
                 time: appointment.time || '',
                 staff: appointment.staff || '',
-                payment: appointment.payment || 'Pending',
+                paymentStatus: appointment.paymentStatus || appointment.payment || 'Pending',
                 amount: Number(resolvedAmount) || 0,
                 bookingId: appointment.bookingId || '',
             });
@@ -251,7 +251,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
             date: formData.date,
             time: formData.time,
             staff: formData.staff,
-            payment: formData.payment,
+            paymentStatus: formData.paymentStatus,
             totalPayment,
             createReceptionAppointment: false,
         };
@@ -431,9 +431,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, appointment = null }) => {
                         <div className="form-group">
                             <label className="form-label">Payment Status</label>
                             <select
-                                name="payment"
-                                className={getSelectClasses(formData.payment, 'Pending')}
-                                value={formData.payment}
+                                name="paymentStatus"
+                                className={getSelectClasses(formData.paymentStatus, 'Pending')}
+                                value={formData.paymentStatus}
                                 onChange={handleChange}
                             >
                                 <option value="Pending">Pending</option>

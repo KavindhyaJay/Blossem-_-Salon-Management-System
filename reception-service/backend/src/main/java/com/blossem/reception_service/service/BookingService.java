@@ -31,14 +31,15 @@ public class BookingService {
         b.setDate(req.getDate());
         b.setTime(req.getTime());
         b.setStaff(req.getStaff());
-        b.setPayment(req.getPayment());
+        b.setPaymentStatus(req.getPaymentStatus());
         b.setTotalPayment(req.getTotalPayment());
         Booking savedBooking = bookingRepo.save(b);
 
         boolean shouldCreateReception = req.getCreateReceptionAppointment() == null
                 || Boolean.TRUE.equals(req.getCreateReceptionAppointment());
 
-        // If email is provided and auto-create flag enabled, automatically create reception appointment
+        // If email is provided and auto-create flag enabled, automatically create
+        // reception appointment
         if (shouldCreateReception && req.getEmail() != null && !req.getEmail().isBlank()) {
             try {
                 // Create reception appointment from the newly created booking
@@ -62,7 +63,7 @@ public class BookingService {
         existing.setDate(req.getDate());
         existing.setTime(req.getTime());
         existing.setStaff(req.getStaff());
-        existing.setPayment(req.getPayment());
+        existing.setPaymentStatus(req.getPaymentStatus());
         existing.setTotalPayment(req.getTotalPayment());
         return bookingRepo.save(existing);
     }

@@ -1,5 +1,8 @@
 package com.blossem.reception_service.DTO;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 
 public class BookingRequest {
@@ -18,7 +21,11 @@ public class BookingRequest {
     private String time;
 
     private String staff;
-    private String payment; // optional
+
+    @JsonProperty("paymentStatus")
+    @JsonAlias({ "payment" })
+    private String paymentStatus; // optional
+
     private Double totalPayment; // optional numeric amount
     private Boolean createReceptionAppointment = Boolean.TRUE;
 
@@ -73,12 +80,14 @@ public class BookingRequest {
         this.staff = staff;
     }
 
-    public String getPayment() {
-        return payment;
+    @JsonProperty("paymentStatus")
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
-    public void setPayment(String payment) {
-        this.payment = payment;
+    @JsonProperty("paymentStatus")
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     public Double getTotalPayment() {

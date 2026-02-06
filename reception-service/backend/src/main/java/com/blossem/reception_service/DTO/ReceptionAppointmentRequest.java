@@ -1,7 +1,9 @@
 package com.blossem.reception_service.DTO;
 
-import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotBlank;
 
 public class ReceptionAppointmentRequest {
 
@@ -23,9 +25,12 @@ public class ReceptionAppointmentRequest {
     private String staff;
     private String receptionNotes;
     private String amount; // payment amount/status (e.g., "2000", "Paid")
-    private String payment; // payment status (e.g., "Paid", "Pending")
+
+    @JsonProperty("paymentStatus")
+    @JsonAlias({ "payment" })
+    private String paymentStatus; // payment status (e.g., "Paid", "Pending")
+
     private String customerArrived; // "Yes" or "No"
-    private String receptionPaymentChecked; // "Yes" or "No"
 
     public ReceptionAppointmentRequest() {
     }
@@ -102,12 +107,14 @@ public class ReceptionAppointmentRequest {
         this.amount = amount;
     }
 
-    public String getPayment() {
-        return payment;
+    @JsonProperty("paymentStatus")
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
-    public void setPayment(String payment) {
-        this.payment = payment;
+    @JsonProperty("paymentStatus")
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     public String getCustomerArrived() {
@@ -118,11 +125,4 @@ public class ReceptionAppointmentRequest {
         this.customerArrived = customerArrived;
     }
 
-    public String getReceptionPaymentChecked() {
-        return receptionPaymentChecked;
-    }
-
-    public void setReceptionPaymentChecked(String receptionPaymentChecked) {
-        this.receptionPaymentChecked = receptionPaymentChecked;
-    }
 }

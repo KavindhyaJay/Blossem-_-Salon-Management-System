@@ -188,6 +188,28 @@ export default function ReceptionDashboard() {
     }
   };
 
+  const handlePaymentStatusUpdate = async (appointment, status = "Paid") => {
+    if (!appointment) {
+      return;
+    }
+
+    const bookingId = appointment.bookingId || appointment.booking_id || appointment.id;
+    if (!bookingId) {
+      setError("Unable to update payment because no booking reference was found.");
+      return;
+    }
+
+    try {
+      setError(null);
+      await receptionService.updatePaymentStatus(bookingId, status);
+      await loadAppointments();
+    } catch (err) {
+      console.error("Error updating payment status:", err);
+      setError("Failed to update payment status. Please try again.");
+      await loadAppointments();
+    }
+  };
+
   // Handle update payment check
   const handleUpdatePaymentCheck = async (id, status) => {
     try {
@@ -305,6 +327,7 @@ export default function ReceptionDashboard() {
           activeView={activeView}
           onViewChange={setActiveView}
           onMarkArrived={(id) => handleMarkArrived(id, "Yes")}
+          onMarkPaymentStatus={handlePaymentStatusUpdate}
         />
 
         {activeView === "calendar" && (

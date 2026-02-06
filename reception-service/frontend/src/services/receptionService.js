@@ -11,15 +11,28 @@ const normalizeFlagValue = (value, fallback = 'No') => {
     return value;
 };
 
+const normalizePaymentStatus = (value) => {
+    if (value === undefined || value === null || value === '') {
+        return 'Pending';
+    }
+    const normalized = value.toString().trim();
+    if (!normalized) {
+        return 'Pending';
+    }
+    const lower = normalized.toLowerCase();
+    if (lower === 'paid') {
+        return 'Paid';
+    }
+    if (lower === 'pending') {
+        return 'Pending';
+    }
+    return normalized;
+};
+
 const normalizeAppointment = (raw = {}) => {
     const totalPayment = firstDefined(raw.totalPayment, raw.total_payment);
     const customerArrived = normalizeFlagValue(firstDefined(raw.customerArrived, raw.customer_arrived));
-    const paymentChecked = normalizeFlagValue(firstDefined(
-        raw.paymentChecked,
-        raw.payment_checked,
-        raw.receptionPaymentChecked,
-        raw.reception_payment_checked
-    ));
+    const paymentStatus = normalizePaymentStatus(firstDefined(raw.paymentStatus, raw.payment));
     const notes = firstDefined(raw.receptionNotes, raw.reception_notes, raw.notes);
 
     return {
@@ -29,9 +42,8 @@ const normalizeAppointment = (raw = {}) => {
         total_payment: totalPayment ?? raw.total_payment,
         customerArrived,
         customer_arrived: customerArrived,
-        paymentChecked,
-        payment_checked: paymentChecked,
-        receptionPaymentChecked: paymentChecked,
+        paymentStatus,
+        payment: paymentStatus,
         receptionNotes: notes,
         notes,
     };
@@ -92,9 +104,9 @@ export const receptionService = {
         return normalizeResponse(response.data);
     },
 
-    // Update payment check
-    updatePaymentCheck: async (id, paymentChecked) => {
-        const response = await api.post(`${RESOURCE}/${id}/payment-check?paymentChecked=${paymentChecked}`);
+    // Update payment status via booking id
+    updatePaymentStatus: async (bookingId, status) => {
+        const response = await api.post(`${RESOURCE}/booking/${bookingId}/payment?status=${encodeURIComponent(status)}`);
         return normalizeResponse(response.data);
     },
 };

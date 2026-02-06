@@ -77,21 +77,6 @@ public class ReceptionController {
     }
 
     /**
-     * Update payment check status by reception appointment ID.
-     * Updates receptionPaymentChecked to "Yes" or "No" and syncs with booking
-     * collection.
-     */
-    @PostMapping("/{id}/payment-check")
-    public ReceptionAppointment updatePaymentCheck(@PathVariable String id,
-            @RequestParam String paymentChecked) {
-        // Validate that paymentChecked is "Yes" or "No"
-        if (!paymentChecked.equalsIgnoreCase("Yes") && !paymentChecked.equalsIgnoreCase("No")) {
-            throw new IllegalArgumentException("paymentChecked must be 'Yes' or 'No'");
-        }
-        return service.updatePaymentCheckById(id, paymentChecked);
-    }
-
-    /**
      * Update payment by bookingId (updates both booking and reception appointment)
      */
     @PostMapping("/booking/{bookingId}/payment")

@@ -246,6 +246,15 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    align-items: center;
+}
+
+.insight-payments__label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--salon-muted);
 }
 
 .payment-chip {
@@ -264,6 +273,22 @@
 .payment-chip.is-pending {
     background: rgba(255, 46, 99, 0.12);
     color: var(--salon-warn);
+}
+
+.payment-action {
+    border-radius: 999px;
+    border: 1px solid var(--salon-border);
+    padding: 6px 16px;
+    background: transparent;
+    color: var(--salon-text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.payment-action:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--salon-accent);
 }
 
 .insight-action {

@@ -60,7 +60,7 @@ const servicesList = (services) => {
     return [];
 };
 
-export default function SalonInsightsPanel({ appointments = [], loading = false, onMarkArrived, activeView, onViewChange, defaultView = "today" }) {
+export default function SalonInsightsPanel({ appointments = [], loading = false, onMarkArrived, onMarkPaymentStatus, activeView, onViewChange, defaultView = "today" }) {
     const isControlled = typeof activeView === "string";
     const [internalView, setInternalView] = useState(defaultView);
     const currentView = isControlled ? activeView : internalView;
@@ -129,6 +129,9 @@ export default function SalonInsightsPanel({ appointments = [], loading = false,
                     const appointmentId = apt.id || apt._id;
                     const cardServices = servicesList(apt.services);
                     const arrived = apt.customerArrived === "Yes";
+                    const rawPaymentStatus = apt.paymentStatus || apt.payment || "Pending";
+                    const paymentLabel = typeof rawPaymentStatus === "string" && rawPaymentStatus.trim() ? rawPaymentStatus.trim() : "Pending";
+                    const isPaid = paymentLabel.toLowerCase() === "paid";
 
                     return (
                         <article key={appointmentId || apt.email} className={`insight-card ${arrived ? "insight-card--arrived" : ""}`}>
@@ -157,17 +160,20 @@ export default function SalonInsightsPanel({ appointments = [], loading = false,
                             </div>
 
                             <div className="insight-meta">
-                                <span>{apt.staff || "Unassigned"}</span>
+                                <span>Staff: {apt.staff || "Unassigned"}</span>
                                 <span>{formatCurrency(apt.totalPayment)}</span>
                             </div>
 
                             <div className="insight-payments">
-                                <span className={`payment-chip ${apt.payment === "Paid" ? "is-paid" : "is-pending"}`}>
-                                    {apt.payment || "Pending"}
+                                <span className="insight-payments__label">Payment:</span>
+                                <span className={`payment-chip ${isPaid ? "is-paid" : "is-pending"}`}>
+                                    {isPaid ? "Paid" : "Pending"}
                                 </span>
-                                <span className={`payment-chip ${apt.paymentChecked === "Yes" ? "is-paid" : "is-pending"}`}>
-                                    {apt.paymentChecked === "Yes" ? "Payment checked" : "Payment pending"}
-                                </span>
+                                {!isPaid && onMarkPaymentStatus && (
+                                    <button type="button" className="payment-action" onClick={() => onMarkPaymentStatus(apt, "Paid")}>
+                                        Mark as Paid
+                                    </button>
+                                )}
                             </div>
 
                             {!arrived && appointmentId && onMarkArrived && (
