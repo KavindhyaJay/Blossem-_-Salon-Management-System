@@ -1,4 +1,4 @@
-// src/components/admin/PhotoReview.jsx - FIXED NO INFINITE LOOP
+// src/components/admin/PhotoReview.jsx - UPDATED WITH adminp- PREFIX
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image, CheckCircle, XCircle, Eye, RefreshCw } from 'lucide-react';
 import './PhotoReview.css';
@@ -52,7 +52,7 @@ const PhotoReview = () => {
     }
   }, [API_BASE_URL]);
 
-  // Fetch photo stats from backend - FIXED: remove stats from dependencies
+  // Fetch photo stats from backend
   const fetchPhotoStats = useCallback(async () => {
     try {
       const token = getAuthToken();
@@ -66,12 +66,12 @@ const PhotoReview = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setStats(data || { pending: 0, approved: 0, rejected: 0, total: 0 }); // Use default object
+        setStats(data || { pending: 0, approved: 0, rejected: 0, total: 0 });
       }
     } catch (error) {
       console.error('Error fetching photo stats:', error);
     }
-  }, [API_BASE_URL]); // REMOVED 'stats' dependency
+  }, [API_BASE_URL]);
 
   // Get pending count for badge
   const fetchPendingCount = useCallback(async () => {
@@ -189,7 +189,7 @@ const PhotoReview = () => {
     }
   };
 
-  // Initialize - FIXED: Use empty dependency array
+  // Initialize
   useEffect(() => {
     const initializeData = async () => {
       await fetchPendingPhotos();
@@ -198,7 +198,7 @@ const PhotoReview = () => {
     };
     
     initializeData();
-  }, []); // Empty dependency array - only run once on mount
+  }, []);
 
   // Format date
   const formatDate = (dateString) => {
@@ -212,9 +212,9 @@ const PhotoReview = () => {
   };
 
   return (
-    <div className="main-content">
+    <div className="adminp-photo-review-container">
       {/* Header */}
-      <div className="content-header">
+      <div className="adminp-photo-review-header">
         <div>
           <h2>
             <Image size={24} style={{ marginRight: '10px' }} />
@@ -224,7 +224,7 @@ const PhotoReview = () => {
         </div>
         
         <button 
-          className="action-btn refresh-btn"
+          className="adminp-refresh-btn"
           onClick={() => {
             fetchPendingPhotos();
             fetchPhotoStats();
@@ -238,120 +238,124 @@ const PhotoReview = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
+      <div className="adminp-photo-stats-grid">
+        <div className="adminp-photo-stat-card">
+          <div className="adminp-photo-stat-header">
             <h3>Pending Review</h3>
-            <div className="stat-icon">⏳</div>
+            <div className="adminp-photo-stat-icon">⏳</div>
           </div>
-          <div className="stat-value pending">{stats.pending}</div>
-          <div className="stat-subtitle">Awaiting approval</div>
+          <div className="adminp-photo-stat-value">{stats.pending}</div>
+          <div className="adminp-photo-stat-subtitle">Awaiting approval</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminp-photo-stat-card">
+          <div className="adminp-photo-stat-header">
             <h3>Approved</h3>
-            <div className="stat-icon">✅</div>
+            <div className="adminp-photo-stat-icon">✅</div>
           </div>
-          <div className="stat-value completed">{stats.approved}</div>
-          <div className="stat-subtitle">Live on website</div>
+          <div className="adminp-photo-stat-value">{stats.approved}</div>
+          <div className="adminp-photo-stat-subtitle">Live on website</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminp-photo-stat-card">
+          <div className="adminp-photo-stat-header">
             <h3>Rejected</h3>
-            <div className="stat-icon">❌</div>
+            <div className="adminp-photo-stat-icon">❌</div>
           </div>
-          <div className="stat-value cancelled">{stats.rejected}</div>
-          <div className="stat-subtitle">Not approved</div>
+          <div className="adminp-photo-stat-value">{stats.rejected}</div>
+          <div className="adminp-photo-stat-subtitle">Not approved</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminp-photo-stat-card">
+          <div className="adminp-photo-stat-header">
             <h3>Total Photos</h3>
-            <div className="stat-icon">📷</div>
+            <div className="adminp-photo-stat-icon">📷</div>
           </div>
-          <div className="stat-value">{stats.total}</div>
-          <div className="stat-subtitle">All time</div>
+          <div className="adminp-photo-stat-value">{stats.total}</div>
+          <div className="adminp-photo-stat-subtitle">All time</div>
         </div>
       </div>
 
       {/* Photos Grid */}
       {loading ? (
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
+        <div className="adminp-photo-loading">
+          <div className="adminp-loading-spinner"></div>
           <p>Loading photos from database...</p>
         </div>
       ) : (
         <>
           {/* Photo Details Modal */}
           {reviewingPhoto && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <div className="modal-header">
+            <div className="adminp-photo-modal-overlay">
+              <div className="adminp-photo-modal">
+                <div className="adminp-modal-header">
                   <h3>Photo Details</h3>
                   <button 
-                    className="close-btn"
+                    className="adminp-modal-close-btn"
                     onClick={() => setReviewingPhoto(null)}
                   >
                     ✕
                   </button>
                 </div>
                 
-                <div className="modal-body">
-                  <div className="photo-preview-large">
+                <div className="adminp-modal-body">
+                  <div className="adminp-photo-fullsize-container">
                     {reviewingPhoto.imageUrl ? (
                       <img 
                         src={reviewingPhoto.imageUrl} 
                         alt={reviewingPhoto.title || 'Staff photo'}
-                        className="photo-fullsize"
+                        className="adminp-photo-fullsize"
                       />
                     ) : (
-                      <div className="no-image">No image available</div>
+                      <div className="adminp-no-image-thumb">
+                        <Image size={32} />
+                        <span>No image available</span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="photo-info">
-                    <div className="info-row">
-                      <span className="info-label">Title:</span>
-                      <span className="info-value">{reviewingPhoto.title || 'Untitled'}</span>
+                  <div className="adminp-photo-details">
+                    <div className="adminp-detail-row">
+                      <span className="adminp-detail-label">Title:</span>
+                      <span className="adminp-detail-value">{reviewingPhoto.title || 'Untitled'}</span>
                     </div>
-                    <div className="info-row">
-                      <span className="info-label">Staff:</span>
-                      <span className="info-value">{reviewingPhoto.staffName || 'Unknown'}</span>
+                    <div className="adminp-detail-row">
+                      <span className="adminp-detail-label">Staff:</span>
+                      <span className="adminp-detail-value">{reviewingPhoto.staffName || 'Unknown'}</span>
                     </div>
-                    <div className="info-row">
-                      <span className="info-label">Category:</span>
-                      <span className="info-value">{reviewingPhoto.category || 'OTHER'}</span>
+                    <div className="adminp-detail-row">
+                      <span className="adminp-detail-label">Category:</span>
+                      <span className="adminp-detail-value">{reviewingPhoto.category || 'OTHER'}</span>
                     </div>
-                    <div className="info-row">
-                      <span className="info-label">Uploaded:</span>
-                      <span className="info-value">{formatDate(reviewingPhoto.uploadedAt)}</span>
+                    <div className="adminp-detail-row">
+                      <span className="adminp-detail-label">Uploaded:</span>
+                      <span className="adminp-detail-value">{formatDate(reviewingPhoto.uploadedAt)}</span>
                     </div>
                     {reviewingPhoto.description && (
-                      <div className="info-row">
-                        <span className="info-label">Description:</span>
-                        <span className="info-value">{reviewingPhoto.description}</span>
+                      <div className="adminp-detail-row">
+                        <span className="adminp-detail-label">Description:</span>
+                        <span className="adminp-detail-value">{reviewingPhoto.description}</span>
                       </div>
                     )}
                   </div>
                   
                   {/* Rejection reason input */}
                   {rejectionReason && (
-                    <div className="rejection-section">
+                    <div className="adminp-rejection-section">
                       <label>Rejection Reason:</label>
                       <textarea 
                         value={rejectionReason}
                         onChange={(e) => setRejectionReason(e.target.value)}
                         placeholder="Provide reason for rejection..."
                         rows={3}
+                        className="adminp-rejection-textarea"
                       />
                     </div>
                   )}
                   
-                  <div className="modal-actions">
+                  <div className="adminp-modal-actions">
                     <button 
-                      className="btn-success"
+                      className="adminp-modal-btn adminp-modal-approve"
                       onClick={() => handleApprove(reviewingPhoto.id)}
                     >
                       <CheckCircle size={16} />
@@ -359,7 +363,7 @@ const PhotoReview = () => {
                     </button>
                     
                     <button 
-                      className="btn-danger"
+                      className="adminp-modal-btn adminp-modal-reject"
                       onClick={() => handleReject(reviewingPhoto.id, rejectionReason || 'Quality not up to standard')}
                     >
                       <XCircle size={16} />
@@ -373,32 +377,32 @@ const PhotoReview = () => {
           
           {/* Photos List */}
           {photos.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📷</div>
+            <div className="adminp-photo-empty-state">
+              <div className="adminp-photo-empty-icon">📷</div>
               <h4>No Photos Pending Review</h4>
               <p>All staff photos have been reviewed. Check back later for new uploads.</p>
               <p className="hint">Staff can upload photos from their dashboard</p>
             </div>
           ) : (
-            <div className="table-container">
-              <div className="table-header">
+            <div className="adminp-photos-grid-container">
+              <div className="adminp-photos-grid-header">
                 <h3>Photos Pending Approval ({photos.length})</h3>
-                <div className="batch-actions">
-                  <button className="btn-secondary">
+                <div className="adminp-batch-actions">
+                  <button className="adminp-batch-btn">
                     Select All
                   </button>
-                  <button className="btn-success">
+                  <button className="adminp-batch-btn adminp-batch-approve">
                     <CheckCircle size={14} />
                     Approve Selected
                   </button>
                 </div>
               </div>
               
-              <div className="photos-grid">
+              <div className="adminp-photos-grid">
                 {photos.map((photo) => (
-                  <div key={photo.id} className="photo-card">
+                  <div key={photo.id} className="adminp-photo-card">
                     {/* Photo Thumbnail */}
-                    <div className="photo-thumbnail">
+                    <div className="adminp-photo-thumbnail">
                       {photo.imageUrl ? (
                         <img 
                           src={photo.imageUrl} 
@@ -406,41 +410,41 @@ const PhotoReview = () => {
                           onClick={() => handleViewDetails(photo.id)}
                         />
                       ) : (
-                        <div className="no-image-thumb">
+                        <div className="adminp-no-image-thumb">
                           <Image size={32} />
                           <span>No image</span>
                         </div>
                       )}
                       
                       {/* Status badge */}
-                      <div className={`status-badge status-${photo.status?.toLowerCase()}`}>
+                      <div className={`adminp-photo-status-badge adminp-status-${photo.status?.toLowerCase()}`}>
                         {photo.status || 'PENDING'}
                       </div>
                     </div>
                     
                     {/* Photo Info */}
-                    <div className="photo-card-info">
-                      <h4 className="photo-title" title={photo.title}>
+                    <div className="adminp-photo-card-info">
+                      <h4 className="adminp-photo-title" title={photo.title}>
                         {photo.title || 'Untitled Photo'}
                       </h4>
                       
-                      <div className="photo-meta">
-                        <div className="meta-item">
-                          <span className="meta-label">Staff:</span>
-                          <span className="meta-value">{photo.staffName || 'Unknown'}</span>
+                      <div className="adminp-photo-meta">
+                        <div className="adminp-meta-item">
+                          <span className="adminp-meta-label">Staff:</span>
+                          <span className="adminp-meta-value">{photo.staffName || 'Unknown'}</span>
                         </div>
-                        <div className="meta-item">
-                          <span className="meta-label">Category:</span>
-                          <span className="meta-value category">{photo.category || 'OTHER'}</span>
+                        <div className="adminp-meta-item">
+                          <span className="adminp-meta-label">Category:</span>
+                          <span className="adminp-meta-value adminp-category-tag">{photo.category || 'OTHER'}</span>
                         </div>
-                        <div className="meta-item">
-                          <span className="meta-label">Uploaded:</span>
-                          <span className="meta-value">{formatDate(photo.uploadedAt)}</span>
+                        <div className="adminp-meta-item">
+                          <span className="adminp-meta-label">Uploaded:</span>
+                          <span className="adminp-meta-value">{formatDate(photo.uploadedAt)}</span>
                         </div>
                       </div>
                       
                       {photo.description && (
-                        <p className="photo-desc" title={photo.description}>
+                        <p className="adminp-photo-description" title={photo.description}>
                           {photo.description.length > 80 
                             ? `${photo.description.substring(0, 80)}...` 
                             : photo.description}
@@ -448,9 +452,9 @@ const PhotoReview = () => {
                       )}
                       
                       {/* Quick Actions */}
-                      <div className="photo-actions">
+                      <div className="adminp-photo-actions">
                         <button 
-                          className="btn-view"
+                          className="adminp-action-btn adminp-btn-view"
                           onClick={() => handleViewDetails(photo.id)}
                           title="View details"
                         >
@@ -459,7 +463,7 @@ const PhotoReview = () => {
                         </button>
                         
                         <button 
-                          className="btn-approve"
+                          className="adminp-action-btn adminp-btn-approve"
                           onClick={() => handleApprove(photo.id)}
                           title="Approve photo"
                         >
@@ -468,7 +472,7 @@ const PhotoReview = () => {
                         </button>
                         
                         <button 
-                          className="btn-reject"
+                          className="adminp-action-btn adminp-btn-reject"
                           onClick={() => handleReject(photo.id, 'Quality not up to standard')}
                           title="Reject photo"
                         >

@@ -1,4 +1,4 @@
-// src/components/admin/ReceptionManagement.jsx 
+// src/components/admin/ReceptionManagement.jsx - WITH adminr- PREFIX
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
@@ -296,27 +296,27 @@ const ReceptionManagement = () => {
     
     if (statusLower.includes('active')) {
       return (
-        <span className="status-badge active">
+        <span className="adminr-status-badge active">
           <CheckCircle size={14} />
           Active
         </span>
       );
     } else if (statusLower.includes('pending')) {
       return (
-        <span className="status-badge pending">
+        <span className="adminr-status-badge pending">
           <Clock size={14} />
           Pending
         </span>
       );
     } else if (statusLower.includes('inactive')) {
       return (
-        <span className="status-badge inactive">
+        <span className="adminr-status-badge inactive">
           <XCircle size={14} />
           Inactive
         </span>
       );
     }
-    return <span className="status-badge unknown">{status || 'Unknown'}</span>;
+    return <span className="adminr-status-badge unknown">{status || 'Unknown'}</span>;
   };
 
   const getShiftBadge = (shift) => {
@@ -325,14 +325,14 @@ const ReceptionManagement = () => {
     switch(shiftUpper) {
       case 'MORNING':
         return (
-          <span className="shift-badge morning">
+          <span className="adminr-shift-badge morning">
             <span className="shift-icon">☀️</span>
             Morning
           </span>
         );
       case 'EVENING':
         return (
-          <span className="shift-badge evening">
+          <span className="adminr-shift-badge evening">
             <span className="shift-icon">🌙</span>
             Evening
           </span>
@@ -340,13 +340,13 @@ const ReceptionManagement = () => {
       case 'FULL_DAY':
       case 'FULLDAY':
         return (
-          <span className="shift-badge full-day">
+          <span className="adminr-shift-badge full-day">
             <span className="shift-icon">⏰</span>
             Full Day
           </span>
         );
       default:
-        return <span className="shift-badge unknown">{shift || 'Not Set'}</span>;
+        return <span className="adminr-shift-badge unknown">{shift || 'Not Set'}</span>;
     }
   };
 
@@ -376,19 +376,19 @@ const ReceptionManagement = () => {
   const eveningShift = receptionists.filter(r => r.shift?.toLowerCase().includes('evening')).length;
 
   return (
-    <div className="reception-management">
-      <div className="section-header">
-        <div className="header-title">
-          <Users size={28} className="header-icon" />
+    <div className="adminr-reception-management">
+      <div className="adminr-section-header">
+        <div className="adminr-header-title">
+          <Users size={28} className="adminr-header-icon" />
           <div>
             <h1>Reception Management</h1>
-            <p className="subtitle">Manage reception staff and their schedules</p>
+            <p className="adminr-subtitle">Manage reception staff and their schedules</p>
           </div>
         </div>
         
-        <div className="header-actions">
+        <div className="adminr-header-actions">
           <button 
-            className="btn-add"
+            className="adminr-btn-add"
             onClick={() => {
               setFormData({
                 name: '',
@@ -407,11 +407,11 @@ const ReceptionManagement = () => {
           </button>
           
           <button 
-            className="btn-refresh"
+            className="adminr-btn-refresh"
             onClick={fetchReceptionists}
             disabled={loading || saving}
           >
-            <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+            <RefreshCw size={18} className={loading ? 'adminr-spinning' : ''} />
             <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
@@ -419,34 +419,34 @@ const ReceptionManagement = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="error-alert">
+        <div className="adminr-error-alert">
           <AlertCircle size={18} />
           <span>{error}</span>
-          <button onClick={() => setError('')} className="error-close">×</button>
+          <button onClick={() => setError('')} className="adminr-error-close">×</button>
         </div>
       )}
 
       {/* Controls */}
-      <div className="controls-container">
-        <div className="search-container">
-          <Search size={20} className="search-icon" />
+      <div className="adminr-controls-container">
+        <div className="adminr-search-container">
+          <Search size={20} className="adminr-search-icon" />
           <input
             type="text"
             placeholder="Search by name, email, or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="adminr-search-input"
             disabled={loading}
           />
         </div>
         
-        <div className="filters-row">
-          <div className="filter-container">
-            <Filter size={18} className="filter-icon" />
+        <div className="adminr-filters-row">
+          <div className="adminr-filter-container">
+            <Filter size={18} className="adminr-filter-icon" />
             <select 
               value={filterStatus} 
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="filter-select"
+              className="adminr-filter-select"
               disabled={loading}
             >
               <option value="all">All Status</option>
@@ -456,12 +456,12 @@ const ReceptionManagement = () => {
             </select>
           </div>
           
-          <div className="filter-container">
-            <Calendar size={18} className="filter-icon" />
+          <div className="adminr-filter-container">
+            <Calendar size={18} className="adminr-filter-icon" />
             <select 
               value={filterShift} 
               onChange={(e) => setFilterShift(e.target.value)}
-              className="filter-select"
+              className="adminr-filter-select"
               disabled={loading}
             >
               <option value="all">All Shifts</option>
@@ -473,7 +473,7 @@ const ReceptionManagement = () => {
         </div>
         
         <button 
-          className="btn-export"
+          className="adminr-btn-export"
           onClick={() => {
             const csvData = filteredReceptionists.map(r => ({
               ID: r._id?.substring(0, 8) || 'N/A',
@@ -494,90 +494,90 @@ const ReceptionManagement = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
+      <div className="adminr-stats-grid">
+        <div className="adminr-stat-card">
+          <div className="adminr-stat-header">
             <h3>Total Receptionists</h3>
-            <div className="stat-icon">👥</div>
+            <div className="adminr-stat-icon">👥</div>
           </div>
-          <div className="stat-value">{totalReceptionists}</div>
-          <div className="stat-label">Reception Staff</div>
+          <div className="adminr-stat-value">{totalReceptionists}</div>
+          <div className="adminr-stat-label">Reception Staff</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminr-stat-card">
+          <div className="adminr-stat-header">
             <h3>Active</h3>
-            <div className="stat-icon">✅</div>
+            <div className="adminr-stat-icon">✅</div>
           </div>
-          <div className="stat-value">{activeReceptionists}</div>
-          <div className="stat-label">Working Now</div>
+          <div className="adminr-stat-value">{activeReceptionists}</div>
+          <div className="adminr-stat-label">Working Now</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminr-stat-card">
+          <div className="adminr-stat-header">
             <h3>Pending</h3>
-            <div className="stat-icon">⏳</div>
+            <div className="adminr-stat-icon">⏳</div>
           </div>
-          <div className="stat-value">{pendingReceptionists}</div>
-          <div className="stat-label">Awaiting Activation</div>
+          <div className="adminr-stat-value">{pendingReceptionists}</div>
+          <div className="adminr-stat-label">Awaiting Activation</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminr-stat-card">
+          <div className="adminr-stat-header">
             <h3>Morning Shift</h3>
-            <div className="stat-icon">☀️</div>
+            <div className="adminr-stat-icon">☀️</div>
           </div>
-          <div className="stat-value">{morningShift}</div>
-          <div className="stat-label">Staff on Morning</div>
+          <div className="adminr-stat-value">{morningShift}</div>
+          <div className="adminr-stat-label">Staff on Morning</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="adminr-stat-card">
+          <div className="adminr-stat-header">
             <h3>Evening Shift</h3>
-            <div className="stat-icon">🌙</div>
+            <div className="adminr-stat-icon">🌙</div>
           </div>
-          <div className="stat-value">{eveningShift}</div>
-          <div className="stat-label">Staff on Evening</div>
+          <div className="adminr-stat-value">{eveningShift}</div>
+          <div className="adminr-stat-label">Staff on Evening</div>
         </div>
       </div>
 
       {/* Receptionists Table */}
-      <div className="table-container">
-        <div className="table-header">
+      <div className="adminr-table-container">
+        <div className="adminr-table-header">
           <h3>Reception Staff ({filteredReceptionists.length})</h3>
-          <div className="table-info">
+          <div className="adminr-table-info">
             Showing {filteredReceptionists.length} of {receptionists.length} receptionists
-            {loading && <span className="loading-indicator"> • Loading...</span>}
+            {loading && <span className="adminr-loading-indicator"> • Loading...</span>}
           </div>
         </div>
         
-        <div className="table-wrapper">
-          <table className="reception-table">
+        <div className="adminr-table-wrapper">
+          <table className="adminr-reception-table">
             <thead>
               <tr>
-                <th className="id-column">ID</th>
-                <th className="name-column">Receptionist</th>
-                <th className="contact-column">Contact Info</th>
-                <th className="shift-column">Shift</th>
-                <th className="status-column">Status</th>
-                <th className="actions-column">Actions</th>
+                <th className="adminr-id-column">ID</th>
+                <th className="adminr-name-column">Receptionist</th>
+                <th className="adminr-contact-column">Contact Info</th>
+                <th className="adminr-shift-column">Shift</th>
+                <th className="adminr-status-column">Status</th>
+                <th className="adminr-actions-column">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && receptionists.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="loading-cell">
-                    <div className="loading-indicator">
-                      <div className="spinner"></div>
+                  <td colSpan="6" className="adminr-loading-cell">
+                    <div className="adminr-loading-indicator">
+                      <div className="adminr-spinner"></div>
                       Loading receptionists from database...
                     </div>
                   </td>
                 </tr>
               ) : filteredReceptionists.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="empty-cell">
-                    <div className="empty-state">
-                      <User size={48} className="empty-icon" />
+                  <td colSpan="6" className="adminr-empty-cell">
+                    <div className="adminr-empty-state">
+                      <User size={48} className="adminr-empty-icon" />
                       <h4>No receptionists found</h4>
                       <p>
                         {searchQuery || filterStatus !== 'all' || filterShift !== 'all'
@@ -587,7 +587,7 @@ const ReceptionManagement = () => {
                       </p>
                       {!searchQuery && filterStatus === 'all' && filterShift === 'all' && receptionists.length === 0 && (
                         <button 
-                          className="btn-add"
+                          className="adminr-btn-add"
                           onClick={() => setShowAddForm(true)}
                           style={{ marginTop: '15px' }}
                         >
@@ -600,45 +600,45 @@ const ReceptionManagement = () => {
                 </tr>
               ) : (
                 filteredReceptionists.map((receptionist) => (
-                  <tr key={receptionist._id || receptionist.id} className="table-row">
-                    <td className="id-column">
+                  <tr key={receptionist._id || receptionist.id} className="adminr-table-row">
+                    <td className="adminr-id-column">
                       <code>#{receptionist._id?.substring(0, 8) || receptionist.id?.substring(0, 8) || 'N/A'}</code>
                     </td>
-                    <td className="name-column">
-                      <div className="receptionist-info">
-                        <div className="receptionist-avatar">
+                    <td className="adminr-name-column">
+                      <div className="adminr-receptionist-info">
+                        <div className="adminr-receptionist-avatar">
                           {receptionist.name?.charAt(0)?.toUpperCase() || 'R'}
                         </div>
-                        <div className="receptionist-details">
-                          <div className="receptionist-name">{receptionist.name || 'Unknown'}</div>
-                          <div className="receptionist-id">
+                        <div className="adminr-receptionist-details">
+                          <div className="adminr-receptionist-name">{receptionist.name || 'Unknown'}</div>
+                          <div className="adminr-receptionist-id">
                             ID: {receptionist._id?.substring(0, 8) || receptionist.id?.substring(0, 8) || 'N/A'}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="contact-column">
-                      <div className="contact-info">
-                        <div className="contact-item">
+                    <td className="adminr-contact-column">
+                      <div className="adminr-contact-info">
+                        <div className="adminr-contact-item">
                           <Mail size={14} />
                           <span>{receptionist.email || 'No email'}</span>
                         </div>
-                        <div className="contact-item">
+                        <div className="adminr-contact-item">
                           <Phone size={14} />
                           <span>{receptionist.phone || 'No phone'}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="shift-column">
+                    <td className="adminr-shift-column">
                       {getShiftBadge(receptionist.shift)}
                     </td>
-                    <td className="status-column">
+                    <td className="adminr-status-column">
                       {getStatusBadge(receptionist.status)}
                     </td>
-                    <td className="actions-column">
-                      <div className="action-buttons">
+                    <td className="adminr-actions-column">
+                      <div className="adminr-action-buttons">
                         <button 
-                          className="btn-edit"
+                          className="adminr-btn-edit"
                           title="Edit receptionist"
                           onClick={() => handleEditReceptionist(receptionist)}
                           disabled={saving}
@@ -647,7 +647,7 @@ const ReceptionManagement = () => {
                           <span>Edit</span>
                         </button>
                         <button 
-                          className="btn-delete"
+                          className="adminr-btn-delete"
                           title="Delete receptionist"
                           onClick={() => handleDeleteReceptionist(receptionist._id || receptionist.id)}
                           disabled={saving}
@@ -667,15 +667,15 @@ const ReceptionManagement = () => {
 
       {/* Add/Edit Form Modal */}
       {(showAddForm || showEditForm) && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="adminr-modal-overlay">
+          <div className="adminr-modal-content">
+            <div className="adminr-modal-header">
               <h2>
                 <Shield size={24} />
                 {showEditForm ? 'Edit Receptionist' : 'Add New Receptionist'}
               </h2>
               <button 
-                className="modal-close"
+                className="adminr-modal-close"
                 onClick={() => {
                   setShowAddForm(false);
                   setShowEditForm(false);
@@ -688,11 +688,11 @@ const ReceptionManagement = () => {
               </button>
             </div>
             
-            <form onSubmit={showEditForm ? handleUpdateReceptionist : handleAddReceptionist} className="reception-form">
-              <div className="form-grid">
-                <div className="form-group">
+            <form onSubmit={showEditForm ? handleUpdateReceptionist : handleAddReceptionist} className="adminr-reception-form">
+              <div className="adminr-form-grid">
+                <div className="adminr-form-group">
                   <label>
-                    <span className="required">*</span> Full Name
+                    <span className="adminr-required">*</span> Full Name
                   </label>
                   <input
                     type="text"
@@ -702,13 +702,13 @@ const ReceptionManagement = () => {
                     placeholder="Enter full name"
                     required
                     disabled={saving}
-                    className="form-input"
+                    className="adminr-form-input"
                   />
                 </div>
                 
-                <div className="form-group">
+                <div className="adminr-form-group">
                   <label>
-                    <span className="required">*</span> Email Address
+                    <span className="adminr-required">*</span> Email Address
                   </label>
                   <input
                     type="email"
@@ -718,14 +718,14 @@ const ReceptionManagement = () => {
                     placeholder="Enter email address"
                     required
                     disabled={saving || showEditForm}
-                    className="form-input"
+                    className="adminr-form-input"
                   />
                   {showEditForm && (
-                    <small className="form-note">Email cannot be changed</small>
+                    <small className="adminr-form-note">Email cannot be changed</small>
                   )}
                 </div>
                 
-                <div className="form-group">
+                <div className="adminr-form-group">
                   <label>Phone Number</label>
                   <input
                     type="tel"
@@ -734,13 +734,13 @@ const ReceptionManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Enter phone number (optional)"
                     disabled={saving}
-                    className="form-input"
+                    className="adminr-form-input"
                   />
                 </div>
                 
-                <div className="form-group">
+                <div className="adminr-form-group">
                   <label>
-                    <span className="required">*</span> Shift
+                    <span className="adminr-required">*</span> Shift
                   </label>
                   <select
                     name="shift"
@@ -748,7 +748,7 @@ const ReceptionManagement = () => {
                     onChange={handleInputChange}
                     required
                     disabled={saving}
-                    className="form-select"
+                    className="adminr-form-select"
                   >
                     <option value="">Select shift</option>
                     <option value="MORNING">Morning Shift (8 AM - 4 PM)</option>
@@ -757,31 +757,31 @@ const ReceptionManagement = () => {
                   </select>
                 </div>
                 
-                <div className="form-group">
+                <div className="adminr-form-group">
                   <label>Status</label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
                     disabled={saving}
-                    className="form-select"
+                    className="adminr-form-select"
                   >
                     <option value="PENDING">Pending Activation</option>
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                   </select>
                   {!showEditForm && (
-                    <small className="form-note">
+                    <small className="adminr-form-note">
                       Pending Activation will require receptionist to activate via email
                     </small>
                   )}
                 </div>
               </div>
               
-              <div className="form-actions">
+              <div className="adminr-form-actions">
                 <button 
                   type="button" 
-                  className="btn-cancel"
+                  className="adminr-btn-cancel"
                   onClick={() => {
                     setShowAddForm(false);
                     setShowEditForm(false);
@@ -794,12 +794,12 @@ const ReceptionManagement = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="btn-save"
+                  className="adminr-btn-save"
                   disabled={saving}
                 >
                   {saving ? (
                     <>
-                      <div className="spinner-small"></div>
+                      <div className="adminr-spinner-small"></div>
                       Saving...
                     </>
                   ) : (

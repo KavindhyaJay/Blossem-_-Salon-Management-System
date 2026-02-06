@@ -1,4 +1,4 @@
-// src/components/admin/AppointmentsManager.jsx - UPDATED WITH LKR
+// src/components/admin/AppointmentsManager.jsx - FIXED VERSION (services array handling)
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar as CalendarIcon, Filter, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import './AppointmentsManager.css';
@@ -40,6 +40,32 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     }).format(amount);
   }, []);
 
+  // Helper function to format services array - NEW FUNCTION
+  const formatServices = useCallback((services) => {
+    if (!services) return 'No Service';
+    
+    // If it's already a string, return it
+    if (typeof services === 'string') return services;
+    
+    // If it's an array, join with comma
+    if (Array.isArray(services)) {
+      return services.join(', ');
+    }
+    
+    // If it's an object with services property
+    if (services.services && Array.isArray(services.services)) {
+      return services.services.join(', ');
+    }
+    
+    // If it's an object, try to extract service names
+    if (typeof services === 'object') {
+      const values = Object.values(services).filter(val => typeof val === 'string');
+      if (values.length > 0) return values.join(', ');
+    }
+    
+    return 'No Service';
+  }, []);
+
   // Fetch appointments - wrapped in useCallback
   const fetchAppointmentsByDate = useCallback(async (date) => {
     if (!date) return;
@@ -59,45 +85,85 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log(`Fetching appointments for date: ${dateStr}`);
+      
       const response = await fetch(`${API_BASE_URL}/api/appointments/date/${dateStr}`, {
         method: 'GET',
         headers: headers,
         credentials: 'include'
       });
       
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
         setAppointments([]);
         return;
       }
       
       const data = await response.json();
+      console.log('API Response data:', data);
       
       if (Array.isArray(data)) {
-        const formattedAppointments = data.map((appt, index) => ({
-          id: appt.id || appt._id || `appt-${index}`,
-          bookingId: appt.bookingId || appt.bookingNumber || `BK${String(index + 1).padStart(3, '0')}`,
-          customerName: appt.customerName || appt.customer?.name || 'Customer',
-          service: appt.service || appt.serviceType || 'Service',
-          staff: appt.staff || appt.staffName || 'Staff',
-          date: appt.date || appt.appointmentDate || dateStr,
-          time: appt.time || appt.appointmentTime || '10:00 AM',
-          status: (appt.status || 'pending').toLowerCase(),
-          amount: parseInt(appt.amount || appt.totalAmount || 0),
-          customerPhone: appt.customerPhone || appt.customer?.phone,
-          duration: appt.duration || '60 min'
-        }));
+        const formattedAppointments = data.map((appt, index) => {
+          // DEBUG LOGGING
+          console.log(`Appointment ${index}:`, {
+            id: appt.id,
+            services: appt.services,
+            service: appt.service,
+            staff: appt.staff,
+            bookingStatus: appt.bookingStatus
+          });
+          
+          // Map backend bookingStatus to frontend status
+          let frontendStatus = 'pending';
+          const bookingStatus = appt.bookingStatus?.toLowerCase();
+          
+          if (bookingStatus === 'confirmed' || bookingStatus === 'active') {
+            frontendStatus = 'confirmed';
+          } else if (bookingStatus === 'completed' || bookingStatus === 'done') {
+            frontendStatus = 'completed';
+          } else if (bookingStatus === 'cancelled' || bookingStatus === 'canceled' || bookingStatus === 'cancelled_by_staff') {
+            frontendStatus = 'cancelled';
+          } else if (bookingStatus === 'pending' || !bookingStatus) {
+            frontendStatus = 'pending';
+          }
+          
+          return {
+            id: appt.id || appt._id || `appt-${index}`,
+            bookingId: appt.bookingId || appt.bookingNumber || `BK${String(index + 1).padStart(3, '0')}`,
+            customerName: appt.customerName || appt.customer?.name || 'Customer',
+            // Handle services array - THIS IS THE KEY FIX
+            services: appt.services, // Keep the raw array for display
+            service: formatServices(appt.services || appt.service), // Formatted string for table display
+            staff: appt.staff || appt.staffName || 'Staff',
+            date: appt.date || appt.appointmentDate || dateStr,
+            time: appt.time || appt.appointmentTime || '10:00 AM',
+            status: frontendStatus,
+            amount: parseInt(appt.amount || appt.totalAmount || 0),
+            customerPhone: appt.customerPhone || appt.customer?.phone,
+            duration: appt.duration || '60 min',
+            // Backend fields for debugging
+            rawServices: appt.services,
+            rawBookingStatus: appt.bookingStatus
+          };
+        });
         
+        console.log('Formatted appointments:', formattedAppointments);
         setAppointments(formattedAppointments);
       } else {
+        console.warn('Data is not an array:', data);
         setAppointments([]);
       }
       
     } catch (error) {
+      console.error('Error fetching appointments:', error);
       setAppointments([]);
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, formatDate, getAuthToken]);
+  }, [API_BASE_URL, formatDate, getAuthToken, formatServices]);
 
   // Generate calendar days - wrapped in useMemo
   const generateCalendarDays = useCallback(() => {
@@ -207,9 +273,9 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
   });
 
   return (
-    <div className="appointments-manager">
+    <div className="admina-appointments-manager">
       {/* Header */}
-      <div className="appointments-header">
+      <div className="admina-appointments-header">
         <div>
           <h2>
             <CalendarIcon size={24} style={{ marginRight: '10px' }} />
@@ -218,13 +284,13 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           <p>Manage and view appointments</p>
         </div>
         
-        <div className="header-actions">
-          <div className="filter-group">
+        <div className="admina-header-actions">
+          <div className="admina-filter-group">
             <Filter size={18} />
             <select 
               value={filter} 
               onChange={(e) => setFilter(e.target.value)}
-              className="filter-select"
+              className="admina-filter-select"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -235,7 +301,7 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           </div>
           
           <button 
-            className="action-btn refresh-btn"
+            className="admina-action-btn admina-refresh-btn"
             onClick={() => fetchAppointmentsByDate(selectedDate)}
             disabled={loading}
           >
@@ -243,7 +309,7 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
             <span>{loading ? 'Loading...' : 'Refresh'}</span>
           </button>
           
-          <button className="action-btn export-btn">
+          <button className="admina-action-btn admina-export-btn">
             <Download size={18} />
             <span>Export</span>
           </button>
@@ -251,93 +317,91 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
+      <div className="admina-stats-grid">
+        <div className="admina-stat-card">
+          <div className="admina-stat-header">
             <h3>Total Appointments</h3>
-            <div className="stat-icon">📅</div>
+            <div className="admina-stat-icon">📅</div>
           </div>
-          <div className="stat-value">{stats.total}</div>
-          <div className="stat-subtitle">Selected Date</div>
+          <div className="admina-stat-value">{stats.total}</div>
+          <div className="admina-stat-subtitle">Selected Date</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admina-stat-card">
+          <div className="admina-stat-header">
             <h3>Completed</h3>
-            <div className="stat-icon">✅</div>
+            <div className="admina-stat-icon">✅</div>
           </div>
-          <div className="stat-value completed">{stats.completed}</div>
-          <div className="stat-subtitle">Finished</div>
+          <div className="admina-stat-value">{stats.completed}</div>
+          <div className="admina-stat-subtitle">Finished</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admina-stat-card">
+          <div className="admina-stat-header">
             <h3>Pending</h3>
-            <div className="stat-icon">⏳</div>
+            <div className="admina-stat-icon">⏳</div>
           </div>
-          <div className="stat-value pending">{stats.pending}</div>
-          <div className="stat-subtitle">Awaiting</div>
+          <div className="admina-stat-value">{stats.pending}</div>
+          <div className="admina-stat-subtitle">Awaiting</div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admina-stat-card">
+          <div className="admina-stat-header">
             <h3>Confirmed</h3>
-            <div className="stat-icon">✓</div>
+            <div className="admina-stat-icon">✓</div>
           </div>
-          <div className="stat-value confirmed">{stats.confirmed}</div>
-          <div className="stat-subtitle">Booked</div>
+          <div className="admina-stat-value">{stats.confirmed}</div>
+          <div className="admina-stat-subtitle">Booked</div>
         </div>
         
         {userRole === 'admin' && (
-          <div className="stat-card">
-            <div className="stat-header">
+          <div className="admina-stat-card">
+            <div className="admina-stat-header">
               <h3>Revenue</h3>
-              {/* UPDATED: Changed ₹ to Rs. */}
-              <div className="stat-icon">Rs.</div>
+              <div className="admina-stat-icon">Rs.</div>
             </div>
-            <div className="stat-value revenue">
-              {/* UPDATED: Changed formatRupees to formatLKR */}
+            <div className="admina-stat-value">
               {formatLKR(stats.revenue)}
             </div>
-            <div className="stat-subtitle">Earnings</div>
+            <div className="admina-stat-subtitle">Earnings</div>
           </div>
         )}
       </div>
 
       {/* Calendar */}
-      <div className="calendar-container">
-        <div className="calendar-header">
+      <div className="admina-calendar-container">
+        <div className="admina-calendar-header">
           <div>
-            <h2 className="calendar-title">
+            <h2 className="admina-calendar-title">
               <CalendarIcon />
               Appointments Calendar
             </h2>
-            <p className="calendar-subtitle">Click on any date to view appointments</p>
+            <p className="admina-calendar-subtitle">Click on any date to view appointments</p>
           </div>
           
-          <div className="calendar-controls">
-            <button className="calendar-nav-btn" onClick={handlePrevMonth}>
+          <div className="admina-calendar-controls">
+            <button className="admina-calendar-nav-btn" onClick={handlePrevMonth}>
               <ChevronLeft size={20} />
             </button>
-            <span className="calendar-month-display">
+            <span className="admina-calendar-month-display">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
-            <button className="calendar-nav-btn" onClick={handleNextMonth}>
+            <button className="admina-calendar-nav-btn" onClick={handleNextMonth}>
               <ChevronRight size={20} />
             </button>
           </div>
         </div>
 
-        <div className="calendar-grid">
+        <div className="admina-calendar-grid">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="calendar-day-header">{day}</div>
+            <div key={day} className="admina-calendar-day-header">{day}</div>
           ))}
           
           {calendarDays.map((day, index) => (
             <div
               key={index}
               className={`
-                calendar-day
+                admina-calendar-day
                 ${day.isCurrentMonth ? 'current-month' : 'other-month'}
                 ${day.isToday ? 'today' : ''}
                 ${day.isSelected ? 'selected' : ''}
@@ -345,13 +409,13 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
               onClick={() => handleDateClick(day.date)}
               title={`${formatDate(day.date)}: ${day.appointmentCount} appointments`}
             >
-              <div className="day-number">{day.date.getDate()}</div>
+              <div className="admina-day-number">{day.date.getDate()}</div>
               
               {day.appointmentCount > 0 && (
                 <>
-                  <div className={`appointment-dot ${day.isSelected ? 'selected' : ''}`} />
+                  <div className={`admina-appointment-dot ${day.isSelected ? 'selected' : ''}`} />
                   {day.appointmentCount > 1 && (
-                    <span className="appointment-count-badge">
+                    <span className="admina-appointment-count-badge">
                       {day.appointmentCount}
                     </span>
                   )}
@@ -361,9 +425,9 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           ))}
         </div>
 
-        <div className="selected-date-info">
-          <div className="selected-date-label">Currently Viewing:</div>
-          <div className="selected-date-value">
+        <div className="admina-selected-date-info">
+          <div className="admina-selected-date-label">Currently Viewing:</div>
+          <div className="admina-selected-date-value">
             {selectedDate.toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
@@ -371,71 +435,83 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
               day: 'numeric' 
             })}
           </div>
-          <div className="appointment-count-text">
+          <div className="admina-appointment-count-text">
             {appointments.length} appointment{appointments.length !== 1 ? 's' : ''} found
             {loading && ' (Loading...)'}
           </div>
         </div>
       </div>
 
-      {/* Appointments Table - REMOVED ACTIONS COLUMN */}
-      <div className="appointments-table-container">
-        <div className="table-header">
+      {/* Appointments Table */}
+      <div className="admina-appointments-table-container">
+        <div className="admina-table-header">
           <h3>Appointments for {selectedDate.toLocaleDateString()}</h3>
-          <div className="appointment-count-display">
+          <div className="admina-appointment-count-display">
             {filteredAppointments.length} appointment{filteredAppointments.length !== 1 ? 's' : ''}
           </div>
         </div>
         
         {loading ? (
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
+          <div className="admina-loading-state">
+            <div className="admina-loading-spinner"></div>
             <p>Loading appointments from database...</p>
           </div>
         ) : (
           <>
             {filteredAppointments.length > 0 ? (
-              <div className="table-responsive">
-                <table className="appointments-table">
+              <div className="admina-table-responsive">
+                <table className="admina-appointments-table">
                   <thead>
                     <tr>
                       <th>ID</th>
                       <th>Customer</th>
-                      <th>Service</th>
+                      <th>Service(s)</th> {/* Updated column header */}
                       {userRole === 'admin' && <th>Staff</th>}
                       <th>Time</th>
                       <th>Status</th>
-                      {/* UPDATED: Changed Amount column heading */}
                       <th>Amount (LKR)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAppointments.map((appointment) => (
                       <tr key={appointment.id}>
-                        <td className="booking-id">
+                        <td className="admina-booking-id">
                           #{appointment.bookingId}
                         </td>
-                        <td className="customer-cell">
-                          <div className="customer-name">{appointment.customerName}</div>
+                        <td className="admina-customer-cell">
+                          <div className="admina-customer-name">{appointment.customerName}</div>
                           {appointment.customerPhone && (
-                            <div className="customer-phone">{appointment.customerPhone}</div>
+                            <div className="admina-customer-phone">{appointment.customerPhone}</div>
                           )}
                         </td>
-                        <td>{appointment.service}</td>
+                        <td className="admina-service-cell"> {/* Added className for better styling */}
+                          <div className="admina-service-list">
+                            {appointment.service}
+                          </div>
+                          {appointment.rawServices && Array.isArray(appointment.rawServices) && (
+                            <div className="admina-service-count">
+                              <small>{appointment.rawServices.length} service{appointment.rawServices.length !== 1 ? 's' : ''}</small>
+                            </div>
+                          )}
+                        </td>
                         {userRole === 'admin' && (
-                          <td className="staff-cell">{appointment.staff}</td>
+                          <td className="admina-staff-cell">{appointment.staff}</td>
                         )}
-                        <td className="time-cell">
-                          <div className="time-slot">{appointment.time}</div>
-                          <div className="duration">{appointment.duration}</div>
+                        <td className="admina-time-cell">
+                          <div className="admina-time-slot">{appointment.time}</div>
+                          <div className="admina-duration">{appointment.duration}</div>
                         </td>
                         <td>
-                          <span className={`status-badge status-${appointment.status}`}>
+                          <span className={`admina-status-badge admina-status-${appointment.status}`}>
                             {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                           </span>
+                          {appointment.rawBookingStatus && appointment.rawBookingStatus !== appointment.status.toUpperCase() && (
+                            <div className="admina-original-status">
+                              <small>({appointment.rawBookingStatus})</small>
+                            </div>
+                          )}
                         </td>
-                        <td className="amount-cell">
-                          {/* UPDATED: Changed formatRupees to formatLKR */}
+                        <td className="admina-amount-cell">
                           {formatLKR(appointment.amount)}
                         </td>
                       </tr>
@@ -444,13 +520,13 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                 </table>
               </div>
             ) : (
-              <div className="empty-state">
-                <div className="empty-icon">📅</div>
+              <div className="admina-empty-state">
+                <div className="admina-empty-icon">📅</div>
                 <h4>No Appointments Found</h4>
                 <p>
                   No appointments scheduled for {selectedDate.toLocaleDateString()}
                 </p>
-                <p className="hint">Try selecting a different date</p>
+                <p className="admina-hint">Try selecting a different date</p>
               </div>
             )}
           </>

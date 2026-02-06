@@ -1,4 +1,4 @@
-// src/components/admin/StaffManagement.jsx - COMPLETE VERSION
+// src/components/admin/StaffManagement.jsx - UPDATED VERSION WITH MULTI-SELECT
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
@@ -18,7 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import axios from 'axios';
-import './StaffManagement.css'; // Make sure this matches your CSS file name
+import './StaffManagement.css';
 
 const StaffManagement = () => {
   // ========== STATE VARIABLES ==========
@@ -31,13 +31,34 @@ const StaffManagement = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [saving, setSaving] = useState(false);
+  
+  // Updated: specializations is now an array
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    specialization: '',
+    specializations: [], // Changed from specialization to specializations (array)
     phone: '',
     status: 'PENDING_ACTIVATION'
   });
+
+  // Available specializations for multi-select
+  const availableSpecializations = [
+    'Hair Stylist',
+    'Color Specialist',
+    'Nail Technician',
+    'Makeup Artist',
+    'Skincare Specialist',
+    'Massage Therapist',
+    'Barber',
+    'Esthetician',
+    'Hair Extensions',
+    'Bridal Stylist',
+    'Men\'s Grooming',
+    'Waxing Specialist',
+    'Lash Technician',
+    'Pedicurist',
+    'Manicurist'
+  ];
 
   const API_BASE_URL = 'http://localhost:8081';
 
@@ -152,6 +173,7 @@ const StaffManagement = () => {
     fetchStaff();
   }, []);
 
+  // Handle input change for regular fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -160,10 +182,46 @@ const StaffManagement = () => {
     }));
   };
 
+  // Handle specialization toggle (for checkbox/multi-select)
+  const handleSpecializationToggle = (specialization) => {
+    setFormData(prev => {
+      const currentSpecs = [...prev.specializations];
+      if (currentSpecs.includes(specialization)) {
+        // Remove if already selected
+        return {
+          ...prev,
+          specializations: currentSpecs.filter(s => s !== specialization)
+        };
+      } else {
+        // Add if not selected
+        return {
+          ...prev,
+          specializations: [...currentSpecs, specialization]
+        };
+      }
+    });
+  };
+
+  // Handle multi-select dropdown change
+  const handleMultiSelectChange = (e) => {
+    const options = e.target.options;
+    const selectedValues = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selectedValues.push(options[i].value);
+      }
+    }
+    setFormData(prev => ({
+      ...prev,
+      specializations: selectedValues
+    }));
+  };
+
+  // Handle adding staff - convert array to comma-separated string
   const handleAddStaff = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.specialization) {
+    if (!formData.name || !formData.email || formData.specializations.length === 0) {
       setError('Please fill in all required fields');
       return;
     }
@@ -174,11 +232,21 @@ const StaffManagement = () => {
       return;
     }
 
+    // Convert array to comma-separated string for backend
+    const dataToSend = {
+      name: formData.name,
+      email: formData.email,
+      specialization: formData.specializations.join(', '), // Convert array to string
+      phone: formData.phone,
+      status: formData.status,
+      role: 'STAFF' // Added role as per backend requirement
+    };
+
     try {
       setSaving(true);
       setError('');
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_BASE_URL}/api/staff`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/staff`, dataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -190,7 +258,7 @@ const StaffManagement = () => {
         setFormData({
           name: '',
           email: '',
-          specialization: '',
+          specializations: [],
           phone: '',
           status: 'PENDING_ACTIVATION'
         });
@@ -206,12 +274,19 @@ const StaffManagement = () => {
     }
   };
 
+  // Handle editing staff - parse comma-separated string to array
   const handleEditStaff = (staff) => {
     setEditingStaff(staff);
+    
+    // Parse comma-separated string back to array
+    const specializations = staff.specialization 
+      ? staff.specialization.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      : [];
+    
     setFormData({
       name: staff.name || '',
       email: staff.email || '',
-      specialization: staff.specialization || '',
+      specializations: specializations,
       phone: staff.phone || '',
       status: staff.status || 'ACTIVE'
     });
@@ -219,15 +294,26 @@ const StaffManagement = () => {
     setError('');
   };
 
+  // Handle updating staff - convert array to comma-separated string
   const handleUpdateStaff = async (e) => {
     e.preventDefault();
     
     if (!editingStaff) return;
     
-    if (!formData.name || !formData.email || !formData.specialization) {
+    if (!formData.name || !formData.email || formData.specializations.length === 0) {
       setError('Please fill in all required fields');
       return;
     }
+
+    // Convert array to comma-separated string for backend
+    const dataToSend = {
+      name: formData.name,
+      email: formData.email,
+      specialization: formData.specializations.join(', '), // Convert array to string
+      phone: formData.phone,
+      status: formData.status,
+      role: 'STAFF' // Added role as per backend requirement
+    };
 
     try {
       setSaving(true);
@@ -235,7 +321,7 @@ const StaffManagement = () => {
       const token = localStorage.getItem('token');
       const response = await axios.put(
         `${API_BASE_URL}/api/staff/${editingStaff._id || editingStaff.id}`,
-        formData,
+        dataToSend,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -347,7 +433,7 @@ const StaffManagement = () => {
               setFormData({
                 name: '',
                 email: '',
-                specialization: '',
+                specializations: [],
                 phone: '',
                 status: 'PENDING_ACTIVATION'
               });
@@ -412,7 +498,6 @@ const StaffManagement = () => {
         <button 
           className="staff-btn-export"
           onClick={() => {
-            // Simple export functionality
             const csvData = filteredStaff.map(staff => ({
               ID: staff._id?.substring(0, 8) || 'N/A',
               Name: staff.name,
@@ -422,12 +507,10 @@ const StaffManagement = () => {
               Phone: staff.phone || 'N/A'
             }));
             
-            // Create CSV content
             const headers = Object.keys(csvData[0] || {}).join(',');
             const rows = csvData.map(row => Object.values(row).join(','));
             const csvContent = [headers, ...rows].join('\n');
             
-            // Create download link
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -564,9 +647,19 @@ const StaffManagement = () => {
                       </div>
                     </td>
                     <td className="staff-specialization-column">
-                      <span className="staff-specialization-tag">
-                        {staff.specialization || 'Not specified'}
-                      </span>
+                      <div className="staff-specialization-tags">
+                        {staff.specialization ? 
+                          staff.specialization.split(',')
+                            .map(spec => spec.trim())
+                            .filter(spec => spec.length > 0)
+                            .map((spec, index) => (
+                              <span key={index} className="staff-specialization-badge">
+                                {spec}
+                              </span>
+                            ))
+                          : 'Not specified'
+                        }
+                      </div>
                     </td>
                     <td className="staff-phone-column">
                       <div className="staff-phone-cell">
@@ -607,7 +700,7 @@ const StaffManagement = () => {
         </div>
       </div>
 
-      {/* Add/Edit Form Modal */}
+      {/* Add/Edit Form Modal with Multi-Select */}
       {(showAddForm || showEditForm) && (
         <div className="staff-modal-overlay">
           <div className="staff-modal-content">
@@ -664,28 +757,83 @@ const StaffManagement = () => {
                   )}
                 </div>
                 
-                <div className="staff-form-group">
+                {/* Specializations Multi-Select */}
+                <div className="staff-form-group staff-multiselect-group">
                   <label>
-                    <span className="staff-required">*</span> Specialization
+                    <span className="staff-required">*</span> Specializations
+                    {formData.specializations.length > 0 && (
+                      <span className="staff-selected-count">
+                        ({formData.specializations.length} selected)
+                      </span>
+                    )}
                   </label>
+                  
+                  {/* Option 1: Multi-select dropdown (recommended) */}
                   <select
-                    name="specialization"
-                    value={formData.specialization}
-                    onChange={handleInputChange}
+                    name="specializations"
+                    value={formData.specializations}
+                    onChange={handleMultiSelectChange}
                     required
                     disabled={saving}
-                    className="staff-form-select"
+                    className="staff-form-multiselect"
+                    multiple
+                    size="6"
                   >
-                    <option value="">Select specialization</option>
-                    <option value="Hair Stylist">Hair Stylist</option>
-                    <option value="Color Specialist">Color Specialist</option>
-                    <option value="Nail Technician">Nail Technician</option>
-                    <option value="Makeup Artist">Makeup Artist</option>
-                    <option value="Skincare Specialist">Skincare Specialist</option>
-                    <option value="Massage Therapist">Massage Therapist</option>
-                    <option value="Barber">Barber</option>
-                    <option value="Esthetician">Esthetician</option>
+                    <option value="" disabled>Select specializations (hold Ctrl/Cmd to select multiple)</option>
+                    {availableSpecializations.map((spec) => (
+                      <option key={spec} value={spec}>
+                        {spec}
+                      </option>
+                    ))}
                   </select>
+                  <small className="staff-form-note">
+                    Hold Ctrl (Windows) or Cmd (Mac) to select multiple items
+                  </small>
+                  
+                  {/* Selected specializations display */}
+                  {formData.specializations.length > 0 && (
+                    <div className="staff-selected-specializations">
+                      <div className="staff-selected-header">
+                        <strong>Selected Specializations:</strong>
+                        <span className="staff-selected-count-badge">
+                          {formData.specializations.length} selected
+                        </span>
+                      </div>
+                      <div className="staff-selected-chips">
+                        {formData.specializations.map(spec => (
+                          <span key={spec} className="staff-selected-chip">
+                            {spec}
+                            <button
+                              type="button"
+                              className="staff-chip-remove"
+                              onClick={() => handleSpecializationToggle(spec)}
+                              title="Remove"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Option 2: Checkbox alternative (commented out) */}
+                  {/*
+                  <div className="staff-checkbox-container">
+                    {availableSpecializations.map((spec) => (
+                      <div key={spec} className="staff-checkbox-item">
+                        <input
+                          type="checkbox"
+                          id={`spec-${spec}`}
+                          checked={formData.specializations.includes(spec)}
+                          onChange={() => handleSpecializationToggle(spec)}
+                          disabled={saving}
+                        />
+                        <label htmlFor={`spec-${spec}`}>{spec}</label>
+                      </div>
+                    ))}
+                  </div>
+                  */}
                 </div>
                 
                 <div className="staff-form-group">

@@ -1,4 +1,4 @@
-// src/components/staff/StaffAppointments.jsx - WITHOUT DEBUG INFO
+// src/components/staff/StaffAppointments.jsx - FIXED VERSION
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Calendar as CalendarIcon, 
@@ -25,6 +25,7 @@ const StaffAppointments = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [staffName, setStaffName] = useState('');
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
 
@@ -54,7 +55,8 @@ const StaffAppointments = ({ user }) => {
         status: 'pending',
         amount: 500,
         customerPhone: '+91 98765 43210',
-        duration: '45 min'
+        duration: '45 min',
+        staff: staffName || 'Staff 1'
       },
       {
         id: 'appt-2',
@@ -66,7 +68,8 @@ const StaffAppointments = ({ user }) => {
         status: 'confirmed',
         amount: 1500,
         customerPhone: '+91 98765 43211',
-        duration: '2 hours'
+        duration: '2 hours',
+        staff: staffName || 'Staff 1'
       },
       {
         id: 'appt-3',
@@ -78,7 +81,8 @@ const StaffAppointments = ({ user }) => {
         status: 'completed',
         amount: 300,
         customerPhone: '+91 98765 43212',
-        duration: '30 min'
+        duration: '30 min',
+        staff: staffName || 'Staff 1'
       }
     ];
     
@@ -86,6 +90,30 @@ const StaffAppointments = ({ user }) => {
     const dayNum = parseInt(dateStr.split('-')[2]);
     return mockAppointments.slice(0, dayNum % 3 + 1);
   };
+
+  // Fetch staff profile to get staff name
+  const fetchStaffProfile = useCallback(async () => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/api/staff/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Staff profile:', data);
+        if (data.name) {
+          setStaffName(data.name);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching staff profile:', error);
+    }
+  }, [API_BASE_URL, getAuthToken]);
 
   const fetchStaffAppointments = useCallback(async (date) => {
     if (!date) return;
@@ -96,86 +124,144 @@ const StaffAppointments = ({ user }) => {
       const token = getAuthToken();
       const dateStr = formatDate(date);
       
-      // Primary endpoint - staff-specific appointments
-      const primaryEndpoint = `${API_BASE_URL}/api/staff/appointments`;
+      console.log(`=== Fetching appointments for date: ${dateStr} ===`);
       
-      let response = null;
-      let data = null;
+      // Check if it's today
+      const today = new Date();
+      const todayStr = formatDate(today);
+      const isToday = dateStr === todayStr;
       
-      try {
-        // Try with query parameter
-        response = await fetch(`${primaryEndpoint}?date=${dateStr}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          // Try alternative endpoint format
-          const altResponse = await fetch(`${API_BASE_URL}/api/appointments?staffId=${user?.id || 'current'}&date=${dateStr}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json'
-            }
-          });
-          
-          if (altResponse.ok) {
-            data = await altResponse.json();
-          } else {
-            throw new Error(`API responded with ${altResponse.status}: ${altResponse.statusText}`);
-          }
-        }
-      } catch (apiError) {
-        // Fallback to mock data for development
-        const mockData = generateMockAppointments(dateStr);
-        data = { appointments: mockData };
+      // Use the correct backend endpoints
+      let endpoint;
+      if (isToday) {
+        endpoint = `${API_BASE_URL}/api/staff/appointments/today`;
+      } else {
+        endpoint = `${API_BASE_URL}/api/staff/appointments/date/${dateStr}`;
       }
       
-      // Process the data
-      let staffAppointments = [];
+      console.log(`Calling endpoint: ${endpoint}`);
       
-      if (data) {
-        if (Array.isArray(data)) {
-          staffAppointments = data;
-        } else if (data.appointments && Array.isArray(data.appointments)) {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API Response data:', data);
+        
+        let staffAppointments = [];
+        
+        // Handle different response formats
+        if (data && data.appointments && Array.isArray(data.appointments)) {
           staffAppointments = data.appointments;
-        } else if (data.data && Array.isArray(data.data)) {
+        } else if (Array.isArray(data)) {
+          staffAppointments = data;
+        } else if (data && data.data && Array.isArray(data.data)) {
           staffAppointments = data.data;
         }
         
-        // Filter to ensure only current date appointments
-        staffAppointments = staffAppointments.filter(appt => {
-          const apptDate = appt.date ? appt.date.split('T')[0] : null;
-          return apptDate === dateStr;
+        console.log(`Found ${staffAppointments.length} appointments`);
+        
+        // Map backend status to frontend status
+        const mappedAppointments = staffAppointments.map(appt => {
+          // Map backend bookingStatus to frontend status
+          let status = 'pending';
+          const bookingStatus = appt.bookingStatus?.toLowerCase();
+          
+          if (bookingStatus === 'confirmed' || bookingStatus === 'active') {
+            status = 'confirmed';
+          } else if (bookingStatus === 'completed' || bookingStatus === 'done') {
+            status = 'completed';
+          } else if (bookingStatus === 'cancelled' || bookingStatus === 'canceled') {
+            status = 'cancelled';
+          } else if (bookingStatus === 'pending' || !bookingStatus) {
+            status = 'pending';
+          }
+          
+          return {
+            id: appt.id,
+            bookingId: appt.bookingId || `BK${appt.id?.substring(0, 4) || '0001'}`,
+            customerName: appt.customerName || 'Customer',
+            service: Array.isArray(appt.services) ? appt.services.join(', ') : appt.services || 'Service',
+            time: appt.time || '10:00 AM',
+            date: appt.date || dateStr,
+            status: status,
+            amount: appt.amount || 0,
+            customerPhone: appt.customerPhone || appt.phone || '+91 00000 00000',
+            duration: '60 min', // Default duration
+            staff: appt.staff || staffName
+          };
         });
         
-        // Sort by time
-        const sortedAppointments = staffAppointments.sort((a, b) => {
-          const timeA = a.time?.replace(' AM', '').replace(' PM', '').replace(':', '') || '0000';
-          const timeB = b.time?.replace(' AM', '').replace(' PM', '').replace(':', '') || '0000';
-          return parseInt(timeA) - parseInt(timeB);
+        // Sort appointments by time
+        const sortedAppointments = mappedAppointments.sort((a, b) => {
+          const timeA = a.time?.toUpperCase() || '';
+          const timeB = b.time?.toUpperCase() || '';
+          
+          // Helper to convert time to 24-hour format for sorting
+          const timeTo24Hour = (timeStr) => {
+            if (!timeStr) return 0;
+            
+            let time = timeStr.toUpperCase();
+            const isPM = time.includes('PM');
+            const isAM = time.includes('AM');
+            
+            // Extract hours and minutes
+            time = time.replace(/[AP]M/i, '').trim();
+            const parts = time.split(':');
+            let hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+            
+            // Convert 12-hour to 24-hour
+            if (isPM && hours < 12) hours += 12;
+            if (isAM && hours === 12) hours = 0;
+            
+            return hours * 100 + minutes;
+          };
+          
+          return timeTo24Hour(timeA) - timeTo24Hour(timeB);
         });
         
+        console.log('Sorted appointments:', sortedAppointments);
         setAppointments(sortedAppointments);
+        
+      } else {
+        const errorText = await response.text();
+        console.error('API Error response:', errorText);
+        
+        // Fallback to mock data for development
+        const mockData = generateMockAppointments(dateStr);
+        console.log('Using mock data for development');
+        setAppointments(mockData);
       }
       
     } catch (error) {
+      console.error('Error in fetchStaffAppointments:', error);
+      
       // Fallback to mock data
       const mockData = generateMockAppointments(formatDate(date));
       setAppointments(mockData);
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, getAuthToken, user?.id]);
+  }, [API_BASE_URL, getAuthToken, staffName]);
 
   useEffect(() => {
-    fetchStaffAppointments(selectedDate);
-  }, [selectedDate, fetchStaffAppointments]);
+    fetchStaffProfile();
+  }, [fetchStaffProfile]);
+
+  useEffect(() => {
+    if (staffName || user?.name) {
+      fetchStaffAppointments(selectedDate);
+    }
+  }, [selectedDate, fetchStaffAppointments, staffName, user?.name]);
 
   const goToPreviousMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -203,6 +289,7 @@ const StaffAppointments = ({ user }) => {
       return (
         (appt.customerName && appt.customerName.toLowerCase().includes(searchLower)) ||
         (appt.service && appt.service.toLowerCase().includes(searchLower)) ||
+        (appt.bookingId && appt.bookingId.toLowerCase().includes(searchLower)) ||
         (appt.customerPhone && appt.customerPhone.includes(searchTerm))
       );
     }
@@ -211,9 +298,9 @@ const StaffAppointments = ({ user }) => {
   });
 
   const formatTime = (timeStr) => {
-    if (!timeStr) return '';
+    if (!timeStr) return '--:--';
     
-    // If time is already in 12-hour format
+    // If time is already in 12-hour format with AM/PM
     if (timeStr.includes('AM') || timeStr.includes('PM')) {
       return timeStr;
     }
@@ -233,7 +320,17 @@ const StaffAppointments = ({ user }) => {
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
     try {
       const token = getAuthToken();
-      const response = await fetch(`${API_BASE_URL}/api/appointments/${appointmentId}/status`, {
+      
+      // Convert frontend status to backend bookingStatus
+      let backendStatus = newStatus.toUpperCase();
+      if (newStatus === 'confirmed') backendStatus = 'CONFIRMED';
+      if (newStatus === 'completed') backendStatus = 'COMPLETED';
+      if (newStatus === 'cancelled') backendStatus = 'CANCELLED';
+      if (newStatus === 'pending') backendStatus = 'PENDING';
+      
+      console.log(`Updating appointment ${appointmentId} to status: ${backendStatus}`);
+      
+      const response = await fetch(`${API_BASE_URL}/api/staff/appointments/${appointmentId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -241,16 +338,22 @@ const StaffAppointments = ({ user }) => {
           'Accept': 'application/json'
         },
         body: JSON.stringify({ 
-          status: newStatus,
-          updatedBy: user?.id || 'staff'
+          status: backendStatus
         })
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Update successful:', result);
+        
+        // Refresh the appointments list
         fetchStaffAppointments(selectedDate);
         alert(`Appointment marked as ${newStatus}!`);
       } else {
-        // For development, just update locally
+        const errorText = await response.text();
+        console.error('Update failed:', response.status, errorText);
+        
+        // For development, update locally
         setAppointments(prev => 
           prev.map(appt => 
             appt.id === appointmentId 
@@ -258,11 +361,12 @@ const StaffAppointments = ({ user }) => {
               : appt
           )
         );
-        alert(`Appointment marked as ${newStatus}! (Local update for development)`);
+        alert(`Appointment marked as ${newStatus}! (Local update)`);
       }
     } catch (error) {
       console.error('Error updating appointment:', error);
-      // For development, update locally anyway
+      
+      // For development, update locally
       setAppointments(prev => 
         prev.map(appt => 
           appt.id === appointmentId 
@@ -351,20 +455,25 @@ const StaffAppointments = ({ user }) => {
   return (
     <div className="staff-appointments-container">
       {/* Header */}
-      <div className="page-header">
-        <div className="header-content">
+      <div className="staff-page-header">
+        <div className="staff-header-content">
           <h1>
             <CalendarIcon size={28} />
             My Appointments
           </h1>
-          <p className="subtitle">Manage your daily schedule and appointments</p>
+          <p className="staff-subtitle">Manage your daily schedule and appointments</p>
+          {staffName && (
+            <div className="staff-name-badge">
+              Staff: <strong>{staffName}</strong>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Search Bars */}
-      <div className="search-section">
-        <div className="search-container">
-          <div className="search-box">
+      {/* Search Section */}
+      <div className="staff-search-section">
+        <div className="staff-search-container">
+          <div className="staff-search-box">
             <Search size={20} />
             <input
               type="text"
@@ -374,13 +483,13 @@ const StaffAppointments = ({ user }) => {
             />
           </div>
           
-          <div className="filters-container">
-            <div className="filter-group">
+          <div className="staff-filters-container">
+            <div className="staff-filter-group">
               <Filter size={18} />
               <select 
                 value={filter} 
                 onChange={(e) => setFilter(e.target.value)}
-                className="filter-select"
+                className="staff-filter-select"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -391,11 +500,11 @@ const StaffAppointments = ({ user }) => {
             </div>
             
             <button 
-              className="refresh-button"
+              className="staff-refresh-button"
               onClick={() => fetchStaffAppointments(selectedDate)}
               disabled={loading}
             >
-              <RefreshCw size={18} className={loading ? 'spinning' : ''} />
+              <RefreshCw size={18} className={loading ? 'staff-spinning' : ''} />
               Refresh
             </button>
           </div>
@@ -403,51 +512,51 @@ const StaffAppointments = ({ user }) => {
       </div>
 
       {/* Calendar Section */}
-      <div className="calendar-section">
-        <div className="calendar-container">
-          <div className="calendar-header">
-            <div className="month-navigation">
-              <button className="nav-button" onClick={goToPreviousMonth}>
+      <div className="staff-calendar-section">
+        <div className="staff-calendar-container">
+          <div className="staff-calendar-header">
+            <div className="staff-month-navigation">
+              <button className="staff-nav-button" onClick={goToPreviousMonth}>
                 <ChevronLeft size={20} />
               </button>
               <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-              <button className="nav-button" onClick={goToNextMonth}>
+              <button className="staff-nav-button" onClick={goToNextMonth}>
                 <ChevronRight size={20} />
               </button>
             </div>
             
-            <div className="calendar-controls">
-              <button className="today-button" onClick={goToToday}>
+            <div className="staff-calendar-controls">
+              <button className="staff-today-button" onClick={goToToday}>
                 <CalendarDays size={18} />
                 Today
               </button>
             </div>
           </div>
 
-          <div className="calendar-wrapper">
+          <div className="staff-calendar-wrapper">
             {/* Weekdays Header */}
-            <div className="weekdays-header">
+            <div className="staff-weekdays-header">
               {weekdays.map((day, index) => (
-                <div key={index} className="weekday-cell">
+                <div key={index} className="staff-weekday-cell">
                   {day}
                 </div>
               ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className="calendar-grid">
+            <div className="staff-calendar-grid">
               {calendarDays.map((day, index) => (
                 <div
                   key={index}
-                  className={`calendar-day ${day.date ? 'has-date' : 'empty'} ${day.isCurrentMonth ? 'current-month' : ''} ${day.isToday ? 'today' : ''} ${day.isSelected ? 'selected' : ''}`}
+                  className={`staff-calendar-day ${day.date ? 'has-date' : 'empty'} ${day.isCurrentMonth ? 'current-month' : ''} ${day.isToday ? 'today' : ''} ${day.isSelected ? 'selected' : ''}`}
                   onClick={() => day.date && handleDateClick(day.date)}
                   title={day.date ? `${formatDate(day.date)}: ${day.appointmentCount} appointments` : ''}
                 >
                   {day.date && (
                     <>
-                      <span className="day-number">{day.dayNumber || day.date.getDate()}</span>
+                      <span className="staff-day-number">{day.dayNumber || day.date.getDate()}</span>
                       {day.appointmentCount > 0 && (
-                        <div className="appointment-indicator" title={`${day.appointmentCount} appointment${day.appointmentCount !== 1 ? 's' : ''}`}>
+                        <div className="staff-appointment-indicator" title={`${day.appointmentCount} appointment${day.appointmentCount !== 1 ? 's' : ''}`}>
                           {day.appointmentCount > 1 ? day.appointmentCount : ''}
                         </div>
                       )}
@@ -458,10 +567,10 @@ const StaffAppointments = ({ user }) => {
             </div>
           </div>
 
-          <div className="selected-date-info">
-            <div className="selected-date">
-              <span className="label">Selected Date:</span>
-              <span className="date">
+          <div className="staff-selected-date-info">
+            <div className="staff-selected-date">
+              <span className="staff-label">Selected Date:</span>
+              <span className="staff-date">
                 {selectedDate.toLocaleDateString('en-US', { 
                   weekday: 'long', 
                   month: 'long', 
@@ -470,77 +579,86 @@ const StaffAppointments = ({ user }) => {
                 })}
               </span>
             </div>
-            <div className="appointments-count">
-              <span className="count">{appointmentStats.total}</span>
-              <span className="label">appointments</span>
+            <div className="staff-appointments-count">
+              <span className="staff-count">{appointmentStats.total}</span>
+              <span className="staff-label">appointments</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Appointments View */}
-      <div className="appointments-section">
-        <div className="appointments-header">
+      {/* Appointments Section */}
+      <div className="staff-appointments-section">
+        <div className="staff-appointments-header">
           <h3>Appointments for {selectedDate.toLocaleDateString('en-US', { 
             month: 'long', 
             day: 'numeric', 
             year: 'numeric' 
           })}</h3>
-          <div className="stats">
-            <div className="stat-item">
-              <span className="stat-label">Pending:</span>
-              <span className="stat-value pending">{appointmentStats.pending}</span>
+          <div className="staff-stats">
+            <div className="staff-stat-item">
+              <span className="staff-stat-label">Pending:</span>
+              <span className="staff-stat-value pending">{appointmentStats.pending}</span>
             </div>
-            <div className="stat-item">
-              <span className="stat-label">Confirmed:</span>
-              <span className="stat-value confirmed">{appointmentStats.confirmed}</span>
+            <div className="staff-stat-item">
+              <span className="staff-stat-label">Confirmed:</span>
+              <span className="staff-stat-value confirmed">{appointmentStats.confirmed}</span>
             </div>
-            <div className="stat-item">
-              <span className="stat-label">Completed:</span>
-              <span className="stat-value completed">{appointmentStats.completed}</span>
+            <div className="staff-stat-item">
+              <span className="staff-stat-label">Completed:</span>
+              <span className="staff-stat-value completed">{appointmentStats.completed}</span>
+            </div>
+            <div className="staff-stat-item">
+              <span className="staff-stat-label">Total:</span>
+              <span className="staff-stat-value total">{appointmentStats.total}</span>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
+          <div className="staff-loading-state">
+            <div className="staff-spinner"></div>
             <p>Loading appointments...</p>
           </div>
         ) : filteredAppointments.length === 0 ? (
-          <div className="empty-state">
+          <div className="staff-empty-state">
             <CalendarIcon size={48} />
             <h4>No Appointments Found</h4>
-            <p>You don't have any appointments scheduled for this date.</p>
+            <p>{staffName ? `${staffName} doesn't have any appointments scheduled for this date.` : "You don't have any appointments scheduled for this date."}</p>
             {searchTerm ? (
-              <p className="hint">Try clearing your search or selecting a different date.</p>
+              <p className="staff-hint">Try clearing your search or selecting a different date.</p>
             ) : (
-              <p className="hint">Try selecting a different date from the calendar.</p>
+              <p className="staff-hint">Try selecting a different date from the calendar.</p>
             )}
           </div>
         ) : (
-          <div className="appointments-grid">
+          <div className="staff-appointments-grid">
             {filteredAppointments.map((appt, index) => (
-              <div key={appt.id || `appt-${index}`} className="appointment-card">
-                <div className="appointment-header">
-                  <div className="time-slot">
+              <div key={appt.id || `appt-${index}`} className="staff-appointment-card">
+                <div className="staff-appointment-header">
+                  <div className="staff-time-slot">
                     <Clock size={16} />
-                    <span className="time">{formatTime(appt.time)}</span>
-                    <span className="duration">{appt.duration || '60 min'}</span>
+                    <span className="staff-time">{formatTime(appt.time)}</span>
+                    <span className="staff-duration">{appt.duration || '60 min'}</span>
                   </div>
-                  <div className={`status-badge status-${appt.status || 'pending'}`}>
+                  <div className={`staff-status-badge staff-status-${appt.status || 'pending'}`}>
                     {(appt.status || 'pending').charAt(0).toUpperCase() + (appt.status || 'pending').slice(1)}
                   </div>
                 </div>
                 
-                <div className="appointment-body">
-                  <div className="customer-info">
-                    <div className="customer-details">
+                <div className="staff-appointment-body">
+                  <div className="staff-appointment-id">
+                    <span className="staff-id-label">Booking ID:</span>
+                    <span className="staff-id-value">{appt.bookingId}</span>
+                  </div>
+                  
+                  <div className="staff-customer-info">
+                    <div className="staff-customer-details">
                       <User size={16} />
                       <div>
-                        <h4>{appt.customerName || appt.customer?.name || 'Customer'}</h4>
+                        <h4>{appt.customerName || 'Customer'}</h4>
                         {appt.customerPhone && (
-                          <div className="customer-phone">
+                          <div className="staff-customer-phone">
                             <Phone size={14} />
                             <span>{appt.customerPhone}</span>
                           </div>
@@ -548,31 +666,31 @@ const StaffAppointments = ({ user }) => {
                       </div>
                     </div>
                     
-                    <div className="service-details">
+                    <div className="staff-service-details">
                       <Scissors size={16} />
                       <div>
-                        <span className="service-name">{appt.service || appt.serviceType || 'Service'}</span>
-                        <div className="service-price">
+                        <span className="staff-service-name">{appt.service || 'Service'}</span>
+                        <div className="staff-service-price">
                           <DollarSign size={14} />
-                          <span>₹{appt.amount || appt.price || appt.totalAmount || '0'}</span>
+                          <span>₹{appt.amount || '0'}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="appointment-actions">
+                <div className="staff-appointment-actions">
                   {appt.status === 'pending' && (
-                    <div className="action-buttons">
+                    <div className="staff-action-buttons">
                       <button 
-                        className="action-button confirm"
+                        className="staff-action-button confirm"
                         onClick={() => updateAppointmentStatus(appt.id, 'confirmed')}
                       >
                         <CheckCircle size={16} />
                         Confirm
                       </button>
                       <button 
-                        className="action-button cancel"
+                        className="staff-action-button cancel"
                         onClick={() => updateAppointmentStatus(appt.id, 'cancelled')}
                       >
                         <XCircle size={16} />
@@ -583,7 +701,7 @@ const StaffAppointments = ({ user }) => {
                   
                   {appt.status === 'confirmed' && (
                     <button 
-                      className="action-button complete"
+                      className="staff-action-button complete"
                       onClick={() => updateAppointmentStatus(appt.id, 'completed')}
                     >
                       <CheckCircle size={16} />
@@ -592,10 +710,16 @@ const StaffAppointments = ({ user }) => {
                   )}
                   
                   {(appt.status === 'completed' || appt.status === 'cancelled') && (
-                    <div className="final-status">
-                      <span className={`status-text ${appt.status}`}>
+                    <div className="staff-final-status">
+                      <span className={`staff-status-text ${appt.status}`}>
                         {appt.status === 'completed' ? '✓ Completed' : '✗ Cancelled'}
                       </span>
+                    </div>
+                  )}
+                  
+                  {appt.staff && (
+                    <div className="staff-assigned-to">
+                      <small>Assigned to: <strong>{appt.staff}</strong></small>
                     </div>
                   )}
                 </div>

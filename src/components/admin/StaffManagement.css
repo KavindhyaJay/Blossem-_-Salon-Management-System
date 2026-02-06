@@ -953,3 +953,171 @@
   border-collapse: collapse;
   min-width: 800px; /* Keep this for wide tables */
 }
+/* Add to StaffManagement.css */
+
+/* Multi-select styling */
+.staff-form-multiselect {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  min-height: 150px;
+  resize: vertical;
+}
+
+.staff-form-multiselect option {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.staff-form-multiselect option:checked {
+  background-color: #4299e1;
+  color: white;
+}
+
+.staff-form-multiselect option:hover {
+  background-color: #ebf8ff;
+}
+
+.staff-multiselect-group {
+  grid-column: span 2;
+}
+
+.staff-selected-count {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #718096;
+  font-weight: normal;
+}
+
+/* Selected specializations display */
+.staff-selected-specializations {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.staff-selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.staff-selected-count-badge {
+  background: #4299e1;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Selected chips */
+.staff-selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.staff-selected-chip {
+  background: #4299e1;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.staff-chip-remove {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.staff-chip-remove:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Specialization badges in table */
+.staff-specialization-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.staff-specialization-badge {
+  background: #e2e8f0;
+  color: #4a5568;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.staff-specialization-badge:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* Checkbox alternative styling (if used) */
+.staff-checkbox-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  margin-top: 8px;
+}
+
+.staff-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.staff-checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.staff-checkbox-item label {
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+/* Form grid adjustment for multi-select */
+.staff-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}

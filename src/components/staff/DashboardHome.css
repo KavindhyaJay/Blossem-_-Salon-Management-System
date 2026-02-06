@@ -1,143 +1,144 @@
-/* src/components/staff/DashboardHome.css - CLEAN VERSION */
-.dashboard-home {
+/* src/components/staff/DashboardHome.css - WITH staffd- PREFIX */
+.staffd-dashboard-home {
   padding: 20px;
+  min-height: 100vh;
+  background: #0f172a;
 }
 
 /* Welcome Header */
-.dashboard-header {
+.staffd-dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 30px;
   padding: 25px;
-  background: linear-gradient(135deg, #030303 0%, #02175f 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border-radius: 16px;
-  border: 1px solid #022763;
+  border: 1px solid #334155;
 }
 
-.welcome-title {
+.staffd-welcome-title {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 8px;
   color: white;
 }
 
-.welcome-subtitle {
-  color: rgba(255, 255, 255, 0.9);
+.staffd-welcome-subtitle {
+  color: #94a3b8;
   font-size: 1rem;
   line-height: 1.5;
 }
 
-.header-actions {
+.staffd-header-actions {
   display: flex;
   gap: 15px;
   align-items: center;
 }
 
-.refresh-btn {
+.staffd-refresh-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
   border-radius: 10px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.refresh-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+.staffd-refresh-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
   transform: translateY(-2px);
 }
 
-.refresh-btn:disabled {
+.staffd-refresh-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.current-time {
+.staffd-current-time {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  border: 1px solid #334155;
+  color: #cbd5e1;
 }
 
-@keyframes spin {
+@keyframes staffd-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-.spinning {
-  animation: spin 1s linear infinite;
+.staffd-spinning {
+  animation: staffd-spin 1s linear infinite;
 }
 
 /* Stats Grid */
-.stats-grid {
+.staffd-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
 
-.stat-card {
+.staffd-stat-card {
   padding: 25px;
   border-radius: 16px;
-  border: 1px solid rgba(6, 1, 36, 0.1);
+  border: 1px solid #334155;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-.stat-card:hover {
+.staffd-stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  border-color: #3b82f6;
 }
 
-.blue-gradient {
-  background: linear-gradient(135deg, #012999 0%, #01103f 100%);
-  border-color: rgba(59, 130, 246, 0.5);
+.staffd-blue-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 }
 
-.stat-icon-wrapper {
+.staffd-stat-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  background: rgba(59, 130, 246, 0.1);
   border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.stat-icon {
+.staffd-stat-icon {
   width: 28px;
   height: 28px;
-  color: white;
+  color: #3b82f6;
 }
 
-.stat-content {
+.staffd-stat-content {
   flex: 1;
 }
 
-.stat-title {
+.staffd-stat-title {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #cbd5e1;
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
 }
 
-.stat-value {
+.staffd-stat-value {
   font-size: 2.2rem;
   font-weight: 800;
   color: white;
@@ -145,27 +146,29 @@
   line-height: 1;
 }
 
-.stat-subtitle {
+.staffd-stat-subtitle {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
 }
 
 /* Appointments Card */
-.appointments-card {
+.staffd-appointments-card {
   background: #1e293b;
   border-radius: 16px;
   border: 1px solid #334155;
   padding: 25px;
 }
 
-.card-header {
+.staffd-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #334155;
 }
 
-.card-title {
+.staffd-card-title {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -174,7 +177,7 @@
   color: white;
 }
 
-.count-badge {
+.staffd-count-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +192,7 @@
   margin-left: 12px;
 }
 
-.view-all-btn {
+.staffd-view-all-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -203,40 +206,40 @@
   transition: all 0.3s ease;
 }
 
-.view-all-btn:hover:not(:disabled) {
+.staffd-view-all-btn:hover:not(:disabled) {
   background: #3b82f6;
   color: white;
 }
 
-.view-all-btn:disabled {
+.staffd-view-all-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Appointments List */
-.appointments-list {
+.staffd-appointments-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.appointment-item {
+.staffd-appointment-item {
   display: flex;
   align-items: center;
   gap: 15px;
   padding: 18px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   border: 1px solid #334155;
   transition: all 0.3s ease;
 }
 
-.appointment-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+.staffd-appointment-item:hover {
+  background: rgba(59, 130, 246, 0.05);
   border-color: #3b82f6;
 }
 
-.time-slot {
+.staffd-time-slot {
   min-width: 80px;
   padding: 10px 15px;
   background: rgba(59, 130, 246, 0.1);
@@ -247,35 +250,36 @@
   font-size: 0.95rem;
 }
 
-.appointment-details {
+.staffd-appointment-details {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.customer-info {
+.staffd-customer-info {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.customer-info svg {
+.staffd-customer-info svg {
   color: #94a3b8;
 }
 
-.customer-name {
+.staffd-customer-name {
   font-size: 1.1rem;
   font-weight: 600;
   color: white;
 }
 
-.service-info {
+.staffd-service-info {
   color: #94a3b8;
   font-size: 0.95rem;
 }
 
-.status-badge {
+/* Status Badges */
+.staffd-status-badge {
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -284,98 +288,134 @@
   letter-spacing: 0.5px;
 }
 
-.status-pending {
+.staffd-status-pending {
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.status-confirmed {
+.staffd-status-confirmed {
   background: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.status-completed {
+.staffd-status-completed {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-.status-cancelled {
+.staffd-status-cancelled {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* Empty State */
-.empty-state {
+.staffd-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px dashed #334155;
 }
 
-.empty-icon {
+.staffd-empty-icon {
   color: #3b82f6;
   margin-bottom: 20px;
   opacity: 0.5;
 }
 
-.empty-state h4 {
+.staffd-empty-state h4 {
   color: white;
   font-size: 1.2rem;
   margin-bottom: 10px;
+  font-weight: 600;
 }
 
-.empty-state p {
+.staffd-empty-state p {
   color: #94a3b8;
   font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    gap: 20px;
+  .staffd-dashboard-home {
+    padding: 15px;
   }
   
-  .header-actions {
+  .staffd-dashboard-header {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .staffd-welcome-title {
+    font-size: 1.8rem;
+  }
+  
+  .staffd-header-actions {
     width: 100%;
     justify-content: space-between;
   }
   
-  .stats-grid {
+  .staffd-stats-grid {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
   
-  .appointment-item {
+  .staffd-stat-card {
+    padding: 20px;
+  }
+  
+  .staffd-appointment-item {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
   
-  .time-slot {
+  .staffd-time-slot {
     width: 100%;
     text-align: left;
   }
   
-  .status-badge {
+  .staffd-status-badge {
     align-self: flex-start;
   }
 }
 
 @media (max-width: 480px) {
-  .card-header {
+  .staffd-card-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
   
-  .view-all-btn {
+  .staffd-view-all-btn {
     align-self: stretch;
     justify-content: center;
+  }
+  
+  .staffd-stat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .staffd-stat-icon-wrapper {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .staffd-stat-icon {
+    width: 24px;
+    height: 24px;
   }
 }

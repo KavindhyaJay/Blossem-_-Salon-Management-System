@@ -1,7 +1,6 @@
-/* src/components/admin/PhotoReview.css - NEW FILE */
-
+/* src/components/admin/PhotoReview.css - WITH adminp- PREFIX */
 /* Main container */
-.photo-review-container {
+.adminp-photo-review-container {
   padding: 20px;
   background: #0f0f0f;
   min-height: 100vh;
@@ -9,7 +8,7 @@
 }
 
 /* Header */
-.photo-review-header {
+.adminp-photo-review-header {
   background: #1a1a1a;
   border-radius: 10px;
   padding: 25px;
@@ -20,7 +19,7 @@
   align-items: center;
 }
 
-.photo-review-header h2 {
+.adminp-photo-review-header h2 {
   color: #ff4444;
   margin: 0;
   display: flex;
@@ -29,13 +28,13 @@
   font-size: 1.5rem;
 }
 
-.photo-review-header p {
+.adminp-photo-review-header p {
   color: #aaa;
   margin: 5px 0 0 0;
   font-size: 0.9rem;
 }
 
-.refresh-btn {
+.adminp-refresh-btn {
   background: #2a2a2a;
   color: #fff;
   border: 1px solid #444;
@@ -49,91 +48,105 @@
   transition: all 0.2s;
 }
 
-.refresh-btn:hover:not(:disabled) {
+.adminp-refresh-btn:hover:not(:disabled) {
   background: #333;
 }
 
-.refresh-btn:disabled {
+.adminp-refresh-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Stats Grid */
-.photo-stats-grid {
+/* Stats Grid - UPDATED TO MATCH REVENUE STYLES */
+.adminp-photo-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
   margin-bottom: 30px;
 }
 
-.photo-stat-card {
+.adminp-photo-stat-card {
   background: #1a1a1a;
-  border-radius: 8px;
-  padding: 20px;
-  border-left: 4px solid #ff4444;
   border: 1px solid #333;
-  transition: transform 0.2s;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.photo-stat-card:hover {
-  transform: translateY(-3px);
+.adminp-photo-stat-card:hover {
+  transform: translateY(-5px);
+  border-color: #ff4444;
 }
 
-.photo-stat-header {
+.adminp-photo-stat-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+  align-items: flex-start;
+  margin-bottom: 15px;
 }
 
-.photo-stat-header h3 {
-  color: #aaa;
-  font-size: 0.9rem;
+.adminp-photo-stat-header h3 {
+  color: #ccc;
   margin: 0;
+  font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.photo-stat-icon {
-  font-size: 1.2rem;
-  opacity: 0.8;
-}
-
-.photo-stat-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: white;
-  margin: 5px 0;
-}
-
-.photo-stat-value.pending {
-  color: #ffaa00;
-}
-
-.photo-stat-value.completed {
-  color: #00cc00;
-}
-
-.photo-stat-value.cancelled {
+.adminp-photo-stat-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 8px;
   color: #ff4444;
+  font-size: 24px;
 }
 
-.photo-stat-subtitle {
-  color: #666;
-  font-size: 0.8rem;
-  margin-top: 5px;
+.adminp-photo-stat-value {
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Color variations for each stat card */
+.adminp-photo-stat-card:nth-child(1) .adminp-photo-stat-value {
+  color: #FF9800; /* Pending - Orange */
+}
+
+.adminp-photo-stat-card:nth-child(2) .adminp-photo-stat-value {
+  color: #4CAF50; /* Approved - Green */
+}
+
+.adminp-photo-stat-card:nth-child(3) .adminp-photo-stat-value {
+  color: #F44336; /* Rejected - Red */
+}
+
+.adminp-photo-stat-card:nth-child(4) .adminp-photo-stat-value {
+  color: #2196F3; /* Total - Blue */
+}
+
+.adminp-photo-stat-subtitle {
+  color: #888;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
 }
 
 /* Photos Grid */
-.photos-grid-container {
+.adminp-photos-grid-container {
   background: #1a1a1a;
   border-radius: 10px;
   padding: 25px;
   border: 1px solid #333;
 }
 
-.photos-grid-header {
+.adminp-photos-grid-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -142,7 +155,7 @@
   border-bottom: 2px solid #333;
 }
 
-.photos-grid-header h3 {
+.adminp-photos-grid-header h3 {
   color: #ff4444;
   margin: 0;
   font-size: 1.3rem;
@@ -151,7 +164,7 @@
   gap: 10px;
 }
 
-.photos-count {
+.adminp-photos-count {
   background: #2a2a2a;
   color: #ff4444;
   padding: 4px 12px;
@@ -161,14 +174,14 @@
 }
 
 /* Photos Grid Layout */
-.photos-grid {
+.adminp-photos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
 /* Photo Card */
-.photo-card {
+.adminp-photo-card {
   background: #222;
   border-radius: 10px;
   overflow: hidden;
@@ -176,21 +189,21 @@
   transition: all 0.3s ease;
 }
 
-.photo-card:hover {
+.adminp-photo-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0,0,0,0.3);
   border-color: #444;
 }
 
 /* Photo Thumbnail */
-.photo-thumbnail {
+.adminp-photo-thumbnail {
   position: relative;
   height: 200px;
   background: #1a1a1a;
   overflow: hidden;
 }
 
-.photo-thumbnail img {
+.adminp-photo-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -198,11 +211,11 @@
   transition: transform 0.3s;
 }
 
-.photo-thumbnail img:hover {
+.adminp-photo-thumbnail img:hover {
   transform: scale(1.05);
 }
 
-.no-image-thumb {
+.adminp-no-image-thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -213,7 +226,7 @@
 }
 
 /* Status Badge */
-.photo-status-badge {
+.adminp-photo-status-badge {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -225,30 +238,30 @@
   text-transform: uppercase;
 }
 
-.status-pending {
+.adminp-status-pending {
   background: rgba(255, 170, 0, 0.2);
   color: #ffaa00;
   border: 1px solid rgba(255, 170, 0, 0.4);
 }
 
-.status-approved {
+.adminp-status-approved {
   background: rgba(0, 200, 0, 0.2);
   color: #00cc00;
   border: 1px solid rgba(0, 200, 0, 0.4);
 }
 
-.status-rejected {
+.adminp-status-rejected {
   background: rgba(255, 68, 68, 0.2);
   color: #ff4444;
   border: 1px solid rgba(255, 68, 68, 0.4);
 }
 
 /* Photo Info */
-.photo-card-info {
+.adminp-photo-card-info {
   padding: 20px;
 }
 
-.photo-title {
+.adminp-photo-title {
   color: white;
   font-size: 1.1rem;
   font-weight: 600;
@@ -258,32 +271,32 @@
   text-overflow: ellipsis;
 }
 
-.photo-meta {
+.adminp-photo-meta {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 15px;
 }
 
-.meta-item {
+.adminp-meta-item {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.meta-label {
+.adminp-meta-label {
   color: #aaa;
   font-size: 0.85rem;
   min-width: 70px;
 }
 
-.meta-value {
+.adminp-meta-value {
   color: white;
   font-weight: 500;
   font-size: 0.9rem;
 }
 
-.category-tag {
+.adminp-category-tag {
   background: rgba(255, 68, 68, 0.1);
   color: #ff4444;
   padding: 2px 8px;
@@ -292,7 +305,7 @@
   font-weight: 500;
 }
 
-.photo-description {
+.adminp-photo-description {
   color: #ccc;
   font-size: 0.9rem;
   margin: 0 0 15px 0;
@@ -304,14 +317,14 @@
 }
 
 /* Photo Actions */
-.photo-actions {
+.adminp-photo-actions {
   display: flex;
   gap: 10px;
   border-top: 1px solid #333;
   padding-top: 15px;
 }
 
-.action-btn {
+.adminp-action-btn {
   flex: 1;
   padding: 8px 12px;
   border-radius: 6px;
@@ -326,38 +339,38 @@
   transition: all 0.2s;
 }
 
-.btn-view {
+.adminp-btn-view {
   background: #2a2a2a;
   color: #fff;
   border: 1px solid #444;
 }
 
-.btn-approve {
+.adminp-btn-approve {
   background: rgba(0, 200, 0, 0.1);
   color: #00cc00;
   border: 1px solid rgba(0, 200, 0, 0.3);
 }
 
-.btn-reject {
+.adminp-btn-reject {
   background: rgba(255, 68, 68, 0.1);
   color: #ff4444;
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
-.btn-view:hover {
+.adminp-btn-view:hover {
   background: #333;
 }
 
-.btn-approve:hover {
+.adminp-btn-approve:hover {
   background: rgba(0, 200, 0, 0.2);
 }
 
-.btn-reject:hover {
+.adminp-btn-reject:hover {
   background: rgba(255, 68, 68, 0.2);
 }
 
 /* Loading State */
-.photo-loading {
+.adminp-photo-loading {
   text-align: center;
   padding: 60px 20px;
   background: #1a1a1a;
@@ -366,28 +379,28 @@
   margin-top: 30px;
 }
 
-.loading-spinner {
+.adminp-loading-spinner {
   border: 4px solid #333;
   border-top: 4px solid #ff4444;
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  animation: spin 1s linear infinite;
+  animation: adminp-spin 1s linear infinite;
   margin: 0 auto 20px;
 }
 
-@keyframes spin {
+@keyframes adminp-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.photo-loading p {
+.adminp-photo-loading p {
   color: #aaa;
   margin: 0;
 }
 
 /* Empty State */
-.photo-empty-state {
+.adminp-photo-empty-state {
   text-align: center;
   padding: 60px 30px;
   background: #1a1a1a;
@@ -396,25 +409,25 @@
   margin-top: 30px;
 }
 
-.photo-empty-icon {
+.adminp-photo-empty-icon {
   font-size: 3rem;
   color: #666;
   margin-bottom: 20px;
 }
 
-.photo-empty-state h4 {
+.adminp-photo-empty-state h4 {
   color: #ccc;
   margin: 0 0 10px 0;
   font-size: 1.2rem;
 }
 
-.photo-empty-state p {
+.adminp-photo-empty-state p {
   color: #888;
   margin: 5px 0;
 }
 
 /* Modal Styles */
-.photo-modal-overlay {
+.adminp-photo-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -428,7 +441,7 @@
   padding: 20px;
 }
 
-.photo-modal {
+.adminp-photo-modal {
   background: #1a1a1a;
   border-radius: 12px;
   max-width: 800px;
@@ -439,7 +452,7 @@
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
-.modal-header {
+.adminp-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -447,13 +460,13 @@
   border-bottom: 1px solid #333;
 }
 
-.modal-header h3 {
+.adminp-modal-header h3 {
   color: white;
   margin: 0;
   font-size: 1.3rem;
 }
 
-.modal-close-btn {
+.adminp-modal-close-btn {
   background: #333;
   border: 1px solid #444;
   color: #fff;
@@ -467,20 +480,20 @@
   font-size: 18px;
 }
 
-.modal-close-btn:hover {
+.adminp-modal-close-btn:hover {
   background: #444;
 }
 
-.modal-body {
+.adminp-modal-body {
   padding: 25px;
 }
 
 /* Full-size Photo */
-.photo-fullsize-container {
+.adminp-photo-fullsize-container {
   margin-bottom: 25px;
 }
 
-.photo-fullsize {
+.adminp-photo-fullsize {
   width: 100%;
   max-height: 400px;
   object-fit: contain;
@@ -489,7 +502,7 @@
 }
 
 /* Photo Details */
-.photo-details {
+.adminp-photo-details {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -499,31 +512,31 @@
   border-radius: 8px;
 }
 
-.detail-row {
+.adminp-detail-row {
   display: flex;
   align-items: flex-start;
   gap: 15px;
 }
 
-.detail-label {
+.adminp-detail-label {
   color: #ff4444;
   font-weight: 600;
   min-width: 100px;
   font-size: 0.9rem;
 }
 
-.detail-value {
+.adminp-detail-value {
   color: #fff;
   flex: 1;
   font-size: 0.95rem;
 }
 
 /* Rejection Reason */
-.rejection-section {
+.adminp-rejection-section {
   margin-bottom: 25px;
 }
 
-.rejection-section label {
+.adminp-rejection-section label {
   display: block;
   color: #ff4444;
   font-weight: 600;
@@ -531,7 +544,7 @@
   font-size: 0.9rem;
 }
 
-.rejection-textarea {
+.adminp-rejection-textarea {
   width: 100%;
   background: #222;
   border: 1px solid #444;
@@ -543,19 +556,19 @@
   font-size: 0.9rem;
 }
 
-.rejection-textarea:focus {
+.adminp-rejection-textarea:focus {
   outline: none;
   border-color: #ff4444;
 }
 
 /* Modal Actions */
-.modal-actions {
+.adminp-modal-actions {
   display: flex;
   gap: 15px;
   justify-content: flex-end;
 }
 
-.modal-btn {
+.adminp-modal-btn {
   padding: 12px 24px;
   border-radius: 6px;
   border: none;
@@ -568,32 +581,32 @@
   font-size: 0.95rem;
 }
 
-.modal-approve {
+.adminp-modal-approve {
   background: #00cc00;
   color: white;
 }
 
-.modal-reject {
+.adminp-modal-reject {
   background: #ff4444;
   color: white;
 }
 
-.modal-approve:hover {
+.adminp-modal-approve:hover {
   background: #00aa00;
 }
 
-.modal-reject:hover {
+.adminp-modal-reject:hover {
   background: #cc0000;
 }
 
 /* Batch Actions */
-.batch-actions {
+.adminp-batch-actions {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-.batch-btn {
+.adminp-batch-btn {
   background: #2a2a2a;
   color: #fff;
   border: 1px solid #444;
@@ -606,37 +619,37 @@
   gap: 6px;
 }
 
-.batch-approve {
+.adminp-batch-approve {
   background: rgba(0, 200, 0, 0.1);
   color: #00cc00;
   border: 1px solid rgba(0, 200, 0, 0.3);
 }
 
-.batch-approve:hover {
+.adminp-batch-approve:hover {
   background: rgba(0, 200, 0, 0.2);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .photos-grid {
+  .adminp-photos-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
   
-  .photo-review-header {
+  .adminp-photo-review-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
   
-  .photo-stats-grid {
+  .adminp-photo-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .modal-actions {
+  .adminp-modal-actions {
     flex-direction: column;
   }
   
-  .modal-btn {
+  .adminp-modal-btn {
     width: 100%;
     justify-content: center;
   }

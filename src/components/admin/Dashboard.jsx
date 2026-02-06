@@ -1,4 +1,4 @@
-// src/components/admin/Dashboard.jsx - FINAL
+// src/components/admin/Dashboard.jsx - UPDATED WITH admin- PREFIX
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, Calendar, Users, Image } from 'lucide-react';
@@ -22,14 +22,14 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="main-content">
-        <div className="content-header">
+        <div className="admin-content-header">
           <div>
             <h2>Admin Dashboard</h2>
             <p>Loading your salon information...</p>
           </div>
         </div>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
+        <div className="admin-loading-container">
+          <div className="admin-loading-spinner"></div>
           <p>Loading dashboard data...</p>
         </div>
       </div>
@@ -38,7 +38,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div className="content-header">
+      <div className="admin-content-header">
         <div>
           <h2>
             <Users size={24} />
@@ -49,49 +49,49 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Grid - EXACT same structure as Revenue */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Total Revenue</h3>
-            <div className="stat-icon">
+            <div className="admin-stat-icon">
               <DollarSign size={24} />
             </div>
           </div>
-          <div className="stat-value">Rs. --</div>
-          <p className="stat-desc">From all appointments</p>
+          <div className="admin-stat-value">--</div>
+          <p className="admin-stat-desc">From all appointments</p>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Today's Appointments</h3>
-            <div className="stat-icon">
+            <div className="admin-stat-icon">
               <Calendar size={24} />
             </div>
           </div>
-          <div className="stat-value">--</div>
-          <p className="stat-desc">Scheduled appointments</p>
+          <div className="admin-stat-value">--</div>
+          <p className="admin-stat-desc">Scheduled appointments</p>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Active Staff</h3>
-            <div className="stat-icon">
+            <div className="admin-stat-icon">
               <Users size={24} />
             </div>
           </div>
-          <div className="stat-value">--</div>
-          <p className="stat-desc">Currently working</p>
+          <div className="admin-stat-value">--</div>
+          <p className="admin-stat-desc">Currently working</p>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-header">
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
             <h3>Pending Photos</h3>
-            <div className="stat-icon">
+            <div className="admin-stat-icon">
               <Image size={24} />
             </div>
           </div>
-          <div className="stat-value">--</div>
-          <p className="stat-desc">Awaiting approval</p>
+          <div className="admin-stat-value">--</div>
+          <p className="admin-stat-desc">Awaiting approval</p>
         </div>
       </div>
     </div>
