@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/reception")
+@RequestMapping("/api/reception-management")  // 🚨 CHANGED HERE
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class ReceptionController {

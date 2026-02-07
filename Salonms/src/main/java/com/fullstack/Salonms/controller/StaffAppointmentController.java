@@ -42,7 +42,7 @@ public class StaffAppointmentController {
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Account is deactivated. Contact admin.");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
-            }
+             }
 
             staff.setPasswordHash(null);
             return ResponseEntity.ok(staff);

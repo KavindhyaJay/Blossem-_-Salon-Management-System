@@ -1,17 +1,20 @@
 package com.fullstack.Salonms.controller;
+
 import java.util.List;
 import java.util.Optional;
 
 import com.fullstack.Salonms.service.StaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.fullstack.Salonms.model.Staff;
 
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/api/staff-management")  // 🚨 CHANGED HERE
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasRole('ADMIN')")  // Added admin protection
 public class StaffController {
     @Autowired
     private StaffService staffService;
