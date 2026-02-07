@@ -17,7 +17,7 @@ public class Booking {
     private String time;
     private List<String>  staff;
     private double totalPayment;
-    private String payment; // e.g., "3000" or "Paid"
+    //private String payment; // e.g., "3000" or "Paid"
 
     public void setCustomerId(String customerId) {
     }

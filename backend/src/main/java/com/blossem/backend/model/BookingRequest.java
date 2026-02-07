@@ -8,12 +8,13 @@ public class BookingRequest {
     private String name;
     private String phone;
     private String email;
-    private String username;
-    private String password;
+    //private String username;
+    //private String password;
 
     private List<String> services;
     private List<String> staff;
     private String date;
     private String time;
-    private String payment;
+    private double totalPayment;
+    //private String payment;
 }

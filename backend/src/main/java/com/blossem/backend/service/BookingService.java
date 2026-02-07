@@ -27,30 +27,30 @@ public class BookingService {
         customer.setName(request.getName());
         customer.setPhone(request.getPhone());
         customer.setEmail(request.getEmail());
-
+        customerRepository.save(customer);
         Customer savedCustomer = customerRepository.save(customer);
 
         // 2️⃣ SAVE LOGIN FOR THIS CUSTOMER
-        Login login = new Login();
-        login.setEmail(request.getEmail());
-        login.setUsername(request.getUsername());
-        login.setPassword(passwordEncoder.encode(request.getPassword()));
+//        Login login = new Login();
+//        login.setEmail(request.getEmail());
+//        login.setUsername(request.getUsername());
+//        login.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        loginRepository.save(login);
+       // loginRepository.save(login);
 
         double totalPayment = 0;
 
-        for (String service : request.getServices()) {
-            switch (service) {
-                case "Nail Art" -> totalPayment += 3000;
-                case "Hair Styling" -> totalPayment += 2500;
-                case "Spa Treatment" -> totalPayment += 5000;
-                case "facial" -> totalPayment += 3500;
-                case "Professional Makeup" -> totalPayment += 4000;
-                case "hair cut" -> totalPayment += 6000;
-                case "hair color" -> totalPayment += 9000;
-            }
-        }
+//        for (String service : request.getServices()) {
+//            switch (service) {
+//                case "Nail Art" -> totalPayment += 3000;
+//                case "Hair Styling" -> totalPayment += 2500;
+//                case "Spa Treatment" -> totalPayment += 5000;
+//                case "facial" -> totalPayment += 3500;
+//                case "Professional Makeup" -> totalPayment += 4000;
+//                case "hair cut" -> totalPayment += 6000;
+//                case "hair color" -> totalPayment += 9000;
+//            }
+//        }
 
         // 3️⃣ SAVE BOOKING FOR THIS CUSTOMER
         Booking booking = new Booking();
@@ -59,8 +59,8 @@ public class BookingService {
         booking.setStaff(request.getStaff());
         booking.setDate(request.getDate());
         booking.setTime(request.getTime());
-        booking.setTotalPayment(totalPayment);
-        booking.setPayment(request.getPayment());
+        booking.setTotalPayment(request.getTotalPayment());
+        //booking.setPayment(request.getPayment());
 
         return bookingRepository.save(booking);
     }
