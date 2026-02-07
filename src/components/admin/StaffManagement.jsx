@@ -75,7 +75,8 @@ const StaffManagement = () => {
         'Content-Type': 'application/json'
       };
       
-      const response = await axios.get(`${API_BASE_URL}/api/staff`, {
+      // 🚨 CHANGED ENDPOINT HERE
+      const response = await axios.get(`${API_BASE_URL}/api/staff-management`, {
         headers: headers,
         timeout: 10000,
         validateStatus: function (status) {
@@ -111,7 +112,7 @@ const StaffManagement = () => {
         throw new Error(`Forbidden: ${errorMsg}`);
       }
       else if (response.status === 404) {
-        throw new Error('Endpoint not found: /api/staff');
+        throw new Error('Endpoint not found: /api/staff-management');
       }
       else {
         throw new Error(`Server error ${response.status}`);
@@ -228,7 +229,9 @@ const StaffManagement = () => {
       setSaving(true);
       setError('');
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_BASE_URL}/api/staff`, dataToSend, {
+      
+      // 🚨 CHANGED ENDPOINT HERE
+      const response = await axios.post(`${API_BASE_URL}/api/staff-management`, dataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -297,8 +300,10 @@ const StaffManagement = () => {
       setSaving(true);
       setError('');
       const token = localStorage.getItem('token');
+      
+      // 🚨 CHANGED ENDPOINT HERE
       const response = await axios.put(
-        `${API_BASE_URL}/api/staff/${editingStaff._id || editingStaff.id}`,
+        `${API_BASE_URL}/api/staff-management/${editingStaff._id || editingStaff.id}`,
         dataToSend,
         {
           headers: {
@@ -330,7 +335,9 @@ const StaffManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_BASE_URL}/api/staff/${id}`, {
+      
+      // 🚨 CHANGED ENDPOINT HERE
+      await axios.delete(`${API_BASE_URL}/api/staff-management/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

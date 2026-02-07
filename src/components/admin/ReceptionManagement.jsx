@@ -68,8 +68,8 @@ const ReceptionManagement = () => {
         'Content-Type': 'application/json'
       };
       
-      // Make the request with axios
-      const response = await axios.get(`${API_BASE_URL}/api/reception`, {
+      // Make the request with axios - 🚨 CHANGED ENDPOINT HERE
+      const response = await axios.get(`${API_BASE_URL}/api/reception-management`, {
         headers: headers,
         timeout: 10000,
         validateStatus: function (status) {
@@ -108,7 +108,7 @@ const ReceptionManagement = () => {
         throw new Error(`Forbidden: ${errorMsg}`);
       }
       else if (response.status === 404) {
-        throw new Error('Endpoint not found: /api/reception');
+        throw new Error('Endpoint not found: /api/reception-management');
       }
       else {
         throw new Error(`Server error ${response.status}`);
@@ -185,7 +185,9 @@ const ReceptionManagement = () => {
       setSaving(true);
       setError('');
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_BASE_URL}/api/reception`, formData, {
+      
+      // 🚨 CHANGED ENDPOINT HERE
+      const response = await axios.post(`${API_BASE_URL}/api/reception-management`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -249,8 +251,10 @@ const ReceptionManagement = () => {
       setSaving(true);
       setError('');
       const token = localStorage.getItem('token');
+      
+      // 🚨 CHANGED ENDPOINT HERE
       const response = await axios.put(
-        `${API_BASE_URL}/api/reception/${editingReceptionist._id || editingReceptionist.id}`,
+        `${API_BASE_URL}/api/reception-management/${editingReceptionist._id || editingReceptionist.id}`,
         formData,
         {
           headers: {
@@ -283,7 +287,9 @@ const ReceptionManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_BASE_URL}/api/reception/${id}`, {
+      
+      // 🚨 CHANGED ENDPOINT HERE
+      await axios.delete(`${API_BASE_URL}/api/reception-management/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
