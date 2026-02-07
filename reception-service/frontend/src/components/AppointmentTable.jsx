@@ -16,9 +16,14 @@ const AppointmentTable = ({ appointments, onEdit, onDelete, onMarkArrived, onUpd
     const formatCurrency = (value) => {
         if (value === null || value === undefined || value === '') return '-';
         const numeric = Number(value);
-        return Number.isFinite(numeric)
-            ? numeric.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })
-            : value;
+        if (!Number.isFinite(numeric)) {
+            return value;
+        }
+        const formatted = new Intl.NumberFormat('en-LK', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(numeric);
+        return `LKR ${formatted}`;
     };
 
     return (

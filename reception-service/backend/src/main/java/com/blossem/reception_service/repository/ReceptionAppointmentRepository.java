@@ -11,5 +11,9 @@ import java.util.Optional;
 public interface ReceptionAppointmentRepository extends MongoRepository<ReceptionAppointment, String> {
     Optional<ReceptionAppointment> findByBookingId(String bookingId);
 
+    List<ReceptionAppointment> findAllByBookingId(String bookingId);
+
     List<ReceptionAppointment> findByEmail(String email);
+
+    Optional<ReceptionAppointment> findFirstByEmailIgnoreCaseAndDateAndTime(String email, String date, String time);
 }

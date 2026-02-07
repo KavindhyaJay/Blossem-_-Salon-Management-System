@@ -327,6 +327,138 @@ body {
   gap: 8px;
 }
 
+.daily-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.daily-meta__block {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.daily-meta__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.daily-meta__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.daily-notes {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.daily-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.daily-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.daily-control label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.daily-control select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px;
+  padding-right: 40px;
+}
+
+.daily-control select:focus {
+  outline: none;
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 2px rgba(255, 95, 132, 0.25);
+}
+
+.daily-control select option {
+  background-color: #1d1b23;
+  color: #fff;
+}
+
+.daily-payment-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.daily-payment-control button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-red);
+  color: #fff8fb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.daily-payment-control button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(255, 95, 132, 0.4);
+}
+
+.daily-payment-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.daily-payment-pill.is-paid {
+  background: rgba(255, 95, 132, 0.18);
+  border-color: rgba(255, 95, 132, 0.55);
+  color: #ffc5d5;
+}
+
+.daily-payment-pill.is-pending {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .tag {
   padding: 4px 10px;
   border-radius: 999px;
@@ -350,6 +482,7 @@ body {
   background: rgba(255, 135, 158, 0.25);
   color: #fff5f7;
 }
+
 
 /* Error Banner */
 .error-banner {
@@ -415,6 +548,7 @@ body {
   overflow: hidden;
   border: 1px solid var(--border-color);
 }
+
 
 /* Login Page */
 .login-root {

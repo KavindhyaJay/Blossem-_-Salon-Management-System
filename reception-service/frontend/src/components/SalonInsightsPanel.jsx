@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import "../styles/insightsPanel.css";
 
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -26,13 +26,13 @@ const normalizeDateKey = (value) => {
 const formatCurrency = (value) => {
     const numeric = Number(value);
     if (Number.isFinite(numeric)) {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
+        const formatted = new Intl.NumberFormat("en-LK", {
+            minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(numeric);
+        return `LKR ${formatted}`;
     }
-    return "$0";
+    return "LKR 0";
 };
 
 const formatLongDate = (value) => {
@@ -47,220 +47,38 @@ const formatLongDate = (value) => {
     });
 };
 
-const servicesList = (services) => {
-    if (!services) {
-        return [];
-    }
-    if (Array.isArray(services)) {
-        return services.filter(Boolean);
-    }
-    if (typeof services === "string") {
-        return services.split(",").map((item) => item.trim()).filter(Boolean);
-    }
-    return [];
-};
+export default function SalonInsightsPanel({ appointments = [], loading = false, selectedDate = null }) {
+    const realTodayKey = normalizeDateKey(new Date());
+    const activeDate = selectedDate || new Date();
+    const activeKey = normalizeDateKey(activeDate) || realTodayKey;
 
-export default function SalonInsightsPanel({ appointments = [], loading = false, onMarkArrived, onMarkPaymentStatus, onUpdatePaymentCheck, activeView, onViewChange, defaultView = "today" }) {
-    const isControlled = typeof activeView === "string";
-    const [internalView, setInternalView] = useState(defaultView);
-    const currentView = isControlled ? activeView : internalView;
-    const [query, setQuery] = useState("");
-
-    const handleViewChange = (view) => {
-        if (!isControlled) {
-            setInternalView(view);
-        }
-        onViewChange?.(view);
-    };
-
-    const searchValue = query.trim().toLowerCase();
-    const todayKey = normalizeDateKey(new Date());
-
-    const filteredAppointments = useMemo(() => {
-        if (!searchValue) {
-            return appointments;
-        }
-        return appointments.filter((apt) => {
-            const haystack = [
-                apt.customerName,
-                apt.email,
-                apt.staff,
-                Array.isArray(apt.services) ? apt.services.join(" ") : apt.services,
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase();
-            return haystack.includes(searchValue);
-        });
-    }, [appointments, searchValue]);
-
-    const todayAppointments = useMemo(
-        () => filteredAppointments.filter((apt) => normalizeDateKey(apt.date) === todayKey),
-        [filteredAppointments, todayKey]
+    const dailyAppointments = useMemo(
+        () => appointments.filter((apt) => normalizeDateKey(apt.date) === activeKey),
+        [appointments, activeKey]
     );
 
-    const orderedAppointments = useMemo(() => {
-        return [...filteredAppointments].sort((a, b) => {
-            const dateA = normalizeDateKey(a.date) || "";
-            const dateB = normalizeDateKey(b.date) || "";
-            if (dateA === dateB) {
-                return (a.time || "").localeCompare(b.time || "");
-            }
-            return dateA.localeCompare(dateB);
-        });
-    }, [filteredAppointments]);
-
-    const arrivedCount = todayAppointments.filter((apt) => apt.customerArrived === "Yes").length;
-    const waitingCount = Math.max(todayAppointments.length - arrivedCount, 0);
-    const todayRevenue = todayAppointments.reduce((sum, apt) => sum + (Number(apt.totalPayment) || 0), 0);
-
-    const renderAppointmentCards = (list) => {
-        if (!list.length) {
-            return (
-                <div className="insight-empty">
-                    <p>No appointments found for this view.</p>
-                </div>
-            );
-        }
-
-        return (
-            <div className="insight-cards">
-                {list.map((apt) => {
-                    const appointmentId = apt.id || apt._id;
-                    const cardServices = servicesList(apt.services);
-                    const arrived = apt.customerArrived === "Yes";
-                    const rawPaymentStatus = apt.paymentStatus || apt.payment || "Pending";
-                    const paymentLabel = typeof rawPaymentStatus === "string" && rawPaymentStatus.trim() ? rawPaymentStatus.trim() : "Pending";
-                    const isPaid = paymentLabel.toLowerCase() === "paid";
-                    const rawPaymentChecked = apt.paymentChecked || apt.receptionPaymentChecked || "No";
-                    const normalizedPaymentChecked = typeof rawPaymentChecked === "string" && rawPaymentChecked.trim()
-                        ? rawPaymentChecked.trim()
-                        : "No";
-                    const isPaymentChecked = normalizedPaymentChecked.toLowerCase() === "yes";
-                    const paymentCheckedLabel = isPaymentChecked ? "Yes" : "No";
-
-                    return (
-                        <article key={appointmentId || apt.email} className={`insight-card ${arrived ? "insight-card--arrived" : ""}`}>
-                            <div className="insight-card__row">
-                                <span className="insight-time">{apt.time || "All day"}</span>
-                                <span className={`insight-pill ${arrived ? "is-arrived" : "is-waiting"}`}>
-                                    {arrived ? "Arrived" : "Waiting"}
-                                </span>
-                            </div>
-
-                            <div className="insight-contact">
-                                <p className="insight-email">{apt.email || "No email on record"}</p>
-                                <p className="insight-name">{apt.customerName || "Walk-in client"}</p>
-                            </div>
-
-                            <div className="insight-services">
-                                {cardServices.length ? (
-                                    cardServices.map((service, index) => (
-                                        <span key={`${service}-${index}`} className="service-chip">
-                                            {service}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="service-chip muted">Services TBD</span>
-                                )}
-                            </div>
-
-                            <div className="insight-meta">
-                                <span>Staff: {apt.staff || "Unassigned"}</span>
-                                <span>{formatCurrency(apt.totalPayment)}</span>
-                            </div>
-
-                            <div className="insight-payments">
-                                <div className="insight-payments__row">
-                                    <span className="insight-payments__label">Payment:</span>
-                                    <span className={`payment-chip ${isPaid ? "is-paid" : "is-pending"}`}>
-                                        {isPaid ? "Paid" : "Pending"}
-                                    </span>
-                                    {!isPaid && onMarkPaymentStatus && (
-                                        <button type="button" className="payment-action" onClick={() => onMarkPaymentStatus(apt, "Paid")}>
-                                            Mark as Paid
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="insight-payments__row">
-                                    <span className="insight-payments__label">Payment Checked:</span>
-                                    <span className={`payment-chip ${isPaymentChecked ? "is-paid" : "is-pending"}`}>
-                                        {isPaymentChecked ? "Yes" : "No"}
-                                    </span>
-                                    {appointmentId && onUpdatePaymentCheck && (
-                                        <div className="payment-check-toggle">
-                                            {["No", "Yes"].map((option) => (
-                                                <button
-                                                    key={option}
-                                                    type="button"
-                                                    className={`payment-check-toggle__btn ${paymentCheckedLabel === option ? "is-active" : ""}`}
-                                                    onClick={() => {
-                                                        if (paymentCheckedLabel === option) {
-                                                            return;
-                                                        }
-                                                        onUpdatePaymentCheck(appointmentId, option);
-                                                    }}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {!arrived && appointmentId && onMarkArrived && (
-                                <button className="insight-action" onClick={() => onMarkArrived(appointmentId)}>
-                                    Mark as Arrived
-                                </button>
-                            )}
-                        </article>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    const renderTabContent = () => {
-        if (loading) {
-            return (
-                <div className="insight-loader">
-                    <div className="dot" />
-                    <div className="dot" />
-                    <div className="dot" />
-                </div>
-            );
-        }
-
-        if (currentView === "calendar") {
-            return (
-                <div className="insight-calendar-placeholder">
-                    <p>Use the calendar below to browse bookings by month.</p>
-                </div>
-            );
-        }
-
-        if (currentView === "today") {
-            return renderAppointmentCards(todayAppointments);
-        }
-
-        return renderAppointmentCards(orderedAppointments);
-    };
+    const arrivedCount = dailyAppointments.filter((apt) => apt.customerArrived === "Yes").length;
+    const waitingCount = Math.max(dailyAppointments.length - arrivedCount, 0);
+    const dailyRevenue = dailyAppointments.reduce((sum, apt) => sum + (Number(apt.totalPayment) || 0), 0);
+    const showingRealToday = activeKey === realTodayKey;
+    const revenueLabel = showingRealToday ? "Today's Revenue" : "Selected Day Revenue";
+    const flowLabel = showingRealToday ? "Today's flow" : "Selected day flow";
+    const dateLabel = formatLongDate(activeDate);
 
     return (
         <section className="insights-shell">
             <div className="insights-top">
                 <div>
                     <p className="insights-eyebrow">Front Desk Snapshot</p>
-                    <h2>Today's flow</h2>
+                    <h2>{flowLabel}</h2>
                 </div>
-                <p className="insights-date">{formatLongDate(new Date())}</p>
+                <p className="insights-date">{dateLabel}</p>
             </div>
 
             <div className="insight-stats">
                 <article className="stat-card">
-                    <p>Today's Appointments</p>
-                    <strong>{todayAppointments.length}</strong>
+                    <p>{showingRealToday ? "Today's Appointments" : "Selected Day Appointments"}</p>
+                    <strong>{dailyAppointments.length}</strong>
                 </article>
                 <article className="stat-card">
                     <p>Arrived</p>
@@ -271,37 +89,22 @@ export default function SalonInsightsPanel({ appointments = [], loading = false,
                     <strong>{waitingCount}</strong>
                 </article>
                 <article className="stat-card accent">
-                    <p>Today's Revenue</p>
-                    <strong>{formatCurrency(todayRevenue)}</strong>
+                    <p>{revenueLabel}</p>
+                    <strong>{formatCurrency(dailyRevenue)}</strong>
                 </article>
             </div>
 
-            <div className="insight-search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    type="text"
-                    placeholder="Search by customer, email, staff, or service"
-                />
+            <div className="insight-calendar-placeholder">
+                {loading ? (
+                    <div className="insight-loader">
+                        <div className="dot" />
+                        <div className="dot" />
+                        <div className="dot" />
+                    </div>
+                ) : (
+                    <p>Use the calendar below to explore and manage bookings for specific dates.</p>
+                )}
             </div>
-
-            <div className="insight-tabs">
-                <button className={currentView === "today" ? "active" : ""} onClick={() => handleViewChange("today")}>
-                    Today's Appointments
-                </button>
-                <button className={currentView === "calendar" ? "active" : ""} onClick={() => handleViewChange("calendar")}>
-                    Calendar View
-                </button>
-                <button className={currentView === "all" ? "active" : ""} onClick={() => handleViewChange("all")}>
-                    All Appointments
-                </button>
-            </div>
-
-            {renderTabContent()}
         </section>
     );
 }

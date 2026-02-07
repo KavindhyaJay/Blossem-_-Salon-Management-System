@@ -15,7 +15,6 @@ export default function ReceptionDashboard() {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [activeView, setActiveView] = useState("today");
   const [syncStatus, setSyncStatus] = useState({ running: false, summary: null, error: null, timestamp: null });
   const [arrivalPrompt, setArrivalPrompt] = useState({ open: false, appointment: null });
   const [sendingArrival, setSendingArrival] = useState(false);
@@ -47,6 +46,29 @@ export default function ReceptionDashboard() {
     if (!key) return [];
     return appointments.filter((appointment) => normalizeDateKey(appointment.date) === key);
   }, [appointments, selectedDate]);
+
+  const formatCurrency = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return "LKR 0";
+    }
+    const formatted = new Intl.NumberFormat("en-LK", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numeric);
+    return `LKR ${formatted}`;
+  };
+
+  const formatTimeLabel = (value) => {
+    if (!value) {
+      return "—";
+    }
+    const date = new Date(`1970-01-01T${value}`);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  };
 
   const staffOptions = useMemo(() => {
     const directory = new Map(STAFF_DIRECTORY.map((staff) => [staff.name.toLowerCase(), { ...staff }]));
@@ -108,7 +130,7 @@ export default function ReceptionDashboard() {
   };
 
   useEffect(() => {
-    // Initial sync pulls fresh booking data before loading appointments
+    loadAppointments();
     performSync();
 
     const refreshInterval = setInterval(loadAppointments, 10000);
@@ -280,7 +302,6 @@ export default function ReceptionDashboard() {
   };
 
   const handleCalendarMonthChange = (monthDate) => {
-    setActiveView("calendar");
     setSelectedDate((prev) => clampDateToMonth(monthDate, prev));
   };
 
@@ -334,95 +355,141 @@ export default function ReceptionDashboard() {
         <SalonInsightsPanel
           appointments={appointments}
           loading={loading}
-          activeView={activeView}
-          onViewChange={setActiveView}
-          onMarkArrived={(id) => handleMarkArrived(id, "Yes")}
-          onMarkPaymentStatus={handlePaymentStatusUpdate}
+          selectedDate={selectedDate}
         />
 
-        {activeView === "calendar" && (
-          <section className="calendar-section">
-            <div className="calendar-card">
-              <div className="calendar-card__header">
-                <div>
-                  <p className="calendar-eyebrow">Calendar</p>
-                  <h2>Check daily bookings</h2>
-                  <p className="calendar-subtitle">Tap a date to see who is scheduled.</p>
-                </div>
+        <section className="calendar-section">
+          <div className="calendar-card">
+            <div className="calendar-card__header">
+              <div>
+                <p className="calendar-eyebrow">Calendar</p>
+                <h2>Check daily bookings</h2>
+                <p className="calendar-subtitle">Tap a date to see who is scheduled.</p>
               </div>
-              <BookingCalendar
-                bookings={appointments}
-                selectedDate={selectedDate}
-                onDateClick={handleCalendarDateClick}
-                onMonthChange={handleCalendarMonthChange}
-              />
             </div>
+            <BookingCalendar
+              bookings={appointments}
+              selectedDate={selectedDate}
+              onDateClick={handleCalendarDateClick}
+              onMonthChange={handleCalendarMonthChange}
+            />
+          </div>
 
-            <div className="daily-card">
-              <div className="daily-card__header">
-                <div>
-                  <p className="calendar-eyebrow">Selected date</p>
-                  <h3>{selectedDateLabel}</h3>
-                </div>
-                {selectedDate && (
-                  <span className="daily-count">
-                    {appointmentsForSelectedDate.length} {appointmentsForSelectedDate.length === 1 ? "booking" : "bookings"}
-                  </span>
-                )}
+          <div className="daily-card">
+            <div className="daily-card__header">
+              <div>
+                <p className="calendar-eyebrow">Selected date</p>
+                <h3>{selectedDateLabel}</h3>
               </div>
-              <div className="daily-card__body">
-                {!selectedDate ? (
-                  <div className="daily-empty-state">
-                    <div className="daily-empty-icon">
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </div>
-                    <p>Select a date to preview appointments.</p>
+              {selectedDate && (
+                <span className="daily-count">
+                  {appointmentsForSelectedDate.length} {appointmentsForSelectedDate.length === 1 ? "booking" : "bookings"}
+                </span>
+              )}
+            </div>
+            <div className="daily-card__body">
+              {!selectedDate ? (
+                <div className="daily-empty-state">
+                  <div className="daily-empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
                   </div>
-                ) : appointmentsForSelectedDate.length === 0 ? (
-                  <div className="daily-empty-state">
-                    <div className="daily-empty-icon">
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                        <path d="M9 14h6" />
-                      </svg>
-                    </div>
-                    <p>No appointments scheduled for this date.</p>
+                  <p>Select a date to preview appointments.</p>
+                </div>
+              ) : appointmentsForSelectedDate.length === 0 ? (
+                <div className="daily-empty-state">
+                  <div className="daily-empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                      <path d="M9 14h6" />
+                    </svg>
                   </div>
-                ) : (
-                  <ul className="daily-list">
-                    {appointmentsForSelectedDate.map((apt) => (
-                      <li key={apt.id || apt._id} className="daily-list__item">
+                  <p>No appointments scheduled for this date.</p>
+                </div>
+              ) : (
+                <ul className="daily-list">
+                  {appointmentsForSelectedDate.map((apt) => {
+                    const paymentState = apt.paymentStatus || apt.payment || "Pending";
+                    const appointmentId = apt.id || apt._id;
+                    return (
+                      <li key={appointmentId} className="daily-list__item">
                         <div className="daily-time">{apt.time || "All day"}</div>
                         <div className="daily-details">
                           <p className="daily-name">{apt.customerName || "Unknown client"}</p>
                           <p className="daily-services">
                             {Array.isArray(apt.services) ? apt.services.join(", ") : apt.services || "Service TBD"}
                           </p>
-                          <div className="daily-tags">
-                            <span className={`tag ${apt.customerArrived === "Yes" ? "success" : "pending"}`}>
-                              {apt.customerArrived === "Yes" ? "Arrived" : "Not arrived"}
-                            </span>
-                            <span className={`tag ${apt.paymentChecked === "Yes" ? "success" : "warning"}`}>
-                              {apt.paymentChecked === "Yes" ? "Payment checked" : "Payment pending"}
-                            </span>
+
+                          <div className="daily-meta">
+                            <div className="daily-meta__block">
+                              <p className="daily-meta__label">Staff</p>
+                              <p className="daily-meta__value">{apt.staff || "Not assigned"}</p>
+                            </div>
+                            <div className="daily-meta__block">
+                              <p className="daily-meta__label">Total</p>
+                              <p className="daily-meta__value">{formatCurrency(apt.totalPayment)}</p>
+                            </div>
+                          </div>
+
+                          {apt.receptionNotes && (
+                            <p className="daily-notes">Notes: {apt.receptionNotes}</p>
+                          )}
+
+                          <div className="daily-controls">
+                            <div className="daily-control">
+                              <label>Payment Status</label>
+                              <div className="daily-payment-control">
+                                <span className={`daily-payment-pill ${paymentState === "Paid" ? "is-paid" : "is-pending"}`}>
+                                  {paymentState}
+                                </span>
+                                {paymentState !== "Paid" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePaymentStatusUpdate(apt, "Paid")}
+                                  >
+                                    Mark Paid
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="daily-control">
+                              <label>Customer Arrived</label>
+                              <select
+                                value={apt.customerArrived === "Yes" ? "Yes" : "No"}
+                                onChange={(e) => handleMarkArrived(appointmentId, e.target.value)}
+                              >
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                              </select>
+                            </div>
+                            <div className="daily-control">
+                              <label>Payment Checked</label>
+                              <select
+                                value={apt.paymentChecked === "Yes" ? "Yes" : "No"}
+                                onChange={(e) => handleUpdatePaymentCheck(appointmentId, e.target.value)}
+                              >
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
                       </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+
 
       </main>
 

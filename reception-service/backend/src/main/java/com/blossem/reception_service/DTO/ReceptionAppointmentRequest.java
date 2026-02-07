@@ -3,23 +3,18 @@ package com.blossem.reception_service.DTO;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.validation.constraints.NotBlank;
-
 public class ReceptionAppointmentRequest {
 
     private String bookingId; // optional: if omitted create booking first
 
-    @NotBlank
     private String email; // required: used to fetch customer name from customer collection
 
     private String customerName; // optional: will be fetched from customer collection if not provided
 
     private String[] services;
 
-    @NotBlank
     private String date;
 
-    @NotBlank
     private String time;
 
     private String staff;

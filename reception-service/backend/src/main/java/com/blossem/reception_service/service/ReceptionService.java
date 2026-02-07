@@ -7,6 +7,7 @@ import com.blossem.reception_service.model.ReceptionAppointment;
 import com.blossem.reception_service.repository.BookingRepository;
 import com.blossem.reception_service.repository.CustomerRepository;
 import com.blossem.reception_service.repository.ReceptionAppointmentRepository;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,11 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReceptionService {
@@ -53,15 +56,39 @@ public class ReceptionService {
      * fallback.
      */
     private String fetchCustomerName(String email, String fallbackName) {
-        Optional<Customer> customerOpt = customerRepo.findByEmail(email);
-        if (customerOpt.isPresent()) {
-            return customerOpt.get().getName();
+        if (email != null && !email.isBlank()) {
+            Optional<Customer> customerOpt = lookupCustomerByEmail(email);
+            if (customerOpt.isPresent() && customerOpt.get().getName() != null
+                    && !customerOpt.get().getName().isBlank()) {
+                return customerOpt.get().getName();
+            }
         }
-        // If customer not found but fallback name provided, use it
         if (fallbackName != null && !fallbackName.isBlank()) {
             return fallbackName;
         }
-        throw new RuntimeException("Customer not found with email: " + email + " and no customer name provided");
+        return firstNonBlank(email, "Customer");
+    }
+
+    private String safeCustomerNameLookup(String email, String fallbackName) {
+        String sanitizedFallback = (fallbackName != null && !fallbackName.isBlank()) ? fallbackName : null;
+        if (email != null && !email.isBlank()) {
+            return lookupCustomerByEmail(email)
+                    .map(Customer::getName)
+                    .filter(name -> name != null && !name.isBlank())
+                    .orElseGet(() -> firstNonBlank(sanitizedFallback, email, "Customer"));
+        }
+        return firstNonBlank(sanitizedFallback, "Customer");
+    }
+
+    private Optional<Customer> lookupCustomerByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            return customerRepo.findByEmail(email);
+        } catch (IncorrectResultSizeDataAccessException ex) {
+            return customerRepo.findAllByEmailIgnoreCase(email.trim()).stream().findFirst();
+        }
     }
 
     // Create reception appointment from request
@@ -75,9 +102,10 @@ public class ReceptionService {
         }
         Double totalPayment = parseAmount(req.getAmount());
         String paymentCheckedInput = req.getPaymentChecked();
+        String customerArrivedInput = req.getCustomerArrived();
 
         String bookingId = req.getBookingId();
-        Booking linkedBooking;
+        Booking linkedBooking = null;
 
         // Create booking if not provided
         if (bookingId == null || bookingId.isBlank()) {
@@ -88,39 +116,54 @@ public class ReceptionService {
             newBooking.setTime(req.getTime());
             newBooking.setStaff(req.getStaff());
             newBooking.setPaymentStatus(paymentStatus);
-            newBooking.setPaymentChecked(normalizeYesNoValue(paymentCheckedInput, "No"));
             newBooking.setTotalPayment(totalPayment);
             linkedBooking = bookingRepo.save(newBooking);
-            bookingId = linkedBooking.getId();
+
         } else {
-            Optional<Booking> existingBookingOpt = bookingRepo.findById(bookingId);
-            if (existingBookingOpt.isEmpty()) {
-                throw new RuntimeException("Provided bookingId not found: " + bookingId);
-            }
-            linkedBooking = existingBookingOpt.get();
+            linkedBooking = bookingRepo.findById(bookingId)
+                    .orElseThrow(() -> new RuntimeException("Provided bookingId not found: " + bookingId));
             boolean bookingUpdated = false;
-            if (totalPayment != null) {
+            if (!Arrays.equals(linkedBooking.getServices(), req.getServices())) {
+                linkedBooking.setServices(cloneServices(req.getServices()));
+                bookingUpdated = true;
+            }
+            if (!Objects.equals(linkedBooking.getDate(), req.getDate())) {
+                linkedBooking.setDate(req.getDate());
+                bookingUpdated = true;
+            }
+            if (!Objects.equals(linkedBooking.getTime(), req.getTime())) {
+                linkedBooking.setTime(req.getTime());
+                bookingUpdated = true;
+            }
+            if (!Objects.equals(linkedBooking.getStaff(), req.getStaff())) {
+                linkedBooking.setStaff(req.getStaff());
+                bookingUpdated = true;
+            }
+            if (req.getEmail() != null && !req.getEmail().isBlank()
+                    && !Objects.equals(linkedBooking.getEmail(), req.getEmail())) {
+                linkedBooking.setEmail(req.getEmail());
+                bookingUpdated = true;
+            }
+            if (!Objects.equals(linkedBooking.getPaymentStatus(), paymentStatus)) {
+                linkedBooking.setPaymentStatus(paymentStatus);
+                bookingUpdated = true;
+            }
+            if (totalPayment != null && !Objects.equals(linkedBooking.getTotalPayment(), totalPayment)) {
                 linkedBooking.setTotalPayment(totalPayment);
                 bookingUpdated = true;
             }
-            if (paymentCheckedInput != null && !paymentCheckedInput.isBlank()) {
-                linkedBooking.setPaymentChecked(normalizeYesNoValue(paymentCheckedInput, "No"));
-                bookingUpdated = true;
-            } else if (linkedBooking.getPaymentChecked() == null || linkedBooking.getPaymentChecked().isBlank()) {
-                linkedBooking.setPaymentChecked("No");
-                bookingUpdated = true;
-            }
             if (bookingUpdated) {
-                bookingRepo.save(linkedBooking);
+                linkedBooking = bookingRepo.save(linkedBooking);
             }
         }
 
+        String normalizedPaymentChecked = "No";
+        String normalizedCustomerArrived = "No";
+
         // Reuse existing reception appointment for the booking if present to avoid
         // duplicates
-        ReceptionAppointment ap = null;
-        if (bookingId != null && !bookingId.isBlank()) {
-            ap = repo.findByBookingId(bookingId).orElse(null);
-        }
+        ReceptionAppointment ap = resolveAppointmentForBookingSnapshot(bookingId, req.getEmail(), req.getDate(),
+                req.getTime()).orElse(null);
         boolean isNewAppointment = (ap == null);
         if (isNewAppointment) {
             ap = new ReceptionAppointment();
@@ -138,23 +181,22 @@ public class ReceptionService {
                 ? totalPayment
                 : (linkedBooking != null ? linkedBooking.getTotalPayment() : null);
         ap.setTotalPayment(safeDouble(appointmentTotal));
-        String paymentChecked = normalizeYesNoValue(
-                firstNonBlank(paymentCheckedInput, linkedBooking != null ? linkedBooking.getPaymentChecked() : null),
-                "No");
-        ap.setPaymentChecked(paymentChecked);
-        ap.setReceptionNotes(req.getReceptionNotes());
-        String customerArrived = req.getCustomerArrived() != null ? req.getCustomerArrived() : "No";
-        ap.setCustomerArrived(customerArrived);
-        ap.setUpdatedAt(Instant.now());
-
-        // Sync customer_arrived and payment_checked to booking
-        if (linkedBooking != null) {
-            if (!Objects.equals(linkedBooking.getPaymentChecked(), paymentChecked)) {
-                linkedBooking.setPaymentChecked(paymentChecked);
-            }
-            linkedBooking.setCustomerArrived(customerArrived);
-            bookingRepo.save(linkedBooking);
+        if (isNewAppointment) {
+            ap.setPaymentChecked(normalizedPaymentChecked);
+        } else if (paymentCheckedInput != null) {
+            ap.setPaymentChecked(
+                    normalizeYesNoValue(paymentCheckedInput,
+                            ap.getPaymentChecked() != null ? ap.getPaymentChecked() : normalizedPaymentChecked));
         }
+        ap.setReceptionNotes(req.getReceptionNotes());
+        if (isNewAppointment) {
+            ap.setCustomerArrived(normalizedCustomerArrived);
+        } else if (customerArrivedInput != null) {
+            ap.setCustomerArrived(
+                    normalizeYesNoValue(customerArrivedInput,
+                            ap.getCustomerArrived() != null ? ap.getCustomerArrived() : normalizedCustomerArrived));
+        }
+        ap.setUpdatedAt(Instant.now());
 
         return repo.save(ap);
     }
@@ -162,17 +204,23 @@ public class ReceptionService {
     // Create from existing booking
     @Transactional
     public ReceptionAppointment createFromExistingBooking(String bookingId) {
-        return createFromExistingBooking(bookingId, null);
+        return createFromExistingBooking(bookingId, null, null);
     }
 
     // Create from existing booking with email
     @Transactional
     public ReceptionAppointment createFromExistingBooking(String bookingId, String email) {
+        return createFromExistingBooking(bookingId, email, null);
+    }
+
+    // Create from existing booking with email and fallback name
+    @Transactional
+    public ReceptionAppointment createFromExistingBooking(String bookingId, String email, String fallbackCustomerName) {
         Booking b = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
 
         // Use email from booking if not provided, or use provided email
-        String emailToUse = (email != null && !email.isBlank()) ? email : b.getEmail();
+        String emailToUse = firstNonBlank(email, b.getEmail());
 
         // Update booking's email if email was provided but booking doesn't have it
         if (email != null && !email.isBlank() && (b.getEmail() == null || b.getEmail().isBlank())) {
@@ -180,20 +228,12 @@ public class ReceptionService {
             bookingRepo.save(b);
         }
 
-        // Fetch customer name from customer collection using email
-        String customerName = null;
-        if (emailToUse != null && !emailToUse.isBlank()) {
-            try {
-                customerName = fetchCustomerName(emailToUse, emailToUse);
-            } catch (Exception e) {
-                customerName = emailToUse;
-            }
-        }
-        if (customerName == null || customerName.isBlank()) {
-            customerName = "Customer";
-        }
+        String customerName = safeCustomerNameLookup(emailToUse, fallbackCustomerName);
+        String bookingPaymentChecked = "No";
+        String bookingCustomerArrived = "No";
 
-        ReceptionAppointment ap = repo.findByBookingId(b.getId()).orElse(null);
+        ReceptionAppointment ap = resolveAppointmentForBookingSnapshot(b.getId(), emailToUse, b.getDate(), b.getTime())
+                .orElse(null);
         boolean isNewAppointment = (ap == null);
         if (isNewAppointment) {
             ap = new ReceptionAppointment();
@@ -207,10 +247,19 @@ public class ReceptionService {
         ap.setTime(b.getTime());
         ap.setStaff(b.getStaff());
         ap.setPaymentStatus(b.getPaymentStatus());
-        ap.setPaymentChecked(determinePaymentCheckedValue(b.getPaymentChecked()));
         ap.setTotalPayment(safeDouble(b.getTotalPayment()));
         ap.setReceptionNotes(null);
-        ap.setCustomerArrived(b.getCustomerArrived() != null ? b.getCustomerArrived() : "No");
+        if (isNewAppointment) {
+            ap.setPaymentChecked(bookingPaymentChecked);
+            ap.setCustomerArrived(bookingCustomerArrived);
+        } else {
+            if (ap.getPaymentChecked() == null || ap.getPaymentChecked().isBlank()) {
+                ap.setPaymentChecked(bookingPaymentChecked);
+            }
+            if (ap.getCustomerArrived() == null || ap.getCustomerArrived().isBlank()) {
+                ap.setCustomerArrived(bookingCustomerArrived);
+            }
+        }
         ap.setUpdatedAt(Instant.now());
 
         return repo.save(ap);
@@ -243,12 +292,14 @@ public class ReceptionService {
         if (amountValue != null) {
             existing.setTotalPayment(amountValue);
         }
+        String normalizedCustomerArrived = null;
         if (req.getCustomerArrived() != null) {
-            existing.setCustomerArrived(req.getCustomerArrived());
+            normalizedCustomerArrived = normalizeYesNoValue(req.getCustomerArrived(), existing.getCustomerArrived());
+            existing.setCustomerArrived(normalizedCustomerArrived);
         }
         String normalizedPaymentChecked = null;
         if (req.getPaymentChecked() != null) {
-            normalizedPaymentChecked = normalizeYesNoValue(req.getPaymentChecked(), "No");
+            normalizedPaymentChecked = normalizeYesNoValue(req.getPaymentChecked(), existing.getPaymentChecked());
             existing.setPaymentChecked(normalizedPaymentChecked);
         }
         existing.setReceptionNotes(req.getReceptionNotes());
@@ -272,12 +323,6 @@ public class ReceptionService {
                 }
                 if (amountValue != null) {
                     booking.setTotalPayment(amountValue);
-                }
-                if (req.getCustomerArrived() != null) {
-                    booking.setCustomerArrived(req.getCustomerArrived());
-                }
-                if (normalizedPaymentChecked != null) {
-                    booking.setPaymentChecked(normalizedPaymentChecked);
                 }
                 bookingRepo.save(booking);
             }
@@ -305,10 +350,6 @@ public class ReceptionService {
             return fallbackNormalized;
         }
         return value.trim().equalsIgnoreCase("Yes") ? "Yes" : "No";
-    }
-
-    private String determinePaymentCheckedValue(String paymentChecked) {
-        return normalizeYesNoValue(paymentChecked, "No");
     }
 
     private Double parseAmount(String amount) {
@@ -356,7 +397,7 @@ public class ReceptionService {
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
 
-        Optional<ReceptionAppointment> maybeAp = repo.findByBookingId(bookingId);
+        Optional<ReceptionAppointment> maybeAp = findAppointmentByBookingId(bookingId);
         ReceptionAppointment ap;
 
         if (maybeAp.isPresent()) {
@@ -370,23 +411,13 @@ public class ReceptionService {
             ap.setBookingId(booking.getId());
             String bookingEmail = booking.getEmail();
             ap.setEmail(bookingEmail);
-            String customerName;
-            if (bookingEmail != null && !bookingEmail.isBlank()) {
-                try {
-                    customerName = fetchCustomerName(bookingEmail, bookingEmail);
-                } catch (RuntimeException ex) {
-                    customerName = bookingEmail;
-                }
-            } else {
-                customerName = "Customer";
-            }
-            ap.setCustomerName(customerName);
+            ap.setCustomerName(safeCustomerNameLookup(bookingEmail, null));
             ap.setServices(booking.getServices());
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
             ap.setPaymentStatus(booking.getPaymentStatus());
-            ap.setPaymentChecked(determinePaymentCheckedValue(booking.getPaymentChecked()));
+            ap.setPaymentChecked("No");
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
             ap.setCustomerArrived("Yes");
             ap.setCreatedAt(Instant.now());
@@ -394,16 +425,6 @@ public class ReceptionService {
         }
 
         ReceptionAppointment savedAp = repo.save(ap);
-
-        // Sync with Booking collection if bookingId exists
-        if (savedAp.getBookingId() != null && !savedAp.getBookingId().isBlank()) {
-            Optional<Booking> bookingOpt = bookingRepo.findById(savedAp.getBookingId());
-            if (bookingOpt.isPresent()) {
-                Booking booking2 = bookingOpt.get();
-                booking2.setCustomerArrived("Yes");
-                bookingRepo.save(booking2);
-            }
-        }
 
         // Notify staff via email
         if (staffEmail != null && !staffEmail.isBlank()) {
@@ -432,7 +453,7 @@ public class ReceptionService {
         booking.setPaymentStatus(paymentValue);
         bookingRepo.save(booking);
 
-        Optional<ReceptionAppointment> maybeAp = repo.findByBookingId(bookingId);
+        Optional<ReceptionAppointment> maybeAp = findAppointmentByBookingId(bookingId);
         ReceptionAppointment ap;
 
         if (maybeAp.isPresent()) {
@@ -446,13 +467,13 @@ public class ReceptionService {
             ap.setBookingId(booking.getId());
             String bookingEmail = booking.getEmail();
             ap.setEmail(bookingEmail);
-            ap.setCustomerName(fetchCustomerName(bookingEmail, bookingEmail));
+            ap.setCustomerName(safeCustomerNameLookup(bookingEmail, null));
             ap.setServices(booking.getServices());
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
             ap.setPaymentStatus(paymentValue);
-            ap.setPaymentChecked(determinePaymentCheckedValue(booking.getPaymentChecked()));
+            ap.setPaymentChecked("No");
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
             ap.setCustomerArrived("No");
             Instant now = Instant.now();
@@ -471,14 +492,6 @@ public class ReceptionService {
         ap.setPaymentChecked(normalized);
         ap.setUpdatedAt(Instant.now());
         ReceptionAppointment saved = repo.save(ap);
-
-        if (ap.getBookingId() != null && !ap.getBookingId().isBlank()) {
-            bookingRepo.findById(ap.getBookingId()).ifPresent(booking -> {
-                booking.setPaymentChecked(normalized);
-                bookingRepo.save(booking);
-            });
-        }
-
         return saved;
     }
 
@@ -511,7 +524,7 @@ public class ReceptionService {
                 continue; // skip malformed booking records
             }
 
-            Optional<ReceptionAppointment> existingOpt = repo.findByBookingId(booking.getId());
+            Optional<ReceptionAppointment> existingOpt = findAppointmentByBookingId(booking.getId());
             if (existingOpt.isPresent()) {
                 ReceptionAppointment ap = existingOpt.get();
                 boolean changed = applyBookingSnapshotToReception(booking, ap);
@@ -614,6 +627,13 @@ public class ReceptionService {
             ap.setEmail(booking.getEmail());
             changed = true;
         }
+        if (ap.getCustomerName() == null || ap.getCustomerName().isBlank()) {
+            String derivedName = safeCustomerNameLookup(booking.getEmail(), null);
+            if (derivedName != null && !derivedName.isBlank()) {
+                ap.setCustomerName(derivedName);
+                changed = true;
+            }
+        }
         if (!Arrays.equals(ap.getServices(), booking.getServices())) {
             ap.setServices(cloneServices(booking.getServices()));
             changed = true;
@@ -634,19 +654,16 @@ public class ReceptionService {
             ap.setPaymentStatus(booking.getPaymentStatus());
             changed = true;
         }
-        String bookingPaymentChecked = determinePaymentCheckedValue(booking.getPaymentChecked());
-        if (!Objects.equals(ap.getPaymentChecked(), bookingPaymentChecked)) {
-            ap.setPaymentChecked(bookingPaymentChecked);
-            changed = true;
-        }
         if (!totalsMatch(ap.getTotalPayment(), booking.getTotalPayment())) {
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
             changed = true;
         }
-
-        String arrivedValue = determineCustomerArrivedValue(booking.getCustomerArrived());
-        if (!Objects.equals(ap.getCustomerArrived(), arrivedValue)) {
-            ap.setCustomerArrived(arrivedValue);
+        if (ap.getPaymentChecked() == null || ap.getPaymentChecked().isBlank()) {
+            ap.setPaymentChecked("No");
+            changed = true;
+        }
+        if (ap.getCustomerArrived() == null || ap.getCustomerArrived().isBlank()) {
+            ap.setCustomerArrived("No");
             changed = true;
         }
 
@@ -668,8 +685,50 @@ public class ReceptionService {
         return services == null ? null : services.clone();
     }
 
-    private String determineCustomerArrivedValue(String customerArrived) {
-        return (customerArrived == null || customerArrived.isBlank()) ? "No" : customerArrived;
+    private Optional<ReceptionAppointment> findAppointmentByBookingId(String bookingId) {
+        if (bookingId == null || bookingId.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            return repo.findByBookingId(bookingId);
+        } catch (IncorrectResultSizeDataAccessException ex) {
+            List<ReceptionAppointment> matches = repo.findAllByBookingId(bookingId);
+            if (matches.isEmpty()) {
+                return Optional.empty();
+            }
+            matches.sort(Comparator
+                    .comparing(ReceptionAppointment::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .reversed());
+            List<String> duplicateIds = matches.stream()
+                    .skip(1)
+                    .map(ReceptionAppointment::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (!duplicateIds.isEmpty()) {
+                repo.deleteAllById(duplicateIds);
+            }
+            return Optional.of(matches.get(0));
+        }
+    }
+
+    private Optional<ReceptionAppointment> resolveAppointmentForBookingSnapshot(String bookingId, String email,
+            String date, String time) {
+        if (bookingId != null && !bookingId.isBlank()) {
+            Optional<ReceptionAppointment> byBooking = findAppointmentByBookingId(bookingId);
+            if (byBooking.isPresent()) {
+                return byBooking;
+            }
+        }
+
+        boolean hasIdentity = email != null && !email.isBlank()
+                && date != null && !date.isBlank()
+                && time != null && !time.isBlank();
+
+        if (!hasIdentity) {
+            return Optional.empty();
+        }
+
+        return repo.findFirstByEmailIgnoreCaseAndDateAndTime(email.trim(), date.trim(), time.trim());
     }
 
     public static class SyncSummary {

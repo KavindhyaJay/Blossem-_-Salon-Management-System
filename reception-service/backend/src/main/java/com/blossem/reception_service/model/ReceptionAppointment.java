@@ -38,7 +38,7 @@ public class ReceptionAppointment {
 
     @JsonProperty("customer_arrived")
     @Field("customer_arrived")
-    private String customerArrived; // "Yes" or "No"
+    private String customerArrived = "No"; // "Yes" or "No"
 
     private String receptionNotes;
 

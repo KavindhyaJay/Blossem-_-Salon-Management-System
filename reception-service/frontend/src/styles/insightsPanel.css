@@ -244,9 +244,42 @@
 
 .insight-payments {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.insight-payment-block {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 16px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.insight-payment-block__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.insight-payment-block__hint {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--salon-muted);
+    opacity: 0.8;
+}
+
+.insight-payment-block__actions {
+    margin-top: 12px;
+    display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.insight-payment-note {
+    font-size: 13px;
+    color: var(--salon-muted);
 }
 
 .insight-payments__label {
@@ -286,9 +319,83 @@
     transition: background 0.2s ease, color 0.2s ease;
 }
 
+.payment-action--confirm {
+    background: linear-gradient(135deg, #ffffff, #ffd1dd);
+    color: #1c0309;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    box-shadow: 0 18px 45px rgba(255, 46, 99, 0.35);
+}
+
+.payment-action__icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
 .payment-action:hover {
     background: rgba(255, 255, 255, 0.14);
     color: var(--salon-accent);
+}
+
+.payment-action--confirm:hover {
+    color: #1c0309;
+    transform: translateY(-1px);
+}
+
+.pill-toggle {
+    margin-top: 12px;
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 6px;
+}
+
+.pill-toggle__btn {
+    flex: 1;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--salon-muted);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pill-toggle__btn.is-active {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--salon-text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.pill-toggle__btn:disabled {
+    cursor: default;
+}
+
+.pill-toggle__indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+}
+
+.pill-toggle__btn.is-active .pill-toggle__indicator {
+    opacity: 1;
 }
 
 .insight-action {

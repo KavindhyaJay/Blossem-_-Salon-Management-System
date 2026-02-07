@@ -84,7 +84,14 @@ const mockInitialAppointments = [
     }
 ];
 
-const formatCurrency = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+const formatCurrency = (value) => {
+    const numeric = Number(value) || 0;
+    const formatted = new Intl.NumberFormat("en-LK", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(numeric);
+    return `LKR ${formatted}`;
+};
 const formatDate = (value) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;

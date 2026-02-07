@@ -7,6 +7,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "bookings")
 public class Booking {
 
@@ -14,27 +18,20 @@ public class Booking {
     private String id;
 
     private String email; // email to link with customer collection and reception collection
-    private String[] services;
+    @Field("services")
+    private Object servicesRaw;
     private String date;
     private String time;
-    private String staff;
-    @JsonProperty("paymentStatus")
-    @JsonAlias({ "payment" })
-    @Field("payment")
-    private String paymentStatus; // Paid or Pending indicator
-
-    @JsonProperty("paymentChecked")
-    @JsonAlias({ "payment_checked", "receptionPaymentChecked", "reception_payment_checked" })
-    @Field("paymentChecked")
-    private String paymentChecked = "No"; // "Yes" when receptionist verifies payment
-
+    @Field("staff")
+    private Object staff;
     @JsonProperty("total_payment")
     @Field("totalPayment")
     private Double totalPayment; // numeric amount synced to external collection
 
-    @JsonProperty("customer_arrived")
-    @Field("customer_arrived")
-    private String customerArrived; // "Yes" or "No"
+    @JsonProperty("paymentStatus")
+    @JsonAlias({ "payment" })
+    @Field("payment")
+    private String paymentStatus; // Paid or Pending indicator
 
     public String getId() {
         return id;
@@ -52,12 +49,14 @@ public class Booking {
         this.email = email;
     }
 
+    @JsonProperty("services")
     public String[] getServices() {
-        return services;
+        return normalizeServices(servicesRaw);
     }
 
+    @JsonProperty("services")
     public void setServices(String[] services) {
-        this.services = services;
+        this.servicesRaw = services;
     }
 
     public String getDate() {
@@ -76,32 +75,14 @@ public class Booking {
         this.time = time;
     }
 
+    @JsonProperty("staff")
     public String getStaff() {
-        return staff;
+        return extractStaffName(staff);
     }
 
-    public void setStaff(String staff) {
-        this.staff = staff;
-    }
-
-    @JsonProperty("paymentStatus")
-    public String getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    @JsonProperty("paymentStatus")
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    @JsonProperty("paymentChecked")
-    public String getPaymentChecked() {
-        return paymentChecked;
-    }
-
-    @JsonProperty("paymentChecked")
-    public void setPaymentChecked(String paymentChecked) {
-        this.paymentChecked = paymentChecked;
+    @JsonProperty("staff")
+    public void setStaff(String staffValue) {
+        this.staff = staffValue;
     }
 
     @JsonProperty("total_payment")
@@ -114,14 +95,70 @@ public class Booking {
         this.totalPayment = totalPayment;
     }
 
-    @JsonProperty("customer_arrived")
-    public String getCustomerArrived() {
-        return customerArrived;
+    @JsonProperty("paymentStatus")
+    public String getPaymentStatus() {
+        return paymentStatus;
     }
 
-    @JsonProperty("customer_arrived")
-    public void setCustomerArrived(String customerArrived) {
-        this.customerArrived = customerArrived;
+    @JsonProperty("paymentStatus")
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    private String extractStaffName(Object rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+        if (rawValue instanceof String str) {
+            return str;
+        }
+        if (rawValue instanceof List<?>) {
+            List<?> list = (List<?>) rawValue;
+            if (!list.isEmpty() && list.get(0) != null) {
+                return list.get(0).toString();
+            }
+            return null;
+        }
+        if (rawValue.getClass().isArray()) {
+            int length = Array.getLength(rawValue);
+            if (length > 0) {
+                Object first = Array.get(rawValue, 0);
+                return first != null ? first.toString() : null;
+            }
+            return null;
+        }
+        return rawValue.toString();
+    }
+
+    private String[] normalizeServices(Object rawValue) {
+        if (rawValue == null) {
+            return new String[0];
+        }
+        if (rawValue instanceof String[] array) {
+            return array.clone();
+        }
+        if (rawValue instanceof List<?>) {
+            List<?> list = (List<?>) rawValue;
+            List<String> normalized = new ArrayList<>();
+            for (Object entry : list) {
+                if (entry != null) {
+                    normalized.add(entry.toString());
+                }
+            }
+            return normalized.toArray(new String[0]);
+        }
+        if (rawValue.getClass().isArray()) {
+            int length = Array.getLength(rawValue);
+            List<String> normalized = new ArrayList<>(length);
+            for (int i = 0; i < length; i++) {
+                Object entry = Array.get(rawValue, i);
+                if (entry != null) {
+                    normalized.add(entry.toString());
+                }
+            }
+            return normalized.toArray(new String[0]);
+        }
+        return new String[] { rawValue.toString() };
     }
 
 }

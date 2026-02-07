@@ -31,26 +31,13 @@ public class BookingService {
         b.setDate(req.getDate());
         b.setTime(req.getTime());
         b.setStaff(req.getStaff());
-        b.setPaymentStatus(req.getPaymentStatus());
-        b.setPaymentChecked(normalizeYesNo(req.getPaymentChecked()));
+        b.setPaymentStatus(resolvePaymentStatus(req.getPaymentStatus(), "Pending"));
         b.setTotalPayment(req.getTotalPayment());
         Booking savedBooking = bookingRepo.save(b);
 
-        boolean shouldCreateReception = req.getCreateReceptionAppointment() == null
-                || Boolean.TRUE.equals(req.getCreateReceptionAppointment());
-
-        // If email is provided and auto-create flag enabled, automatically create
-        // reception appointment
-        if (shouldCreateReception && req.getEmail() != null && !req.getEmail().isBlank()) {
-            try {
-                // Create reception appointment from the newly created booking
-                receptionService.createFromExistingBooking(savedBooking.getId(), req.getEmail());
-            } catch (Exception e) {
-                // Log error but don't fail the booking creation
-                System.err.println("Failed to create reception appointment for booking: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
+        // Always mirror the booking in reception appointments so the two collections stay
+        // in sync. Let any failure propagate so we don't end up with mismatched data.
+        receptionService.createFromExistingBooking(savedBooking.getId(), req.getEmail(), req.getCustomerName());
 
         return savedBooking;
     }
@@ -64,11 +51,9 @@ public class BookingService {
         existing.setDate(req.getDate());
         existing.setTime(req.getTime());
         existing.setStaff(req.getStaff());
-        existing.setPaymentStatus(req.getPaymentStatus());
-        if (req.getPaymentChecked() != null) {
-            existing.setPaymentChecked(normalizeYesNo(req.getPaymentChecked()));
-        } else if (existing.getPaymentChecked() == null || existing.getPaymentChecked().isBlank()) {
-            existing.setPaymentChecked("No");
+        String normalizedPaymentStatus = resolvePaymentStatus(req.getPaymentStatus(), null);
+        if (normalizedPaymentStatus != null) {
+            existing.setPaymentStatus(normalizedPaymentStatus);
         }
         existing.setTotalPayment(req.getTotalPayment());
         return bookingRepo.save(existing);
@@ -86,11 +71,28 @@ public class BookingService {
         return bookingRepo.findById(id).orElseThrow(() -> new RuntimeException("Booking not found: " + id));
     }
 
-    private String normalizeYesNo(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return "No";
+    private String resolvePaymentStatus(String rawValue, String fallbackIfBlank) {
+        String normalized = normalizePaymentValue(rawValue);
+        if (normalized != null) {
+            return normalized;
         }
-        return value.trim().equalsIgnoreCase("Yes") ? "Yes" : "No";
+        return fallbackIfBlank;
     }
 
+    private String normalizePaymentValue(String paymentValue) {
+        if (paymentValue == null) {
+            return null;
+        }
+        String trimmed = paymentValue.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (trimmed.equalsIgnoreCase("PAID")) {
+            return "Paid";
+        }
+        if (trimmed.equalsIgnoreCase("PENDING")) {
+            return "Pending";
+        }
+        return trimmed;
+    }
 }
