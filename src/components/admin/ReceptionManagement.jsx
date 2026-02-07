@@ -238,6 +238,13 @@ const ReceptionManagement = () => {
       return;
     }
 
+    // Email validation (only if email is being changed)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     try {
       setSaving(true);
       setError('');
@@ -717,12 +724,9 @@ const ReceptionManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Enter email address"
                     required
-                    disabled={saving || showEditForm}
+                    disabled={saving}
                     className="adminr-form-input"
                   />
-                  {showEditForm && (
-                    <small className="adminr-form-note">Email cannot be changed</small>
-                  )}
                 </div>
                 
                 <div className="adminr-form-group">

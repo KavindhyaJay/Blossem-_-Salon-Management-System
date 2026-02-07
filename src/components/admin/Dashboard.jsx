@@ -1,24 +1,22 @@
-// src/components/admin/Dashboard.jsx - UPDATED: ONLY STATS CARDS
+// src/components/admin/Dashboard.jsx - CLEANED UP
 import React, { useState, useEffect, useCallback } from 'react';
-import { DollarSign, Calendar, Users, Image, RefreshCw, TrendingUp } from 'lucide-react';
+import { DollarSign, Calendar, Users, Image, RefreshCw, ShoppingBag } from 'lucide-react';
 import './Dashboard.css';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalRevenue: 0,
     todaysAppointments: 0,
+    totalRevenue: 0,
     activeStaff: 0,
     pendingPhotos: 0,
-    growthRate: 0,
-    totalStaff: 0,
-    inactiveStaff: 0,
-    totalCustomers: 0,
-    completedAppointments: 0,
-    monthlyRevenue: 0,
-    weeklyRevenue: 0
+    totalServices: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    todaysRevenue: 0
   });
+  
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
 
   const getAuthToken = useCallback(() => {
@@ -42,6 +40,7 @@ const AdminDashboard = () => {
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {
     try {
+      setLoading(true);
       const token = getAuthToken();
       
       const headers = {
@@ -64,117 +63,116 @@ const AdminDashboard = () => {
         fetch(`${API_BASE_URL}/api/admin/photos/pending-count`, { headers })
       ]);
 
-      // Process appointments data
-      let appointments = [];
-      let totalRevenue = 0;
+      // Initialize stats
       let todaysAppointments = 0;
-      let completedAppointments = 0;
-      let monthlyRevenue = 0;
-      let weeklyRevenue = 0;
-      let customerSet = new Set();
+      let totalRevenue = 0;
+      let activeStaff = 0;
+      let pendingPhotos = 0;
+      let totalServices = 0;
+      let pendingBookings = 0;
+      let confirmedBookings = 0;
+      let todaysRevenue = 0;
       
+      // Service frequency tracking
+      const serviceFrequency = {};
+
+      // Process appointments data
       if (appointmentsResponse.ok) {
         const appointmentsData = await appointmentsResponse.json();
         if (Array.isArray(appointmentsData)) {
-          appointments = appointmentsData;
-          
-          // Get current date ranges
           const today = new Date();
-          const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          const startOfWeek = new Date(today);
-          startOfWeek.setDate(today.getDate() - today.getDay());
-          startOfWeek.setHours(0, 0, 0, 0);
+          const todayStr = today.toISOString().split('T')[0];
           
-          // Calculate various revenue metrics
-          appointments.forEach(appt => {
-            const amount = parseInt(appt.amount || appt.totalAmount || 0);
+          appointmentsData.forEach(appt => {
+            const amount = parseInt(appt.totalPayment || appt.amount || 0);
             const status = appt.bookingStatus?.toLowerCase();
-            const apptDate = appt.date ? new Date(appt.date) : null;
+            const apptDate = appt.date ? appt.date.split('T')[0] : null;
             
-            // Total revenue from completed/confirmed appointments
-            if ((status === 'completed' || status === 'confirmed') && amount > 0) {
+            // Calculate revenue
+            if ((status === 'completed' || status === 'confirmed' || !status) && amount > 0) {
               totalRevenue += amount;
             }
             
-            // Monthly revenue
-            if (apptDate && apptDate >= startOfMonth && amount > 0) {
-              monthlyRevenue += amount;
-            }
-            
-            // Weekly revenue
-            if (apptDate && apptDate >= startOfWeek && amount > 0) {
-              weeklyRevenue += amount;
-            }
-            
-            // Count today's appointments
-            if (apptDate && apptDate.toDateString() === today.toDateString()) {
+            // Today's appointments
+            if (apptDate === todayStr) {
               todaysAppointments++;
+              if (amount > 0) {
+                todaysRevenue += amount;
+              }
             }
             
-            // Count completed appointments
-            if (status === 'completed') {
-              completedAppointments++;
+            // Booking status counts
+            if (status === 'pending') {
+              pendingBookings++;
+            } else if (status === 'confirmed') {
+              confirmedBookings++;
             }
             
-            // Track unique customers
-            if (appt.customerName) {
-              customerSet.add(appt.customerName);
-            }
-            if (appt.customerId) {
-              customerSet.add(appt.customerId);
+            // Service frequency tracking
+            const services = appt.services || [];
+            if (Array.isArray(services)) {
+              services.forEach(service => {
+                if (typeof service === 'string') {
+                  serviceFrequency[service] = (serviceFrequency[service] || 0) + 1;
+                }
+              });
             }
           });
+          
+          // Total unique services
+          totalServices = Object.keys(serviceFrequency).length;
         }
       }
 
       // Process staff data
-      let activeStaff = 0;
-      let totalStaff = 0;
-      let inactiveStaff = 0;
-      
       if (staffResponse.ok) {
         const staffData = await staffResponse.json();
         if (Array.isArray(staffData)) {
-          totalStaff = staffData.length;
-          
-          // Count active/inactive staff
           activeStaff = staffData.filter(staff => {
             const status = staff.status?.toLowerCase();
-            return status === 'active' || status === 'activated';
+            return status === 'active' || status === 'activated' || !status;
           }).length;
-          
-          inactiveStaff = totalStaff - activeStaff;
         }
       }
 
       // Process photos data
-      let pendingPhotos = 0;
       if (photosResponse.ok) {
-        const photosData = await photosResponse.json();
-        if (photosData.pendingCount !== undefined) {
-          pendingPhotos = photosData.pendingCount;
+        try {
+          const photosData = await photosResponse.json();
+          if (photosData.pendingCount !== undefined) {
+            pendingPhotos = photosData.pendingCount;
+          }
+        } catch (err) {
+          console.log('No pending photos data or different format');
         }
       }
 
-      // Calculate growth rate
-      const growthRate = Math.floor(Math.random() * 21) - 5;
-
       setStats({
-        totalRevenue,
         todaysAppointments,
+        totalRevenue,
         activeStaff,
-        totalStaff,
-        inactiveStaff,
         pendingPhotos,
-        growthRate,
-        totalCustomers: customerSet.size,
-        completedAppointments,
-        monthlyRevenue,
-        weeklyRevenue
+        totalServices,
+        pendingBookings,
+        confirmedBookings,
+        todaysRevenue
       });
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set default values on error
+      setStats({
+        todaysAppointments: 0,
+        totalRevenue: 0,
+        activeStaff: 0,
+        pendingPhotos: 0,
+        totalServices: 0,
+        pendingBookings: 0,
+        confirmedBookings: 0,
+        todaysRevenue: 0
+      });
+    } finally {
+      setLoading(false);
     }
   }, [API_BASE_URL, getAuthToken]);
 
@@ -183,41 +181,38 @@ const AdminDashboard = () => {
     try {
       const token = getAuthToken();
       if (!token) {
-        return;
-      }
-
-      const validateResponse = await fetch(`${API_BASE_URL}/api/admin/auth/validate`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!validateResponse.ok) {
-        return;
-      }
-
-      const userData = await validateResponse.json();
-      if (userData.role !== 'ADMIN') {
-        return;
-      }
-
-      // Get admin profile
-      const profileResponse = await fetch(`${API_BASE_URL}/api/admin/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json();
-        setUser(profileData);
-      } else {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        if (storedUser && storedUser.role === 'ADMIN') {
-          setUser(storedUser);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
         }
+        return;
       }
+
+      const headers = { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Try general user endpoint
+      try {
+        const userResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: headers
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+      } catch (err) {
+        console.log('User endpoint not available');
+      }
+
     } catch (error) {
       console.error('Error fetching user data:', error);
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser && storedUser.role === 'ADMIN') {
-        setUser(storedUser);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
     }
   }, [API_BASE_URL, getAuthToken]);
@@ -226,7 +221,6 @@ const AdminDashboard = () => {
     const initDashboard = async () => {
       await fetchUserData();
       await fetchDashboardData();
-      setLoading(false);
     };
     
     initDashboard();
@@ -234,7 +228,7 @@ const AdminDashboard = () => {
 
   const refreshDashboard = () => {
     setLoading(true);
-    fetchDashboardData().finally(() => setLoading(false));
+    fetchDashboardData();
   };
 
   if (loading) {
@@ -262,7 +256,7 @@ const AdminDashboard = () => {
             <Users size={24} />
             Welcome back, {user?.name || 'Admin'}!
           </h2>
-          <p>Salon Overview Dashboard</p>
+          <p>Salon Overview Dashboard • All data is live from your database</p>
         </div>
         <div className="admin-dashboard-controls">
           <button 
@@ -276,33 +270,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Stats Grid - ONLY SECTION VISIBLE */}
+      {/* Stats Grid - ONLY SECTION */}
       <div className="admin-stats-grid">
-        {/* Total Revenue Card */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <h3>Total Revenue</h3>
-            <div className="admin-stat-icon revenue-icon">
-              <DollarSign size={24} />
-            </div>
-          </div>
-          <div className="admin-stat-value">{formatLKR(stats.totalRevenue)}</div>
-          <div className="admin-stat-trend">
-            {stats.growthRate >= 0 ? (
-              <span className="trend-up">
-                <TrendingUp size={14} />
-                +{stats.growthRate}% from last week
-              </span>
-            ) : (
-              <span className="trend-down">
-                <TrendingUp size={14} style={{ transform: 'rotate(180deg)' }} />
-                {stats.growthRate}% from last week
-              </span>
-            )}
-          </div>
-          <p className="admin-stat-desc">From {stats.completedAppointments} completed appointments</p>
-        </div>
-        
         {/* Today's Appointments Card */}
         <div className="admin-stat-card">
           <div className="admin-stat-header">
@@ -312,30 +281,65 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="admin-stat-value">{stats.todaysAppointments}</div>
-          <p className="admin-stat-desc">
+          <div className="admin-stat-subtext">
             {stats.todaysAppointments > 0 
-              ? `Scheduled appointments for today` 
-              : 'No appointments today'}
+              ? `${stats.confirmedBookings} confirmed • ${stats.pendingBookings} pending`
+              : 'No appointments scheduled'
+            }
+          </div>
+          <p className="admin-stat-desc">
+            Appointments scheduled for today
           </p>
         </div>
         
-        {/* Staff Members Card */}
+        {/* Today's Revenue Card */}
         <div className="admin-stat-card">
           <div className="admin-stat-header">
-            <h3>Staff Members</h3>
+            <h3>Today's Revenue</h3>
+            <div className="admin-stat-icon revenue-icon">
+              <DollarSign size={24} />
+            </div>
+          </div>
+          <div className="admin-stat-value">{formatLKR(stats.todaysRevenue)}</div>
+          <div className="admin-stat-subtext">
+            From {stats.todaysAppointments} appointments
+          </div>
+          <p className="admin-stat-desc">
+            Estimated revenue from today's appointments
+          </p>
+        </div>
+        
+        {/* Active Staff Card */}
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <h3>Active Staff</h3>
             <div className="admin-stat-icon staff-icon">
               <Users size={24} />
             </div>
           </div>
-          <div className="admin-stat-value">{stats.totalStaff}</div>
-          <div className="admin-staff-breakdown">
-            <span className="staff-active">{stats.activeStaff} Active</span>
-            <span className="staff-inactive">{stats.inactiveStaff} Inactive</span>
+          <div className="admin-stat-value">{stats.activeStaff}</div>
+          <div className="admin-stat-subtext">
+            Ready to serve customers
           </div>
           <p className="admin-stat-desc">
-            {stats.activeStaff > 0 
-              ? 'Currently working staff members' 
-              : 'No active staff members'}
+            Staff members currently active
+          </p>
+        </div>
+        
+        {/* Total Revenue Card */}
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <h3>Total Revenue</h3>
+            <div className="admin-stat-icon total-icon">
+              <DollarSign size={24} color="#FF9800" />
+            </div>
+          </div>
+          <div className="admin-stat-value">{formatLKR(stats.totalRevenue)}</div>
+          <div className="admin-stat-subtext">
+            All-time recorded revenue
+          </div>
+          <p className="admin-stat-desc">
+            From all completed appointments
           </p>
         </div>
         
@@ -348,66 +352,28 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="admin-stat-value">{stats.pendingPhotos}</div>
+          <div className="admin-stat-subtext">
+            Awaiting approval
+          </div>
           <p className="admin-stat-desc">
-            {stats.pendingPhotos > 0 
-              ? 'Photos awaiting approval' 
-              : 'No pending photos'}
+            Photos waiting for your review
           </p>
         </div>
         
-        {/* Monthly Revenue Card */}
+        {/* Available Services Card */}
         <div className="admin-stat-card">
           <div className="admin-stat-header">
-            <h3>Monthly Revenue</h3>
-            <div className="admin-stat-icon monthly-icon">
-              <DollarSign size={24} />
+            <h3>Available Services</h3>
+            <div className="admin-stat-icon services-icon">
+              <ShoppingBag size={24} />
             </div>
           </div>
-          <div className="admin-stat-value">{formatLKR(stats.monthlyRevenue)}</div>
-          <p className="admin-stat-desc">
-            Revenue generated this month
-          </p>
-        </div>
-        
-        {/* Weekly Revenue Card */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <h3>Weekly Revenue</h3>
-            <div className="admin-stat-icon weekly-icon">
-              <DollarSign size={24} />
-            </div>
+          <div className="admin-stat-value">{stats.totalServices}</div>
+          <div className="admin-stat-subtext">
+            Unique service types
           </div>
-          <div className="admin-stat-value">{formatLKR(stats.weeklyRevenue)}</div>
           <p className="admin-stat-desc">
-            Revenue generated this week
-          </p>
-        </div>
-        
-        {/* Total Customers Card */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <h3>Total Customers</h3>
-            <div className="admin-stat-icon customers-icon">
-              <Users size={24} />
-            </div>
-          </div>
-          <div className="admin-stat-value">{stats.totalCustomers}</div>
-          <p className="admin-stat-desc">
-            Unique customers served
-          </p>
-        </div>
-        
-        {/* Completed Appointments Card */}
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <h3>Completed</h3>
-            <div className="admin-stat-icon completed-icon">
-              <Calendar size={24} />
-            </div>
-          </div>
-          <div className="admin-stat-value">{stats.completedAppointments}</div>
-          <p className="admin-stat-desc">
-            All-time completed appointments
+            Services offered by your salon
           </p>
         </div>
       </div>

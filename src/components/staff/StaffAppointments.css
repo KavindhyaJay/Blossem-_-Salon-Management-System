@@ -939,3 +939,101 @@
   font-size: 1.1rem;
   font-weight: 700;
 }
+/* Calendar Styles */
+.staff-calendar-day.has-appointments {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.staff-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.staff-today-indicator {
+  font-size: 10px;
+  background-color: #3b82f6;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+}
+
+.staff-appointment-count-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.staff-appointment-count-badge {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  position: relative;
+}
+
+.staff-appointment-count-badge.double-digit {
+  font-size: 10px;
+  background-color: #ef4444;
+}
+
+.staff-appointment-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 4px;
+  height: 4px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  border: 1px solid white;
+}
+
+/* Selected Date Info */
+.staff-selected-date-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.staff-calendar-summary {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.staff-calendar-appointments-total,
+.staff-calendar-days-with-appointments {
+  padding: 4px 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+}
+
+.staff-revenue-label {
+  margin-left: 10px;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Stats Section */
+.staff-stats .staff-stat-item.revenue {
+  color: #059669;
+  border-color: #059669;
+}
+
+.staff-stat-value.revenue {
+  color: #059669;
+  font-weight: 700;
+}

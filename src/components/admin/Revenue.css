@@ -980,3 +980,450 @@
   display: block;
   margin-bottom: 4px;
 }
+/* Add to your existing Revenue.css */
+
+/* Payment breakdown badge */
+.payment-breakdown-badge {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.payment-breakdown-badge .actual-payments {
+  background: #4CAF50;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.payment-breakdown-badge .estimated-payments {
+  background: #FF9800;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Payment breakdown in cards */
+.payment-breakdown {
+  margin: 8px 0;
+}
+
+.payment-breakdown-bar {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.payment-breakdown-bar .actual-bar {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.payment-breakdown-stats {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.actual-stat, .estimated-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actual-stat {
+  color: #4CAF50;
+}
+
+.estimated-stat {
+  color: #FF9800;
+}
+
+/* Payment composition */
+.payment-composition {
+  margin: 8px 0;
+}
+
+.composition-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.composition-dot.actual {
+  background: #4CAF50;
+}
+
+.composition-dot.estimated {
+  background: #FF9800;
+}
+
+.composition-label {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Table styles for payment breakdown */
+.actual-amount, .estimated-amount {
+  position: relative;
+}
+
+.payment-count {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.actual-total, .estimated-total {
+  font-weight: 600;
+}
+
+.total-count {
+  font-size: 11px;
+  color: #666;
+  font-weight: normal;
+}
+
+/* Payment type badges in table */
+.payment-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.payment-type-badge.actual {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.payment-type-badge.estimated {
+  background: #FFF3E0;
+  color: #EF6C00;
+}
+
+.payment-source {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Row highlighting */
+tr.actual-payment {
+  background: #F9F9F9;
+}
+
+tr.estimated-payment {
+  background: #FFFCF5;
+}
+
+/* Service card payment breakdown */
+.service-payment-breakdown {
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.service-actual, .service-estimated {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.service-actual {
+  color: #4CAF50;
+}
+
+.service-estimated {
+  color: #FF9800;
+}
+
+.service-actual-count {
+  font-size: 11px;
+  color: #666;
+  margin-left: 4px;
+}
+
+/* Actual/Estimate notes in amount cells */
+.actual-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.actual-note svg {
+  color: #4CAF50;
+}
+
+.estimation-note {
+  color: #FF9800;
+}
+
+/* Payment info box */
+.payment-info {
+  background: #F5F5F5;
+  border-left: 4px solid #4CAF50;
+}
+
+.payment-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.payment-info-content {
+  font-size: 13px;
+}
+
+.payment-info-content p {
+  margin: 4px 0;
+}
+
+.payment-info-content code {
+  background: #e0e0e0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Highlight colors for summary */
+.summary-value.actual {
+  color: #4CAF50;
+}
+
+.summary-value.total {
+  color: #2196F3;
+}
+/* Add to Revenue.css - Dark Theme Payment Breakdown Table */
+
+/* Fix white table background in recent transactions */
+.recent-transactions-container .revenue-table-container {
+  background: #1a1a1a;
+}
+
+.recent-transactions-container .revenue-table {
+  background: transparent;
+}
+
+.recent-transactions-container .revenue-table th {
+  background: #252525;
+  color: #ccc;
+  border-bottom: 1px solid #333;
+}
+
+.recent-transactions-container .revenue-table td {
+  color: #ccc;
+  border-bottom: 1px solid #333;
+  background: transparent;
+}
+
+/* Fix white row backgrounds */
+tr.actual-payment {
+  background: rgba(76, 175, 80, 0.05) !important;
+}
+
+tr.estimated-payment {
+  background: rgba(255, 152, 0, 0.05) !important;
+}
+
+tr.actual-payment:hover,
+tr.estimated-payment:hover {
+  background: #252525 !important;
+}
+
+/* Fix payment type badges for dark theme */
+.payment-type-badge.actual {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.payment-type-badge.estimated {
+  background: rgba(255, 152, 0, 0.2);
+  color: #FF9800;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+/* Fix payment source text */
+.payment-source {
+  font-size: 11px;
+  color: #888 !important;
+  margin-top: 2px;
+}
+
+/* Fix amount cells */
+.recent-transactions-container .revenue-amount {
+  color: #db3232 !important;
+  font-weight: 600;
+}
+
+/* Fix service cell text color */
+.recent-transactions-container .service-cell {
+  color: #ccc !important;
+}
+
+/* Fix booking ID color */
+.recent-transactions-container .booking-id {
+  color: #2196F3 !important;
+}
+
+/* Fix actual/estimate notes */
+.actual-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: #4CAF50 !important;
+}
+
+.actual-note svg {
+  color: #4CAF50 !important;
+}
+
+.estimation-note {
+  color: #FF9800 !important;
+}
+
+/* Fix table header text */
+.recent-transactions-container .revenue-table thead {
+  background: #252525;
+}
+
+.recent-transactions-container .revenue-table thead th {
+  color: #ccc !important;
+  font-weight: 600;
+}
+
+/* Fix table body text */
+.recent-transactions-container .revenue-table tbody td {
+  color: #ccc !important;
+}
+
+/* Fix payment breakdown bar for dark theme */
+.payment-breakdown-bar {
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.payment-breakdown-bar .actual-bar {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+/* Fix payment composition text */
+.composition-label {
+  font-size: 12px;
+  color: #888 !important;
+}
+
+/* Fix payment count text */
+.payment-count,
+.total-count {
+  font-size: 11px;
+  color: #888 !important;
+}
+
+/* Fix payment info box for dark theme */
+.payment-info {
+  background: rgba(76, 175, 80, 0.05);
+  border-left: 4px solid #4CAF50;
+  color: #ccc;
+}
+
+.payment-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.payment-info-content {
+  font-size: 13px;
+  color: #ccc;
+}
+
+.payment-info-content p {
+  margin: 4px 0;
+  color: #ccc;
+}
+
+.payment-info-content code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* Fix table cell alignment */
+.recent-transactions-container .revenue-table td {
+  vertical-align: middle;
+  padding: 12px 20px;
+}
+
+/* Fix column widths */
+.recent-transactions-container .revenue-table th:nth-child(1),
+.recent-transactions-container .revenue-table td:nth-child(1) {
+  width: 100px; /* Date */
+}
+
+.recent-transactions-container .revenue-table th:nth-child(2),
+.recent-transactions-container .revenue-table td:nth-child(2) {
+  width: 120px; /* Booking ID */
+}
+
+.recent-transactions-container .revenue-table th:nth-child(3),
+.recent-transactions-container .revenue-table td:nth-child(3) {
+  width: 150px; /* Customer */
+}
+
+.recent-transactions-container .revenue-table th:nth-child(4),
+.recent-transactions-container .revenue-table td:nth-child(4) {
+  width: 200px; /* Service */
+}
+
+.recent-transactions-container .revenue-table th:nth-child(5),
+.recent-transactions-container .revenue-table td:nth-child(5) {
+  width: 150px; /* Amount */
+  text-align: right;
+}
+
+.recent-transactions-container .revenue-table th:nth-child(6),
+.recent-transactions-container .revenue-table td:nth-child(6) {
+  width: 120px; /* Payment Type */
+}
+
+/* Fix amount alignment */
+.recent-transactions-container .revenue-table td:nth-child(5) {
+  text-align: right;
+}
+
+/* Fix mobile responsive */
+@media (max-width: 768px) {
+  .recent-transactions-container .revenue-table-container {
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+  
+  .recent-transactions-container .revenue-table {
+    min-width: 700px;
+  }
+}

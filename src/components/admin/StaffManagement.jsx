@@ -1,4 +1,4 @@
-// src/components/admin/StaffManagement.jsx - UPDATED WITH admin- PREFIX
+// src/components/admin/StaffManagement.jsx - UPDATED WITH ACTUAL SERVICES
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
@@ -40,22 +40,15 @@ const StaffManagement = () => {
     status: 'PENDING_ACTIVATION'
   });
 
+  // UPDATED: Based on your actual staff data
   const availableSpecializations = [
-    'Hair Stylist',
-    'Color Specialist',
-    'Nail Technician',
-    'Makeup Artist',
-    'Skincare Specialist',
-    'Massage Therapist',
-    'Barber',
-    'Esthetician',
-    'Hair Extensions',
-    'Bridal Stylist',
-    'Men\'s Grooming',
-    'Waxing Specialist',
-    'Lash Technician',
-    'Pedicurist',
-    'Manicurist'
+    'Facial',
+    'Professional Makeup',
+    'Spa treatment',
+    'Hair cut',
+    'Hair color',
+    'Hair styling',
+    'Nail Art'
   ];
 
   const API_BASE_URL = 'http://localhost:8081';
@@ -732,12 +725,9 @@ const StaffManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Enter email address"
                     required
-                    disabled={saving || showEditForm}
+                    disabled={saving}
                     className="admin-form-input"
                   />
-                  {showEditForm && (
-                    <small className="admin-form-note">Email cannot be changed</small>
-                  )}
                 </div>
                 
                 {/* Specializations Multi-Select */}

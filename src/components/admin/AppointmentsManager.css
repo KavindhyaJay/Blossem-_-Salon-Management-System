@@ -729,3 +729,291 @@
     font-size: 0.85rem;
   }
 }
+/* Add these styles to your existing AppointmentsManager.css */
+
+/* Appointment count display in calendar */
+.admina-calendar-day.has-appointments {
+  background: rgba(219, 50, 50, 0.1);
+}
+
+.admina-appointment-count-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 3px;
+}
+
+.admina-appointment-count-badge {
+  background: #db3232;
+  color: white;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.admina-appointment-count-badge.double-digit {
+  font-size: 0.6rem;
+  min-width: 20px;
+  height: 20px;
+}
+
+/* Today indicator */
+.admina-today-indicator {
+  font-size: 0.6rem;
+  color: #db3232;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+/* Calendar summary */
+.admina-calendar-summary {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.admina-calendar-appointments-total,
+.admina-calendar-days-with-appointments {
+  background: rgba(219, 50, 50, 0.05);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(219, 50, 50, 0.2);
+}
+
+/* Loading state for calendar */
+.admina-calendar-month-display {
+  min-width: 220px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admina-calendar-summary {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .admina-appointment-count-badge {
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+  }
+  
+  .admina-appointment-count-badge.double-digit {
+    font-size: 0.55rem;
+    min-width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admina-calendar-month-display {
+    min-width: 180px;
+    font-size: 0.9rem;
+  }
+  
+  .admina-appointment-count-badge {
+    font-size: 0.5rem;
+    min-width: 14px;
+    height: 14px;
+  }
+  
+  .admina-appointment-count-badge.double-digit {
+    font-size: 0.45rem;
+    min-width: 16px;
+    height: 16px;
+  }
+}
+/* Add to AppointmentsManager.css */
+
+/* Total amount in table header */
+.admina-total-amount {
+  margin-left: 10px;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+/* Estimated amount indicators */
+.admina-estimated-note {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #FF9800;
+  font-style: italic;
+}
+
+.admina-estimated-tag {
+  display: inline-block;
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  margin-left: 5px;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+/* Payment status */
+.admina-payment-status {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Amount value styling */
+.admina-amount-value {
+  font-weight: 600;
+  color: #db3232;
+  font-size: 1.1rem;
+}
+
+/* Updated stat card for total amount */
+.admina-stat-card:nth-child(4) .admina-stat-value {
+  color: #4CAF50;
+}
+/* Add to AppointmentsManager.css */
+
+/* Revenue stat card */
+.admina-stat-card .admina-stat-value.revenue {
+  color: #4CAF50;
+}
+
+/* Payment status badges */
+.admina-payment-status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 6px;
+}
+
+.admina-payment-status-badge.paid {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.admina-payment-status-badge.pending {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+/* Payment cell */
+.admina-payment-cell {
+  min-width: 140px;
+}
+
+.admina-payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admina-payment-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admina-payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.admina-payment-checked,
+.admina-customer-arrived {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Customer email */
+.admina-customer-email {
+  font-size: 0.8rem;
+  color: #2196F3;
+  margin-top: 2px;
+}
+
+/* Amount source */
+.admina-amount-source {
+  font-size: 0.7rem;
+  color: #888;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* Total amount in table header */
+.admina-total-amount {
+  margin-left: 10px;
+  color: #4CAF50;
+  font-weight: 600;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Updated color for revenue card */
+.admina-stat-card:nth-child(2) .admina-stat-value {
+  color: #4CAF50;
+}
+
+.admina-stat-card:nth-child(3) .admina-stat-value {
+  color: #FF9800;
+}
+
+.admina-stat-card:nth-child(4) .admina-stat-value {
+  color: #2196F3;
+}
+
+/* Amount value styling */
+.admina-amount-value {
+  font-weight: 600;
+  color: #db3232;
+  font-size: 1.1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admina-payment-cell {
+    min-width: 120px;
+  }
+  
+  .admina-payment-details {
+    font-size: 0.7rem;
+  }
+  
+  .admina-total-amount {
+    display: block;
+    margin: 5px 0 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .admina-payment-cell {
+    min-width: 100px;
+  }
+  
+  .admina-payment-status-badge {
+    font-size: 0.6rem;
+    padding: 3px 6px;
+  }
+}

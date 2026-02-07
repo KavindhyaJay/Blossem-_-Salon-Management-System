@@ -1,19 +1,19 @@
-// src/components/admin/AppointmentsManager.jsx - WITHOUT REVENUE STAT CARD
+// src/components/admin/AppointmentsManager.jsx - UPDATED WITH totalPayment
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Calendar as CalendarIcon, Filter, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, Download, ChevronLeft, ChevronRight, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import './AppointmentsManager.css';
 
 const AppointmentsManager = ({ userRole = 'admin' }) => {
   const [appointments, setAppointments] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
+  const [calendarLoading, setCalendarLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Get API base URL from environment
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
   
-  // Get auth token - wrapped in useCallback
   const getAuthToken = useCallback(() => {
     let token = localStorage.getItem('adminToken');
     if (!token) token = localStorage.getItem('token');
@@ -22,7 +22,6 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     return token;
   }, []);
 
-  // Format date to YYYY-MM-DD - wrapped in useCallback
   const formatDate = useCallback((date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -30,33 +29,79 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     return `${year}-${month}-${day}`;
   }, []);
 
-  // Helper function to format services array - NEW FUNCTION
   const formatServices = useCallback((services) => {
     if (!services) return 'No Service';
     
-    // If it's already a string, return it
     if (typeof services === 'string') return services;
     
-    // If it's an array, join with comma
     if (Array.isArray(services)) {
       return services.join(', ');
-    }
-    
-    // If it's an object with services property
-    if (services.services && Array.isArray(services.services)) {
-      return services.services.join(', ');
-    }
-    
-    // If it's an object, try to extract service names
-    if (typeof services === 'object') {
-      const values = Object.values(services).filter(val => typeof val === 'string');
-      if (values.length > 0) return values.join(', ');
     }
     
     return 'No Service';
   }, []);
 
-  // Fetch appointments - wrapped in useCallback
+  // UPDATED: Now uses totalPayment from backend
+  const extractAmount = useCallback((appt) => {
+    // Use totalPayment first (main field from database)
+    if (appt.totalPayment !== undefined && appt.totalPayment !== null) {
+      if (typeof appt.totalPayment === 'number') {
+        return appt.totalPayment;
+      }
+      if (typeof appt.totalPayment === 'string' && appt.totalPayment.trim() !== '') {
+        const value = parseFloat(appt.totalPayment);
+        if (!isNaN(value)) {
+          return value;
+        }
+      }
+    }
+    
+    // Fallback to amount field (for backward compatibility)
+    if (appt.amount !== undefined && appt.amount !== null) {
+      if (typeof appt.amount === 'number') {
+        return appt.amount;
+      }
+      if (typeof appt.amount === 'string' && appt.amount.trim() !== '') {
+        const value = parseFloat(appt.amount);
+        if (!isNaN(value)) {
+          return value;
+        }
+      }
+    }
+    
+    return 0;
+  }, []);
+
+  // Helper function to get service-based default amount
+  const getServiceAmount = useCallback((services) => {
+    if (!services || !Array.isArray(services)) return 0;
+    
+    const servicePrices = {
+      'Facial': 3500,
+      'Professional Makeup': 4000,
+      'Hair Color': 3500,
+      'Spa Treatment': 5000,
+      'Spa Treatment, Facial': 8000,
+      'Haircut': 1500,
+      'Manicure': 2000,
+      'Pedicure': 2500,
+      'Massage': 3000,
+      'Waxing': 1500,
+      'Default': 3500
+    };
+    
+    let total = 0;
+    services.forEach(service => {
+      if (servicePrices[service]) {
+        total += servicePrices[service];
+      } else {
+        total += servicePrices['Default'];
+      }
+    });
+    
+    return total;
+  }, []);
+
   const fetchAppointmentsByDate = useCallback(async (date) => {
     if (!date) return;
     
@@ -75,38 +120,32 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      console.log(`Fetching appointments for date: ${dateStr}`);
-      
       const response = await fetch(`${API_BASE_URL}/api/appointments/date/${dateStr}`, {
         method: 'GET',
         headers: headers,
         credentials: 'include'
       });
       
-      console.log('Response status:', response.status);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
         setAppointments([]);
         return;
       }
       
       const data = await response.json();
-      console.log('API Response data:', data);
       
       if (Array.isArray(data)) {
         const formattedAppointments = data.map((appt, index) => {
-          // DEBUG LOGGING
-          console.log(`Appointment ${index}:`, {
-            id: appt.id,
-            services: appt.services,
-            service: appt.service,
-            staff: appt.staff,
-            bookingStatus: appt.bookingStatus
-          });
+          let appointmentId;
+          if (appt.id) {
+            appointmentId = appt.id;
+          } else if (appt._id && appt._id.$oid) {
+            appointmentId = appt._id.$oid;
+          } else if (appt._id) {
+            appointmentId = appt._id;
+          } else {
+            appointmentId = `appt-${index}`;
+          }
           
-          // Map backend bookingStatus to frontend status
           let frontendStatus = 'pending';
           const bookingStatus = appt.bookingStatus?.toLowerCase();
           
@@ -120,30 +159,36 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
             frontendStatus = 'pending';
           }
           
+          // Extract amount using totalPayment from backend
+          const amountValue = extractAmount(appt);
+          
           return {
-            id: appt.id || appt._id || `appt-${index}`,
-            bookingId: appt.bookingId || appt.bookingNumber || `BK${String(index + 1).padStart(3, '0')}`,
-            customerName: appt.customerName || appt.customer?.name || 'Customer',
-            // Handle services array - THIS IS THE KEY FIX
-            services: appt.services, // Keep the raw array for display
-            service: formatServices(appt.services || appt.service), // Formatted string for table display
-            staff: appt.staff || appt.staffName || 'Staff',
-            date: appt.date || appt.appointmentDate || dateStr,
-            time: appt.time || appt.appointmentTime || '10:00 AM',
+            id: appointmentId,
+            bookingId: appt.bookingId || `BK${String(index + 1).padStart(3, '0')}`,
+            customerName: appt.customerName || 'Customer',
+            email: appt.email,
+            services: appt.services,
+            service: formatServices(appt.services),
+            staff: appt.staff || 'Staff',
+            date: appt.date || dateStr,
+            time: appt.time || '10:00 AM',
             status: frontendStatus,
-            amount: parseInt(appt.amount || appt.totalAmount || 0),
-            customerPhone: appt.customerPhone || appt.customer?.phone,
-            duration: appt.duration || '60 min',
-            // Backend fields for debugging
-            rawServices: appt.services,
-            rawBookingStatus: appt.bookingStatus
+            amount: amountValue,
+            customerPhone: appt.customerPhone,
+            duration: '60 min',
+            // Payment details from backend
+            payment: appt.payment,
+            paymentChecked: appt.paymentChecked,
+            customerArrived: appt.customer_arrived,
+            rawTotalPayment: appt.totalPayment,
+            rawAmount: appt.amount,
+            rawBookingStatus: appt.bookingStatus,
+            rawPaymentStatus: appt.paymentStatus
           };
         });
         
-        console.log('Formatted appointments:', formattedAppointments);
         setAppointments(formattedAppointments);
       } else {
-        console.warn('Data is not an array:', data);
         setAppointments([]);
       }
       
@@ -153,9 +198,56 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, formatDate, getAuthToken, formatServices]);
+  }, [API_BASE_URL, formatDate, getAuthToken, formatServices, extractAmount]);
 
-  // Generate calendar days - wrapped in useMemo
+  const fetchAllAppointmentsForCalendar = useCallback(async (year, month) => {
+    try {
+      setCalendarLoading(true);
+      const token = getAuthToken();
+      
+      const headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/appointments`, {
+        method: 'GET',
+        headers: headers,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        setAllAppointments([]);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        const monthAppointments = data.filter(appt => {
+          if (!appt.date) return false;
+          const appointmentDate = new Date(appt.date);
+          return appointmentDate.getFullYear() === year && 
+                 appointmentDate.getMonth() === month;
+        });
+        
+        setAllAppointments(monthAppointments);
+      } else {
+        setAllAppointments([]);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching appointments for calendar:', error);
+      setAllAppointments([]);
+    } finally {
+      setCalendarLoading(false);
+    }
+  }, [API_BASE_URL, getAuthToken]);
+
   const generateCalendarDays = useCallback(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -167,57 +259,69 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     const daysInMonth = lastDay.getDate();
     const days = [];
     
-    // Previous month days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = 0; i < startingDay; i++) {
       const day = prevMonthLastDay - startingDay + i + 1;
       const date = new Date(year, month - 1, day);
+      const dateStr = formatDate(date);
+      
+      const appointmentCount = allAppointments.filter(appt => {
+        const apptDate = appt.date?.split('T')[0];
+        return apptDate === dateStr;
+      }).length;
+      
       days.push({
         date,
         isCurrentMonth: false,
         isToday: false,
         isSelected: false,
-        appointmentCount: 0
+        appointmentCount
       });
     }
     
-    // Current month days
     const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const dateStr = formatDate(date);
       const isSelected = formatDate(date) === formatDate(selectedDate);
+      const isToday = formatDate(date) === formatDate(today);
       
-      const dateAppointments = appointments.filter(appt => {
+      const appointmentCount = allAppointments.filter(appt => {
         const apptDate = appt.date?.split('T')[0];
         return apptDate === dateStr;
-      });
+      }).length;
       
       days.push({
         date,
         isCurrentMonth: true,
-        isToday: formatDate(date) === formatDate(today),
+        isToday,
         isSelected,
-        appointmentCount: dateAppointments.length
+        appointmentCount
       });
     }
     
-    // Next month days
     const totalCells = 42;
     for (let i = days.length; i < totalCells; i++) {
       const day = i - days.length + 1;
       const date = new Date(year, month + 1, day);
+      const dateStr = formatDate(date);
+      
+      const appointmentCount = allAppointments.filter(appt => {
+        const apptDate = appt.date?.split('T')[0];
+        return apptDate === dateStr;
+      }).length;
+      
       days.push({
         date,
         isCurrentMonth: false,
         isToday: false,
         isSelected: false,
-        appointmentCount: 0
+        appointmentCount
       });
     }
     
     return days;
-  }, [currentMonth, appointments, formatDate, selectedDate]);
+  }, [currentMonth, allAppointments, formatDate, selectedDate]);
 
   const handleDateClick = (date) => {
     if (!date.isCurrentMonth) {
@@ -228,14 +332,17 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
   };
 
   const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    setCurrentMonth(newMonth);
+    fetchAllAppointmentsForCalendar(newMonth.getFullYear(), newMonth.getMonth());
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    setCurrentMonth(newMonth);
+    fetchAllAppointmentsForCalendar(newMonth.getFullYear(), newMonth.getMonth());
   };
 
-  // Get stats - wrapped in useMemo
   const stats = useMemo(() => {
     const total = appointments.length;
     const completed = appointments.filter(a => a.status === 'completed').length;
@@ -246,10 +353,15 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     return { total, completed, pending, confirmed, cancelled };
   }, [appointments]);
 
-  // Load appointments on mount and when selectedDate changes
+  // Calculate total revenue for selected date
+  const totalRevenue = useMemo(() => {
+    return appointments.reduce((sum, appt) => sum + (appt.amount || 0), 0);
+  }, [appointments]);
+
   useEffect(() => {
     fetchAppointmentsByDate(selectedDate);
-  }, [selectedDate, fetchAppointmentsByDate]);
+    fetchAllAppointmentsForCalendar(currentMonth.getFullYear(), currentMonth.getMonth());
+  }, [selectedDate, currentMonth, fetchAppointmentsByDate, fetchAllAppointmentsForCalendar]);
 
   const calendarDays = generateCalendarDays();
   
@@ -258,16 +370,31 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
     return appt.status === filter;
   });
 
+  // Get payment verification icon
+  const getPaymentIcon = (paymentChecked) => {
+    if (paymentChecked?.toLowerCase() === 'yes') {
+      return <CheckCircle size={14} color="#4CAF50" />;
+    }
+    return <XCircle size={14} color="#f44336" />;
+  };
+
+  // Get arrival status icon
+  const getArrivalIcon = (arrived) => {
+    if (arrived?.toLowerCase() === 'yes') {
+      return <CheckCircle size={14} color="#4CAF50" />;
+    }
+    return <AlertCircle size={14} color="#FF9800" />;
+  };
+
   return (
     <div className="admina-appointments-manager">
-      {/* Header */}
       <div className="admina-appointments-header">
         <div>
           <h2>
             <CalendarIcon size={24} style={{ marginRight: '10px' }} />
             {userRole === 'admin' ? 'Appointments Dashboard' : 'My Schedule'}
           </h2>
-          <p>Manage and view appointments</p>
+          <p>Manage and view appointments with payment details</p>
         </div>
         
         <div className="admina-header-actions">
@@ -288,11 +415,14 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
           
           <button 
             className="admina-action-btn admina-refresh-btn"
-            onClick={() => fetchAppointmentsByDate(selectedDate)}
-            disabled={loading}
+            onClick={() => {
+              fetchAppointmentsByDate(selectedDate);
+              fetchAllAppointmentsForCalendar(currentMonth.getFullYear(), currentMonth.getMonth());
+            }}
+            disabled={loading || calendarLoading}
           >
             <RefreshCw size={18} />
-            <span>{loading ? 'Loading...' : 'Refresh'}</span>
+            <span>{(loading || calendarLoading) ? 'Loading...' : 'Refresh'}</span>
           </button>
           
           <button className="admina-action-btn admina-export-btn">
@@ -302,7 +432,6 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
         </div>
       </div>
 
-      {/* Stats Cards - REMOVED REVENUE CARD */}
       <div className="admina-stats-grid">
         <div className="admina-stat-card">
           <div className="admina-stat-header">
@@ -315,33 +444,38 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
         
         <div className="admina-stat-card">
           <div className="admina-stat-header">
-            <h3>Completed</h3>
+            <h3>Total Revenue</h3>
+            <div className="admina-stat-icon">💰</div>
+          </div>
+          <div className="admina-stat-value revenue">
+            Rs. {totalRevenue.toLocaleString()}
+          </div>
+          <div className="admina-stat-subtitle">From {stats.total} appointments</div>
+        </div>
+        
+        <div className="admina-stat-card">
+          <div className="admina-stat-header">
+            <h3>Paid Appointments</h3>
             <div className="admina-stat-icon">✅</div>
           </div>
-          <div className="admina-stat-value">{stats.completed}</div>
-          <div className="admina-stat-subtitle">Finished</div>
+          <div className="admina-stat-value">
+            {appointments.filter(a => a.payment === 'Paid').length}
+          </div>
+          <div className="admina-stat-subtitle">Payment verified</div>
         </div>
         
         <div className="admina-stat-card">
           <div className="admina-stat-header">
-            <h3>Pending</h3>
-            <div className="admina-stat-icon">⏳</div>
+            <h3>Average Per Appointment</h3>
+            <div className="admina-stat-icon">📊</div>
           </div>
-          <div className="admina-stat-value">{stats.pending}</div>
-          <div className="admina-stat-subtitle">Awaiting</div>
-        </div>
-        
-        <div className="admina-stat-card">
-          <div className="admina-stat-header">
-            <h3>Confirmed</h3>
-            <div className="admina-stat-icon">✓</div>
+          <div className="admina-stat-value">
+            Rs. {stats.total > 0 ? Math.round(totalRevenue / stats.total).toLocaleString() : '0'}
           </div>
-          <div className="admina-stat-value">{stats.confirmed}</div>
-          <div className="admina-stat-subtitle">Booked</div>
+          <div className="admina-stat-subtitle">Based on actual payments</div>
         </div>
       </div>
 
-      {/* Calendar */}
       <div className="admina-calendar-container">
         <div className="admina-calendar-header">
           <div>
@@ -349,17 +483,28 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
               <CalendarIcon />
               Appointments Calendar
             </h2>
-            <p className="admina-calendar-subtitle">Click on any date to view appointments</p>
+            <p className="admina-calendar-subtitle">
+              {calendarLoading ? 'Loading appointment counts...' : 'Appointment counts shown on each date'}
+            </p>
           </div>
           
           <div className="admina-calendar-controls">
-            <button className="admina-calendar-nav-btn" onClick={handlePrevMonth}>
+            <button 
+              className="admina-calendar-nav-btn" 
+              onClick={handlePrevMonth}
+              disabled={calendarLoading}
+            >
               <ChevronLeft size={20} />
             </button>
             <span className="admina-calendar-month-display">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {calendarLoading && ' (Loading...)'}
             </span>
-            <button className="admina-calendar-nav-btn" onClick={handleNextMonth}>
+            <button 
+              className="admina-calendar-nav-btn" 
+              onClick={handleNextMonth}
+              disabled={calendarLoading}
+            >
               <ChevronRight size={20} />
             </button>
           </div>
@@ -378,21 +523,24 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                 ${day.isCurrentMonth ? 'current-month' : 'other-month'}
                 ${day.isToday ? 'today' : ''}
                 ${day.isSelected ? 'selected' : ''}
+                ${day.appointmentCount > 0 ? 'has-appointments' : ''}
               `}
               onClick={() => handleDateClick(day.date)}
-              title={`${formatDate(day.date)}: ${day.appointmentCount} appointments`}
+              title={`${formatDate(day.date)}: ${day.appointmentCount} appointment${day.appointmentCount !== 1 ? 's' : ''}`}
             >
               <div className="admina-day-number">{day.date.getDate()}</div>
               
               {day.appointmentCount > 0 && (
-                <>
-                  <div className={`admina-appointment-dot ${day.isSelected ? 'selected' : ''}`} />
-                  {day.appointmentCount > 1 && (
-                    <span className="admina-appointment-count-badge">
-                      {day.appointmentCount}
-                    </span>
-                  )}
-                </>
+                <div className="admina-appointment-count-display">
+                  <span className={`admina-appointment-count-badge ${day.appointmentCount > 9 ? 'double-digit' : ''}`}>
+                    {day.appointmentCount > 9 ? '9+' : day.appointmentCount}
+                  </span>
+                  {day.appointmentCount === 1 && <div className="admina-appointment-dot" />}
+                </div>
+              )}
+              
+              {day.isToday && day.appointmentCount === 0 && (
+                <div className="admina-today-indicator">Today</div>
               )}
             </div>
           ))}
@@ -409,18 +557,31 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
             })}
           </div>
           <div className="admina-appointment-count-text">
-            {appointments.length} appointment{appointments.length !== 1 ? 's' : ''} found
+            {appointments.length} appointment{appointments.length !== 1 ? 's' : ''} • 
+            Total Revenue: <strong>Rs. {totalRevenue.toLocaleString()}</strong>
             {loading && ' (Loading...)'}
+          </div>
+          <div className="admina-calendar-summary">
+            <span className="admina-calendar-appointments-total">
+              {allAppointments.length} appointments in {currentMonth.toLocaleDateString('en-US', { month: 'long' })}
+            </span>
+            <span className="admina-calendar-days-with-appointments">
+              {Array.from(new Set(allAppointments.map(a => a.date?.split('T')[0]))).length} days with appointments
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Appointments Table */}
       <div className="admina-appointments-table-container">
         <div className="admina-table-header">
           <h3>Appointments for {selectedDate.toLocaleDateString()}</h3>
           <div className="admina-appointment-count-display">
             {filteredAppointments.length} appointment{filteredAppointments.length !== 1 ? 's' : ''}
+            {totalRevenue > 0 && (
+              <span className="admina-total-amount">
+                • Total: Rs. {totalRevenue.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
         
@@ -438,10 +599,10 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                     <tr>
                       <th>ID</th>
                       <th>Customer</th>
-                      <th>Service(s)</th> {/* Updated column header */}
+                      <th>Service(s)</th>
                       {userRole === 'admin' && <th>Staff</th>}
                       <th>Time</th>
-                      <th>Status</th>
+                      <th>Payment Status</th>
                       <th>Amount (LKR)</th>
                     </tr>
                   </thead>
@@ -453,39 +614,53 @@ const AppointmentsManager = ({ userRole = 'admin' }) => {
                         </td>
                         <td className="admina-customer-cell">
                           <div className="admina-customer-name">{appointment.customerName}</div>
-                          {appointment.customerPhone && (
-                            <div className="admina-customer-phone">{appointment.customerPhone}</div>
+                          {appointment.email && (
+                            <div className="admina-customer-email">{appointment.email}</div>
                           )}
                         </td>
-                        <td className="admina-service-cell"> {/* Added className for better styling */}
+                        <td className="admina-service-cell">
                           <div className="admina-service-list">
                             {appointment.service}
                           </div>
-                          {appointment.rawServices && Array.isArray(appointment.rawServices) && (
-                            <div className="admina-service-count">
-                              <small>{appointment.rawServices.length} service{appointment.rawServices.length !== 1 ? 's' : ''}</small>
-                            </div>
-                          )}
                         </td>
                         {userRole === 'admin' && (
                           <td className="admina-staff-cell">{appointment.staff}</td>
                         )}
                         <td className="admina-time-cell">
                           <div className="admina-time-slot">{appointment.time}</div>
-                          <div className="admina-duration">{appointment.duration}</div>
                         </td>
-                        <td>
-                          <span className={`admina-status-badge admina-status-${appointment.status}`}>
-                            {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                          </span>
-                          {appointment.rawBookingStatus && appointment.rawBookingStatus !== appointment.status.toUpperCase() && (
-                            <div className="admina-original-status">
-                              <small>({appointment.rawBookingStatus})</small>
+                        <td className="admina-payment-cell">
+                          <div className="admina-payment-info">
+                            <div className="admina-payment-status-row">
+                              {getPaymentIcon(appointment.paymentChecked)}
+                              <span className={`admina-payment-status-badge ${appointment.payment === 'Paid' ? 'paid' : 'pending'}`}>
+                                {appointment.payment || 'Pending'}
+                              </span>
                             </div>
-                          )}
+                            <div className="admina-payment-details">
+                              {appointment.paymentChecked && (
+                                <span className="admina-payment-checked">
+                                  Checked: {appointment.paymentChecked}
+                                </span>
+                              )}
+                              {appointment.customerArrived && (
+                                <span className="admina-customer-arrived">
+                                  {getArrivalIcon(appointment.customerArrived)}
+                                  Arrived: {appointment.customerArrived}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="admina-amount-cell">
-                          Rs. {appointment.amount?.toLocaleString() || '0'}
+                          <div className="admina-amount-value">
+                            Rs. {appointment.amount?.toLocaleString() || '0'}
+                          </div>
+                          {appointment.rawTotalPayment && (
+                            <div className="admina-amount-source">
+                              <small>from totalPayment</small>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

@@ -1,4 +1,4 @@
-// src/components/staff/StaffAppointments.jsx - FIXED VERSION
+// src/components/staff/StaffAppointments.jsx - UPDATED WITH MONTHLY APPOINTMENT COUNTS
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Calendar as CalendarIcon, 
@@ -20,9 +20,11 @@ import './StaffAppointments.css';
 
 const StaffAppointments = ({ user }) => {
   const [appointments, setAppointments] = useState([]);
+  const [monthAppointments, setMonthAppointments] = useState({}); // Stores appointments for the entire month
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [loadingMonth, setLoadingMonth] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [staffName, setStaffName] = useState('');
@@ -42,53 +44,45 @@ const StaffAppointments = ({ user }) => {
     return `${year}-${month}-${day}`;
   };
 
-  // Mock data for testing - REMOVE IN PRODUCTION
-  const generateMockAppointments = (dateStr) => {
-    const mockAppointments = [
-      {
-        id: 'appt-1',
-        bookingId: 'BK001',
-        customerName: 'John Smith',
-        service: 'Haircut',
-        time: '10:00 AM',
-        date: dateStr,
-        status: 'pending',
-        amount: 500,
-        customerPhone: '+91 98765 43210',
-        duration: '45 min',
-        staff: staffName || 'Staff 1'
-      },
-      {
-        id: 'appt-2',
-        bookingId: 'BK002',
-        customerName: 'Sarah Johnson',
-        service: 'Hair Coloring',
-        time: '2:30 PM',
-        date: dateStr,
-        status: 'confirmed',
-        amount: 1500,
-        customerPhone: '+91 98765 43211',
-        duration: '2 hours',
-        staff: staffName || 'Staff 1'
-      },
-      {
-        id: 'appt-3',
-        bookingId: 'BK003',
-        customerName: 'Mike Wilson',
-        service: 'Beard Trim',
-        time: '4:00 PM',
-        date: dateStr,
-        status: 'completed',
-        amount: 300,
-        customerPhone: '+91 98765 43212',
-        duration: '30 min',
-        staff: staffName || 'Staff 1'
+  // Format amount to Sri Lankan Rupees (LKR)
+  const formatLKR = (amount) => {
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
+  // Helper function to extract amount from totalPayment field
+  const extractAmount = (appt) => {
+    // Use totalPayment first (main field from database)
+    if (appt.totalPayment !== undefined && appt.totalPayment !== null) {
+      if (typeof appt.totalPayment === 'number') {
+        return appt.totalPayment;
       }
-    ];
+      if (typeof appt.totalPayment === 'string' && appt.totalPayment.trim() !== '') {
+        const value = parseFloat(appt.totalPayment);
+        if (!isNaN(value)) {
+          return value;
+        }
+      }
+    }
     
-    // Randomize for different dates
-    const dayNum = parseInt(dateStr.split('-')[2]);
-    return mockAppointments.slice(0, dayNum % 3 + 1);
+    // Fallback to amount field (for backward compatibility)
+    if (appt.amount !== undefined && appt.amount !== null) {
+      if (typeof appt.amount === 'number') {
+        return appt.amount;
+      }
+      if (typeof appt.amount === 'string' && appt.amount.trim() !== '') {
+        const value = parseFloat(appt.amount);
+        if (!isNaN(value)) {
+          return value;
+        }
+      }
+    }
+    
+    return 0;
   };
 
   // Fetch staff profile to get staff name
@@ -115,29 +109,27 @@ const StaffAppointments = ({ user }) => {
     }
   }, [API_BASE_URL, getAuthToken]);
 
-  const fetchStaffAppointments = useCallback(async (date) => {
-    if (!date) return;
+  // Fetch appointments for the ENTIRE MONTH (for calendar display)
+  const fetchMonthAppointments = useCallback(async () => {
+    if (!currentMonth) return;
     
-    setLoading(true);
+    setLoadingMonth(true);
     
     try {
       const token = getAuthToken();
-      const dateStr = formatDate(date);
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
       
-      console.log(`=== Fetching appointments for date: ${dateStr} ===`);
+      // Get first and last day of month
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDate = formatDate(firstDay);
+      const endDate = formatDate(lastDay);
       
-      // Check if it's today
-      const today = new Date();
-      const todayStr = formatDate(today);
-      const isToday = dateStr === todayStr;
+      console.log(`Fetching appointments for month range: ${startDate} to ${endDate}`);
       
-      // Use the correct backend endpoints
-      let endpoint;
-      if (isToday) {
-        endpoint = `${API_BASE_URL}/api/staff/appointments/today`;
-      } else {
-        endpoint = `${API_BASE_URL}/api/staff/appointments/date/${dateStr}`;
-      }
+      // Use the new monthly range endpoint
+      const endpoint = `${API_BASE_URL}/api/staff/appointments/range?start=${startDate}&end=${endDate}`;
       
       console.log(`Calling endpoint: ${endpoint}`);
       
@@ -150,118 +142,158 @@ const StaffAppointments = ({ user }) => {
         }
       });
       
-      console.log('Response status:', response.status);
+      console.log('Month range response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('API Response data:', data);
+        console.log('Monthly appointments data:', data);
         
-        let staffAppointments = [];
+        let appointmentsByDate = {};
         
         // Handle different response formats
-        if (data && data.appointments && Array.isArray(data.appointments)) {
-          staffAppointments = data.appointments;
-        } else if (Array.isArray(data)) {
-          staffAppointments = data;
-        } else if (data && data.data && Array.isArray(data.data)) {
-          staffAppointments = data.data;
+        if (data && data.appointmentsByDate) {
+          // Use the grouped data if available
+          appointmentsByDate = data.appointmentsByDate;
+        } else if (data && data.appointments && Array.isArray(data.appointments)) {
+          // Group appointments by date manually
+          data.appointments.forEach(appt => {
+            if (appt.date) {
+              const dateKey = appt.date.split('T')[0]; // Remove time part if exists
+              if (!appointmentsByDate[dateKey]) {
+                appointmentsByDate[dateKey] = [];
+              }
+              appointmentsByDate[dateKey].push(appt);
+            }
+          });
         }
         
-        console.log(`Found ${staffAppointments.length} appointments`);
+        console.log(`Found appointments for ${Object.keys(appointmentsByDate).length} dates`);
+        setMonthAppointments(appointmentsByDate);
         
-        // Map backend status to frontend status
-        const mappedAppointments = staffAppointments.map(appt => {
-          // Map backend bookingStatus to frontend status
-          let status = 'pending';
-          const bookingStatus = appt.bookingStatus?.toLowerCase();
-          
-          if (bookingStatus === 'confirmed' || bookingStatus === 'active') {
-            status = 'confirmed';
-          } else if (bookingStatus === 'completed' || bookingStatus === 'done') {
-            status = 'completed';
-          } else if (bookingStatus === 'cancelled' || bookingStatus === 'canceled') {
-            status = 'cancelled';
-          } else if (bookingStatus === 'pending' || !bookingStatus) {
-            status = 'pending';
-          }
-          
-          return {
-            id: appt.id,
-            bookingId: appt.bookingId || `BK${appt.id?.substring(0, 4) || '0001'}`,
-            customerName: appt.customerName || 'Customer',
-            service: Array.isArray(appt.services) ? appt.services.join(', ') : appt.services || 'Service',
-            time: appt.time || '10:00 AM',
-            date: appt.date || dateStr,
-            status: status,
-            amount: appt.amount || 0,
-            customerPhone: appt.customerPhone || appt.phone || '+91 00000 00000',
-            duration: '60 min', // Default duration
-            staff: appt.staff || staffName
-          };
-        });
-        
-        // Sort appointments by time
-        const sortedAppointments = mappedAppointments.sort((a, b) => {
-          const timeA = a.time?.toUpperCase() || '';
-          const timeB = b.time?.toUpperCase() || '';
-          
-          // Helper to convert time to 24-hour format for sorting
-          const timeTo24Hour = (timeStr) => {
-            if (!timeStr) return 0;
-            
-            let time = timeStr.toUpperCase();
-            const isPM = time.includes('PM');
-            const isAM = time.includes('AM');
-            
-            // Extract hours and minutes
-            time = time.replace(/[AP]M/i, '').trim();
-            const parts = time.split(':');
-            let hours = parseInt(parts[0]) || 0;
-            const minutes = parseInt(parts[1]) || 0;
-            
-            // Convert 12-hour to 24-hour
-            if (isPM && hours < 12) hours += 12;
-            if (isAM && hours === 12) hours = 0;
-            
-            return hours * 100 + minutes;
-          };
-          
-          return timeTo24Hour(timeA) - timeTo24Hour(timeB);
-        });
-        
-        console.log('Sorted appointments:', sortedAppointments);
-        setAppointments(sortedAppointments);
+        // Update selected date appointments from the month data
+        const selectedDateStr = formatDate(selectedDate);
+        if (appointmentsByDate[selectedDateStr]) {
+          // Map and sort appointments for selected date
+          const mappedAppointments = mapAppointmentsData(appointmentsByDate[selectedDateStr], selectedDateStr);
+          setAppointments(mappedAppointments);
+        } else {
+          setAppointments([]);
+        }
         
       } else {
         const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        
-        // Fallback to mock data for development
-        const mockData = generateMockAppointments(dateStr);
-        console.log('Using mock data for development');
-        setAppointments(mockData);
+        console.error('Month range API Error:', errorText);
+        setMonthAppointments({});
+        setAppointments([]);
       }
       
     } catch (error) {
-      console.error('Error in fetchStaffAppointments:', error);
-      
-      // Fallback to mock data
-      const mockData = generateMockAppointments(formatDate(date));
-      setAppointments(mockData);
+      console.error('Error fetching month appointments:', error);
+      setMonthAppointments({});
+      setAppointments([]);
     } finally {
-      setLoading(false);
+      setLoadingMonth(false);
     }
-  }, [API_BASE_URL, getAuthToken, staffName]);
+  }, [API_BASE_URL, getAuthToken, currentMonth, selectedDate]);
+
+  // Helper function to map appointment data
+  const mapAppointmentsData = (appointmentsData, dateStr) => {
+    if (!appointmentsData || !Array.isArray(appointmentsData)) return [];
+    
+    const mappedAppointments = appointmentsData.map(appt => {
+      // Map backend bookingStatus to frontend status
+      let status = 'pending';
+      const bookingStatus = appt.bookingStatus?.toLowerCase();
+      
+      if (bookingStatus === 'confirmed' || bookingStatus === 'active') {
+        status = 'confirmed';
+      } else if (bookingStatus === 'completed' || bookingStatus === 'done') {
+        status = 'completed';
+      } else if (bookingStatus === 'cancelled' || bookingStatus === 'canceled') {
+        status = 'cancelled';
+      } else if (bookingStatus === 'pending' || !bookingStatus) {
+        status = 'pending';
+      }
+      
+      // Extract amount using totalPayment
+      const amount = extractAmount(appt);
+      
+      return {
+        id: appt.id,
+        bookingId: appt.bookingId || `BK${appt.id?.substring(0, 4) || '0001'}`,
+        customerName: appt.customerName || 'Customer',
+        service: Array.isArray(appt.services) ? appt.services.join(', ') : appt.services || 'Service',
+        time: appt.time || '10:00 AM',
+        date: appt.date || dateStr,
+        status: status,
+        amount: amount,
+        totalPayment: appt.totalPayment,
+        rawAmount: appt.amount,
+        customerPhone: appt.customerPhone || appt.phone || '+94 77 XXX XXXX',
+        duration: '60 min',
+        staff: appt.staff || staffName
+      };
+    });
+    
+    // Sort appointments by time
+    return mappedAppointments.sort((a, b) => {
+      const timeA = a.time?.toUpperCase() || '';
+      const timeB = b.time?.toUpperCase() || '';
+      
+      // Helper to convert time to 24-hour format for sorting
+      const timeTo24Hour = (timeStr) => {
+        if (!timeStr) return 0;
+        
+        let time = timeStr.toUpperCase();
+        const isPM = time.includes('PM');
+        const isAM = time.includes('AM');
+        
+        // Extract hours and minutes
+        time = time.replace(/[AP]M/i, '').trim();
+        const parts = time.split(':');
+        let hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        
+        // Convert 12-hour to 24-hour
+        if (isPM && hours < 12) hours += 12;
+        if (isAM && hours === 12) hours = 0;
+        
+        return hours * 100 + minutes;
+      };
+      
+      return timeTo24Hour(timeA) - timeTo24Hour(timeB);
+    });
+  };
+
+  // Fetch appointments for specific date (for when month data is already loaded)
+  const fetchAppointmentsForDate = useCallback((date) => {
+    const dateStr = formatDate(date);
+    
+    if (monthAppointments[dateStr]) {
+      const mappedAppointments = mapAppointmentsData(monthAppointments[dateStr], dateStr);
+      setAppointments(mappedAppointments);
+    } else {
+      setAppointments([]);
+    }
+  }, [monthAppointments]);
 
   useEffect(() => {
     fetchStaffProfile();
   }, [fetchStaffProfile]);
 
   useEffect(() => {
+    // Fetch appointments for the entire month when month changes
     if (staffName || user?.name) {
-      fetchStaffAppointments(selectedDate);
+      fetchMonthAppointments();
     }
-  }, [selectedDate, fetchStaffAppointments, staffName, user?.name]);
+  }, [currentMonth, staffName, user?.name]);
+
+  useEffect(() => {
+    // When selected date changes, update appointments from month data
+    if (Object.keys(monthAppointments).length > 0) {
+      fetchAppointmentsForDate(selectedDate);
+    }
+  }, [selectedDate, monthAppointments, fetchAppointmentsForDate]);
 
   const goToPreviousMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -346,39 +378,69 @@ const StaffAppointments = ({ user }) => {
         const result = await response.json();
         console.log('Update successful:', result);
         
-        // Refresh the appointments list
-        fetchStaffAppointments(selectedDate);
+        // Refresh the month appointments to update counts
+        fetchMonthAppointments();
         alert(`Appointment marked as ${newStatus}!`);
       } else {
         const errorText = await response.text();
         console.error('Update failed:', response.status, errorText);
         
-        // For development, update locally
-        setAppointments(prev => 
-          prev.map(appt => 
-            appt.id === appointmentId 
-              ? { ...appt, status: newStatus }
-              : appt
-          )
+        // Update local state
+        const updatedAppointments = appointments.map(appt => 
+          appt.id === appointmentId 
+            ? { ...appt, status: newStatus }
+            : appt
         );
+        setAppointments(updatedAppointments);
+        
+        // Update month appointments cache
+        const dateStr = formatDate(selectedDate);
+        const updatedMonthAppts = { ...monthAppointments };
+        if (updatedMonthAppts[dateStr]) {
+          updatedMonthAppts[dateStr] = updatedMonthAppts[dateStr].map(appt => {
+            if (appt.id === appointmentId) {
+              const updatedAppt = { ...appt };
+              updatedAppt.bookingStatus = backendStatus;
+              return updatedAppt;
+            }
+            return appt;
+          });
+          setMonthAppointments(updatedMonthAppts);
+        }
+        
         alert(`Appointment marked as ${newStatus}! (Local update)`);
       }
     } catch (error) {
       console.error('Error updating appointment:', error);
       
-      // For development, update locally
-      setAppointments(prev => 
-        prev.map(appt => 
-          appt.id === appointmentId 
-            ? { ...appt, status: newStatus }
-            : appt
-        )
+      // Update local state
+      const updatedAppointments = appointments.map(appt => 
+        appt.id === appointmentId 
+          ? { ...appt, status: newStatus }
+          : appt
       );
+      setAppointments(updatedAppointments);
+      
+      // Update month appointments cache
+      const dateStr = formatDate(selectedDate);
+      const updatedMonthAppts = { ...monthAppointments };
+      if (updatedMonthAppts[dateStr]) {
+        updatedMonthAppts[dateStr] = updatedMonthAppts[dateStr].map(appt => {
+          if (appt.id === appointmentId) {
+            const updatedAppt = { ...appt };
+            updatedAppt.bookingStatus = newStatus.toUpperCase();
+            return updatedAppt;
+          }
+          return appt;
+        });
+        setMonthAppointments(updatedMonthAppts);
+      }
+      
       alert(`Appointment marked as ${newStatus}! (Local update due to error)`);
     }
   };
 
-  // Generate calendar with proper layout
+  // Generate calendar with appointment counts from month data
   const generateCalendar = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -401,27 +463,26 @@ const StaffAppointments = ({ user }) => {
         isCurrentMonth: false,
         isToday: false,
         isSelected: false,
-        appointmentCount: 0
+        appointmentCount: 0,
+        dayNumber: null
       });
     }
     
-    // Add days of the month
+    // Add days of the month with appointment counts from monthAppointments
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const dateStr = formatDate(date);
       
-      // Count appointments for this date
-      const dateAppointments = appointments.filter(appt => {
-        const apptDate = appt.date ? appt.date.split('T')[0] : null;
-        return apptDate === dateStr;
-      });
+      // Get appointment count from month data
+      const dateAppointments = monthAppointments[dateStr] || [];
+      const appointmentCount = dateAppointments.length;
       
       calendar.push({
         date,
         isCurrentMonth: true,
         isToday: dateStr === todayStr,
         isSelected: dateStr === selectedDateStr,
-        appointmentCount: dateAppointments.length,
+        appointmentCount: appointmentCount,
         dayNumber: day
       });
     }
@@ -433,7 +494,8 @@ const StaffAppointments = ({ user }) => {
         isCurrentMonth: false,
         isToday: false,
         isSelected: false,
-        appointmentCount: 0
+        appointmentCount: 0,
+        dayNumber: null
       });
     }
     
@@ -443,13 +505,23 @@ const StaffAppointments = ({ user }) => {
   const calendarDays = generateCalendar();
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Get appointment statistics
+  // Get appointment statistics for selected date
   const appointmentStats = {
     total: appointments.length,
     pending: appointments.filter(a => a.status === 'pending').length,
     confirmed: appointments.filter(a => a.status === 'confirmed').length,
     completed: appointments.filter(a => a.status === 'completed').length,
     cancelled: appointments.filter(a => a.status === 'cancelled').length,
+  };
+
+  // Get total appointments for the month
+  const getTotalMonthAppointments = () => {
+    return Object.values(monthAppointments).reduce((total, apps) => total + apps.length, 0);
+  };
+
+  // Get days with appointments in current month
+  const getDaysWithAppointments = () => {
+    return Object.keys(monthAppointments).length;
   };
 
   return (
@@ -501,11 +573,11 @@ const StaffAppointments = ({ user }) => {
             
             <button 
               className="staff-refresh-button"
-              onClick={() => fetchStaffAppointments(selectedDate)}
-              disabled={loading}
+              onClick={fetchMonthAppointments}
+              disabled={loadingMonth}
             >
-              <RefreshCw size={18} className={loading ? 'staff-spinning' : ''} />
-              Refresh
+              <RefreshCw size={18} className={loadingMonth ? 'staff-spinning' : ''} />
+              Refresh Month
             </button>
           </div>
         </div>
@@ -530,6 +602,12 @@ const StaffAppointments = ({ user }) => {
                 <CalendarDays size={18} />
                 Today
               </button>
+              {loadingMonth && (
+                <div className="staff-loading-month">
+                  <div className="staff-mini-spinner"></div>
+                  <span>Loading month...</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -543,21 +621,26 @@ const StaffAppointments = ({ user }) => {
               ))}
             </div>
 
-            {/* Calendar Grid */}
+            {/* Calendar Grid with Appointment Counts */}
             <div className="staff-calendar-grid">
               {calendarDays.map((day, index) => (
                 <div
                   key={index}
                   className={`staff-calendar-day ${day.date ? 'has-date' : 'empty'} ${day.isCurrentMonth ? 'current-month' : ''} ${day.isToday ? 'today' : ''} ${day.isSelected ? 'selected' : ''}`}
                   onClick={() => day.date && handleDateClick(day.date)}
-                  title={day.date ? `${formatDate(day.date)}: ${day.appointmentCount} appointments` : ''}
+                  title={day.date ? `${day.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}: ${day.appointmentCount} appointment${day.appointmentCount !== 1 ? 's' : ''}` : ''}
                 >
                   {day.date && (
                     <>
-                      <span className="staff-day-number">{day.dayNumber || day.date.getDate()}</span>
+                      <span className="staff-day-number">{day.dayNumber}</span>
                       {day.appointmentCount > 0 && (
-                        <div className="staff-appointment-indicator" title={`${day.appointmentCount} appointment${day.appointmentCount !== 1 ? 's' : ''}`}>
-                          {day.appointmentCount > 1 ? day.appointmentCount : ''}
+                        <div className={`staff-appointment-indicator ${day.appointmentCount > 3 ? 'many' : day.appointmentCount > 1 ? 'some' : 'few'}`}>
+                          <span className="staff-appointment-count">
+                            {day.appointmentCount}
+                          </span>
+                          <span className="staff-appointment-label">
+                            appt{day.appointmentCount !== 1 ? 's' : ''}
+                          </span>
                         </div>
                       )}
                     </>
@@ -581,7 +664,10 @@ const StaffAppointments = ({ user }) => {
             </div>
             <div className="staff-appointments-count">
               <span className="staff-count">{appointmentStats.total}</span>
-              <span className="staff-label">appointments</span>
+              <span className="staff-label">appointments today</span>
+              <span className="staff-month-total">
+                ({getTotalMonthAppointments()} total this month)
+              </span>
             </div>
           </div>
         </div>
@@ -615,7 +701,12 @@ const StaffAppointments = ({ user }) => {
           </div>
         </div>
 
-        {loading ? (
+        {loadingMonth ? (
+          <div className="staff-loading-state">
+            <div className="staff-spinner"></div>
+            <p>Loading month appointments...</p>
+          </div>
+        ) : loading ? (
           <div className="staff-loading-state">
             <div className="staff-spinner"></div>
             <p>Loading appointments...</p>
@@ -672,7 +763,12 @@ const StaffAppointments = ({ user }) => {
                         <span className="staff-service-name">{appt.service || 'Service'}</span>
                         <div className="staff-service-price">
                           <DollarSign size={14} />
-                          <span>₹{appt.amount || '0'}</span>
+                          <span>{formatLKR(appt.amount)}</span>
+                          {appt.totalPayment !== null && appt.totalPayment !== undefined && (
+                            <div className="staff-payment-source">
+                              <small>(from totalPayment)</small>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

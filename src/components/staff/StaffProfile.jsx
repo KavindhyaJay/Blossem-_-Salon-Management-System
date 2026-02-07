@@ -1,17 +1,17 @@
-// src/components/staff/StaffProfile.jsx - WITH PROFILE PICTURE UPLOAD
+// src/components/staff/StaffProfile.jsx - UPDATED AS REQUESTED
 import React, { useState, useCallback } from 'react';
 import { 
   User, 
   Mail, 
   Phone, 
-  Calendar, 
-  MapPin, 
   Edit2,
   Save,
   X,
   Camera,
   Upload,
-  Trash2
+  Trash2,
+  Badge,
+  Shield
 } from 'lucide-react';
 import './StaffProfile.css';
 
@@ -25,10 +25,7 @@ const StaffProfile = ({ user }) => {
     email: user?.email || 'john@example.com',
     phone: user?.phone || '+1 (555) 123-4567',
     specialization: user?.specialization || 'Hair Stylist',
-    experience: user?.experience || '5 years',
-    location: user?.location || 'New York, NY',
-    bio: user?.bio || 'Experienced hair stylist specializing in modern cuts and color techniques.',
-    profilePicture: user?.profilePicture || null
+    staffId: user?.id?.slice(0, 8) || 'STF001'
   });
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
@@ -121,17 +118,50 @@ const StaffProfile = ({ user }) => {
     }
   };
 
-  const handleSave = () => {
-    // In a real app, you would make an API call here
-    console.log('Saving profile:', profileData);
-    
-    // If there's a new profile picture to upload, do it first
-    if (profilePicFile) {
-      handleProfilePicUpload();
+  const handleSave = async () => {
+    try {
+      const token = getAuthToken();
+      
+      // Prepare data for API call
+      const updateData = {
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone,
+        specialization: profileData.specialization
+      };
+      
+      console.log('Saving profile:', updateData);
+      
+      // Make API call to update profile
+      const response = await fetch(`${API_BASE_URL}/api/staff/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Profile updated:', data);
+        
+        // If there's a new profile picture to upload, do it
+        if (profilePicFile) {
+          await handleProfilePicUpload();
+        }
+        
+        setIsEditing(false);
+        alert('Profile updated successfully!');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Update failed');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert(`Failed to save profile: ${error.message}`);
     }
-    
-    setIsEditing(false);
-    alert('Profile updated successfully!');
   };
 
   const handleCancel = () => {
@@ -140,10 +170,7 @@ const StaffProfile = ({ user }) => {
       email: user?.email || 'john@example.com',
       phone: user?.phone || '+1 (555) 123-4567',
       specialization: user?.specialization || 'Hair Stylist',
-      experience: user?.experience || '5 years',
-      location: user?.location || 'New York, NY',
-      bio: user?.bio || 'Experienced hair stylist specializing in modern cuts and color techniques.',
-      profilePicture: user?.profilePicture || null
+      staffId: user?.id?.slice(0, 8) || 'STF001'
     });
     setProfilePicPreview(null);
     setProfilePicFile(null);
@@ -155,7 +182,7 @@ const StaffProfile = ({ user }) => {
       {/* Header */}
       <div className="profile-header">
         <h2>My Profile</h2>
-        <p>Manage your personal information and preferences</p>
+        <p>Manage your personal information</p>
       </div>
 
       <div className="profile-content">
@@ -246,10 +273,10 @@ const StaffProfile = ({ user }) => {
             <div className="profile-picture-info">
               <h4>{profileData.name}</h4>
               <p className="profile-role">{profileData.specialization}</p>
-              <p className="profile-location">
-                <MapPin size={14} />
-                {profileData.location}
-              </p>
+              <div className="staff-id-display">
+                <Badge size={14} />
+                <span className="staff-id">Staff ID: {profileData.staffId}</span>
+              </div>
             </div>
           </div>
 
@@ -265,6 +292,7 @@ const StaffProfile = ({ user }) => {
                     type="text"
                     value={profileData.name}
                     onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter your full name"
                   />
                 ) : (
                   <div className="field-value">{profileData.name}</div>
@@ -281,6 +309,7 @@ const StaffProfile = ({ user }) => {
                     type="email"
                     value={profileData.email}
                     onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter your email"
                   />
                 ) : (
                   <div className="field-value">{profileData.email}</div>
@@ -297,6 +326,7 @@ const StaffProfile = ({ user }) => {
                     type="tel"
                     value={profileData.phone}
                     onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Enter your phone number"
                   />
                 ) : (
                   <div className="field-value">{profileData.phone}</div>
@@ -313,56 +343,10 @@ const StaffProfile = ({ user }) => {
                     type="text"
                     value={profileData.specialization}
                     onChange={(e) => setProfileData(prev => ({ ...prev, specialization: e.target.value }))}
+                    placeholder="Enter your specialization"
                   />
                 ) : (
                   <div className="field-value">{profileData.specialization}</div>
-                )}
-              </div>
-
-              <div className="profile-field">
-                <label>
-                  <Calendar size={16} />
-                  Experience
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={profileData.experience}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, experience: e.target.value }))}
-                  />
-                ) : (
-                  <div className="field-value">{profileData.experience}</div>
-                )}
-              </div>
-
-              <div className="profile-field">
-                <label>
-                  <MapPin size={16} />
-                  Location
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={profileData.location}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                ) : (
-                  <div className="field-value">{profileData.location}</div>
-                )}
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <div className="profile-field full-width">
-                <label>Bio / Description</label>
-                {isEditing ? (
-                  <textarea
-                    value={profileData.bio}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                    rows={4}
-                  />
-                ) : (
-                  <div className="field-value">{profileData.bio}</div>
                 )}
               </div>
             </div>
@@ -381,21 +365,21 @@ const StaffProfile = ({ user }) => {
           </div>
 
           <div className="stat-card">
-            <h4>Account Details</h4>
+            <h4>Account Security</h4>
             <div className="account-info">
               <div className="info-item">
-                <span className="info-label">Member Since</span>
-                <span className="info-value">Jan 2024</span>
+                <span className="info-label">Account Type</span>
+                <span className="info-value">Staff</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Last Updated</span>
-                <span className="info-value">Today</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Staff ID</span>
-                <span className="info-value">{user?.id?.slice(0, 8) || 'STF001'}</span>
+                <span className="info-label">Permissions</span>
+                <span className="info-value">Appointments Only</span>
               </div>
             </div>
+            <button className="security-btn">
+              <Shield size={14} />
+              View Security Settings
+            </button>
           </div>
           
           {/* Profile Picture Tips */}
