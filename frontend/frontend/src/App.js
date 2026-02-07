@@ -4,7 +4,7 @@ import { Scissors } from 'lucide-react';
 import './App.css'; 
 import { 
   Home, Method, Services, Staff, DateSelect, 
-  TimeSelect, Info, Summary, ProgressBar 
+  TimeSelect, Summary, ProgressBar 
 } from './components/Steps';
 
 function App() {
@@ -17,8 +17,9 @@ function App() {
     staff: {},       
     date: null,        
     time: null,        
+    // Customer details kept as empty placeholders since we removed the input step
     customer: { 
-      name: '', 
+      name: 'Guest Client', 
       email: '', 
       phone: '', 
       username: '', 
@@ -32,11 +33,9 @@ function App() {
   const handleNext = (nextStep) => setStep(nextStep);
   const handleBack = (prevStep) => setStep(prevStep);
   
-  // --- NEW RESET HANDLER ---
+  // --- RESET HANDLER ---
   const handleCancel = () => {
-    // 1. Clear all data
     setBooking(initialBookingState);
-    // 2. Go back to Home
     setStep('HOME');
   };
 
@@ -58,7 +57,7 @@ function App() {
   return (
     <div className="app-wrapper">
       <nav className="navbar">
-        <div className="logo" onClick={handleCancel}> {/* Clicking Logo also resets now */}
+        <div className="logo" onClick={handleCancel}> 
           <div style={{background: 'var(--primary-red)', padding: 6, borderRadius: 8, marginRight: 8, display: 'flex'}}>
             <Scissors size={20} color="white"/>
           </div>
@@ -115,21 +114,13 @@ function App() {
           />
         )}
         
-        {step === 'INFO' && (
-          <Info 
-            booking={booking} 
-            onNext={handleNext} 
-            onBack={handleBack} 
-            onUpdate={updateBooking} 
-          />
-        )}
+        {/* INFO STEP REMOVED */}
         
-        {/* Step 8: Final Summary & Confirmation */}
         {step === 'SUMMARY' && (
           <Summary 
             booking={booking} 
             onBack={handleBack} 
-            onCancel={handleCancel}  // <--- Passed the new reset function here
+            onCancel={handleCancel}
             onEdit={() => setStep('METHOD')} 
           />
         )}

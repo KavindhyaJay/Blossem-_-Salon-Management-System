@@ -361,10 +361,6 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
 };
 
 // --- Date Step ---
-// src/components/Steps.js
-
-// ... other imports ...
-
 export const DateSelect = ({ onNext, onBack, onUpdate }) => {
   // 1. State to keep track of the month currently being viewed
   const [viewDate, setViewDate] = useState(new Date()); 
@@ -469,7 +465,7 @@ export const DateSelect = ({ onNext, onBack, onUpdate }) => {
   );
 };
 
-// --- Time Step ---
+// --- Time Step (UPDATED NAV) ---
 export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
   <div className="step-container">
     <div className="header-row">
@@ -494,7 +490,8 @@ export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
     
     <div className="footer-action">
       {booking.time && (
-         <button className="btn-primary full-width" onClick={() => onNext('INFO')}>
+         // UPDATED: Navigates directly to SUMMARY, skipping Info
+         <button className="btn-primary full-width" onClick={() => onNext('SUMMARY')}>
            Continue
          </button>
       )}
@@ -502,65 +499,7 @@ export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
   </div>
 );
 
-// --- Info Step ---
-export const Info = ({ booking, onNext, onBack, onUpdate }) => (
-  <div className="step-container">
-     <div className="header-row">
-      <button className="btn-back" onClick={() => onBack('TIME')}>
-        <ChevronLeft size={16}/> Back
-      </button>
-      <h2>Your Details</h2>
-      <div style={{width: 60}}></div>
-    </div>
-    
-    <div className="form-card">
-      <div className="input-group">
-        <label>Full Name</label>
-        <input 
-          type="text" 
-          placeholder="Enter Name" 
-          value={booking.customer.name}
-          onChange={(e) => onUpdate('customer', {...booking.customer, name: e.target.value})}
-        />
-      </div>
-      <div className="input-group">
-        <label>Email</label>
-        <input 
-          type="email" 
-          placeholder="Enter Email" 
-          value={booking.customer.email}
-          onChange={(e) => onUpdate('customer', {...booking.customer, email: e.target.value})}
-        />
-      </div>
-      <div className="input-group">
-        <label>Username</label>
-        <input 
-          type="text" 
-          placeholder="Enter Username" 
-          value={booking.customer.username}
-          onChange={(e) => onUpdate('customer', {...booking.customer, username: e.target.value})}
-        />
-      </div>
-      <div className="input-group">
-        <label>Password</label>
-        <input 
-          type="password" 
-          placeholder="Secure Password"
-          value={booking.customer.password}
-          onChange={(e) => onUpdate('customer', {...booking.customer, password: e.target.value})}
-        />
-      </div>
-      
-      <div className="form-actions">
-         <button className="btn-primary full-width" onClick={() => onNext('SUMMARY')}>
-           Review Booking
-         </button>
-      </div>
-    </div>
-  </div>
-);
-
-// --- Summary Step (UPDATED) ---
+// --- Summary Step ---
 export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
   const totalCost = booking.services.reduce((acc, curr) => acc + curr.price, 0);
 
@@ -591,7 +530,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
       payment: totalCost.toString()
     };
 
-    console.log("Sending Payload: - Steps.js:594", payload);
+    console.log("Sending Payload: - Steps.js:533", payload);
 
     // 3. Send to Backend
     fetch('http://localhost:8081/api/bookings/create', {
@@ -608,7 +547,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
         window.location.reload(); 
     })
     .catch(error => {
-        console.error("Error: - Steps.js:611", error);
+        console.error("Error: - Steps.js:550", error);
         alert("Booking Failed. Check console.");
     });
   };
@@ -616,7 +555,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
   return (
     <div className="step-container">
        <div className="header-row">
-        <button className="btn-back" onClick={() => onBack('INFO')}>
+        <button className="btn-back" onClick={() => onBack('TIME')}>
           <ChevronLeft size={16}/> Back
         </button>
         <h2>Booking Summary</h2>
@@ -624,12 +563,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
       </div>
       
       <div className="summary-card">
-        {/* Customer */}
-        <div className="summary-section">
-          <h3>Customer</h3>
-          <p><strong>Name:</strong> {booking.customer.name || 'N/A'}</p>
-          <p><strong>Email:</strong> {booking.customer.email || 'N/A'}</p>
-        </div>
+        
         
         {/* Services */}
         <div className="summary-section">
@@ -676,8 +610,8 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
                           borderBottom: '1px dashed #eee',
                           paddingBottom: '4px'
                       }}>
-                        <span style={{color: '#666'}}>{service.name}</span>
-                        <span style={{fontWeight: 600, color: '#333'}}>
+                        <span style={{color: '#7a7979', fontWeight: 700, fontSize: '15px'}}>{service.name}</span>
+                        <span style={{fontWeight: 700, color: '#7a7979', fontSize: '15px'}}>
                           {assignedStaff?.name || "No Preference"}
                         </span>
                       </li>
@@ -695,7 +629,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
           
           <button 
             className="btn-outline full-width" 
-            style={{marginTop: '10px', color: '#007bff', borderColor: '#007bff'}}
+            style={{marginTop: '5px',marginBottom: '10px', color: '#007bff', borderColor: '#007bff'}}
             onClick={onEdit}
           >
             Edit Booking Details
