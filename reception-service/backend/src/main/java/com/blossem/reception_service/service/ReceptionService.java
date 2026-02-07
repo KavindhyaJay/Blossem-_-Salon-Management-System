@@ -30,15 +30,18 @@ public class ReceptionService {
     private final BookingRepository bookingRepo;
     private final CustomerRepository customerRepo;
     private final EmailService emailService;
+    private final StaffDirectoryService staffDirectory;
 
     public ReceptionService(ReceptionAppointmentRepository repo,
             BookingRepository bookingRepo,
             CustomerRepository customerRepo,
-            EmailService emailService) {
+            EmailService emailService,
+            StaffDirectoryService staffDirectory) {
         this.repo = repo;
         this.bookingRepo = bookingRepo;
         this.customerRepo = customerRepo;
         this.emailService = emailService;
+        this.staffDirectory = staffDirectory;
     }
 
     public List<ReceptionAppointment> listAll() {
@@ -106,6 +109,7 @@ public class ReceptionService {
 
         String bookingId = req.getBookingId();
         Booking linkedBooking = null;
+        String staffEmailForAppointment = null;
 
         // Create booking if not provided
         if (bookingId == null || bookingId.isBlank()) {
@@ -115,13 +119,18 @@ public class ReceptionService {
             newBooking.setDate(req.getDate());
             newBooking.setTime(req.getTime());
             newBooking.setStaff(req.getStaff());
+            String resolvedStaffEmail = resolveStaffEmail(req.getStaff(), req.getStaffEmail(), null);
+            newBooking.setStaffEmail(resolvedStaffEmail);
             newBooking.setPaymentStatus(paymentStatus);
             newBooking.setTotalPayment(totalPayment);
             linkedBooking = bookingRepo.save(newBooking);
+            bookingId = linkedBooking.getId();
+            staffEmailForAppointment = resolvedStaffEmail;
 
         } else {
-            linkedBooking = bookingRepo.findById(bookingId)
-                    .orElseThrow(() -> new RuntimeException("Provided bookingId not found: " + bookingId));
+            final String bookingIdForLookup = bookingId;
+            linkedBooking = bookingRepo.findById(bookingIdForLookup)
+                    .orElseThrow(() -> new RuntimeException("Provided bookingId not found: " + bookingIdForLookup));
             boolean bookingUpdated = false;
             if (!Arrays.equals(linkedBooking.getServices(), req.getServices())) {
                 linkedBooking.setServices(cloneServices(req.getServices()));
@@ -137,6 +146,12 @@ public class ReceptionService {
             }
             if (!Objects.equals(linkedBooking.getStaff(), req.getStaff())) {
                 linkedBooking.setStaff(req.getStaff());
+                bookingUpdated = true;
+            }
+            String resolvedStaffEmail = resolveStaffEmail(req.getStaff(), req.getStaffEmail(),
+                    linkedBooking.getStaffEmail());
+            if (!Objects.equals(linkedBooking.getStaffEmail(), resolvedStaffEmail)) {
+                linkedBooking.setStaffEmail(resolvedStaffEmail);
                 bookingUpdated = true;
             }
             if (req.getEmail() != null && !req.getEmail().isBlank()
@@ -155,6 +170,8 @@ public class ReceptionService {
             if (bookingUpdated) {
                 linkedBooking = bookingRepo.save(linkedBooking);
             }
+            staffEmailForAppointment = resolveStaffEmail(req.getStaff(), req.getStaffEmail(),
+                    linkedBooking.getStaffEmail());
         }
 
         String normalizedPaymentChecked = "No";
@@ -176,6 +193,8 @@ public class ReceptionService {
         ap.setDate(req.getDate());
         ap.setTime(req.getTime());
         ap.setStaff(req.getStaff());
+        ap.setStaffEmail(firstNonBlank(staffEmailForAppointment,
+                linkedBooking != null ? linkedBooking.getStaffEmail() : null));
         ap.setPaymentStatus(paymentStatus);
         Double appointmentTotal = totalPayment != null
                 ? totalPayment
@@ -246,6 +265,7 @@ public class ReceptionService {
         ap.setDate(b.getDate());
         ap.setTime(b.getTime());
         ap.setStaff(b.getStaff());
+        ap.setStaffEmail(ensureBookingStaffEmail(b));
         ap.setPaymentStatus(b.getPaymentStatus());
         ap.setTotalPayment(safeDouble(b.getTotalPayment()));
         ap.setReceptionNotes(null);
@@ -284,6 +304,8 @@ public class ReceptionService {
         existing.setDate(req.getDate());
         existing.setTime(req.getTime());
         existing.setStaff(req.getStaff());
+        String resolvedStaffEmail = resolveStaffEmail(req.getStaff(), req.getStaffEmail(), existing.getStaffEmail());
+        existing.setStaffEmail(resolvedStaffEmail);
         String requestedPaymentStatus = normalizePaymentValue(req.getPaymentStatus());
         if (requestedPaymentStatus != null) {
             existing.setPaymentStatus(requestedPaymentStatus);
@@ -318,6 +340,7 @@ public class ReceptionService {
                 booking.setDate(req.getDate());
                 booking.setTime(req.getTime());
                 booking.setStaff(req.getStaff());
+                booking.setStaffEmail(resolvedStaffEmail != null ? resolvedStaffEmail : booking.getStaffEmail());
                 if (requestedPaymentStatus != null) {
                     booking.setPaymentStatus(requestedPaymentStatus);
                 }
@@ -396,6 +419,7 @@ public class ReceptionService {
     public ReceptionAppointment markArrivedByBookingId(String bookingId, String staffEmail) {
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+        String bookingStaffEmail = ensureBookingStaffEmail(booking);
 
         Optional<ReceptionAppointment> maybeAp = findAppointmentByBookingId(bookingId);
         ReceptionAppointment ap;
@@ -403,6 +427,7 @@ public class ReceptionService {
         if (maybeAp.isPresent()) {
             ap = maybeAp.get();
             ap.setCustomerArrived("Yes");
+            ap.setStaffEmail(bookingStaffEmail);
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
             ap.setUpdatedAt(Instant.now());
         } else {
@@ -416,6 +441,7 @@ public class ReceptionService {
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
+            ap.setStaffEmail(bookingStaffEmail);
             ap.setPaymentStatus(booking.getPaymentStatus());
             ap.setPaymentChecked("No");
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
@@ -452,6 +478,7 @@ public class ReceptionService {
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
         booking.setPaymentStatus(paymentValue);
         bookingRepo.save(booking);
+        String bookingStaffEmail = ensureBookingStaffEmail(booking);
 
         Optional<ReceptionAppointment> maybeAp = findAppointmentByBookingId(bookingId);
         ReceptionAppointment ap;
@@ -459,6 +486,7 @@ public class ReceptionService {
         if (maybeAp.isPresent()) {
             ap = maybeAp.get();
             ap.setPaymentStatus(paymentValue);
+            ap.setStaffEmail(bookingStaffEmail);
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
             ap.setUpdatedAt(Instant.now());
         } else {
@@ -472,6 +500,7 @@ public class ReceptionService {
             ap.setDate(booking.getDate());
             ap.setTime(booking.getTime());
             ap.setStaff(booking.getStaff());
+            ap.setStaffEmail(bookingStaffEmail);
             ap.setPaymentStatus(paymentValue);
             ap.setPaymentChecked("No");
             ap.setTotalPayment(safeDouble(booking.getTotalPayment()));
@@ -618,6 +647,7 @@ public class ReceptionService {
 
     private boolean applyBookingSnapshotToReception(Booking booking, ReceptionAppointment ap) {
         boolean changed = false;
+        String bookingStaffEmail = ensureBookingStaffEmail(booking);
 
         if (!Objects.equals(ap.getBookingId(), booking.getId())) {
             ap.setBookingId(booking.getId());
@@ -648,6 +678,10 @@ public class ReceptionService {
         }
         if (!Objects.equals(ap.getStaff(), booking.getStaff())) {
             ap.setStaff(booking.getStaff());
+            changed = true;
+        }
+        if (!Objects.equals(ap.getStaffEmail(), bookingStaffEmail)) {
+            ap.setStaffEmail(bookingStaffEmail);
             changed = true;
         }
         if (!Objects.equals(ap.getPaymentStatus(), booking.getPaymentStatus())) {
@@ -683,6 +717,28 @@ public class ReceptionService {
 
     private String[] cloneServices(String[] services) {
         return services == null ? null : services.clone();
+    }
+
+    private String resolveStaffEmail(String staffName, String explicitEmail, String fallback) {
+        if (explicitEmail != null && !explicitEmail.isBlank()) {
+            return explicitEmail.trim();
+        }
+        if (staffName != null && !staffName.isBlank()) {
+            return staffDirectory.findEmailByName(staffName.trim()).orElse(fallback);
+        }
+        return fallback;
+    }
+
+    private String ensureBookingStaffEmail(Booking booking) {
+        if (booking == null) {
+            return null;
+        }
+        String resolved = resolveStaffEmail(booking.getStaff(), booking.getStaffEmail(), booking.getStaffEmail());
+        if (!Objects.equals(resolved, booking.getStaffEmail())) {
+            booking.setStaffEmail(resolved);
+            bookingRepo.save(booking);
+        }
+        return resolved;
     }
 
     private Optional<ReceptionAppointment> findAppointmentByBookingId(String bookingId) {

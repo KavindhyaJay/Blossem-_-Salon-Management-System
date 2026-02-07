@@ -24,6 +24,8 @@ public class Booking {
     private String time;
     @Field("staff")
     private Object staff;
+    @Field("staffEmail")
+    private String staffEmail;
     @JsonProperty("total_payment")
     @Field("totalPayment")
     private Double totalPayment; // numeric amount synced to external collection
@@ -83,6 +85,14 @@ public class Booking {
     @JsonProperty("staff")
     public void setStaff(String staffValue) {
         this.staff = staffValue;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
     }
 
     @JsonProperty("total_payment")

@@ -22,6 +22,8 @@ public class ReceptionAppointment {
     private String date;
     private String time;
     private String staff;
+    @Field("staffEmail")
+    private String staffEmail;
     @JsonProperty("paymentStatus")
     @JsonAlias({ "payment" })
     @Field("payment")
@@ -110,6 +112,14 @@ public class ReceptionAppointment {
 
     public void setStaff(String staff) {
         this.staff = staff;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
     }
 
     @JsonProperty("paymentStatus")

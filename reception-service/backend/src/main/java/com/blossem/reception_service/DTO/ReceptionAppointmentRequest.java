@@ -18,6 +18,7 @@ public class ReceptionAppointmentRequest {
     private String time;
 
     private String staff;
+    private String staffEmail;
     private String receptionNotes;
     private String amount; // payment amount/status (e.g., "2000", "Paid")
 
@@ -88,6 +89,14 @@ public class ReceptionAppointmentRequest {
 
     public void setStaff(String staff) {
         this.staff = staff;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
     }
 
     public String getReceptionNotes() {

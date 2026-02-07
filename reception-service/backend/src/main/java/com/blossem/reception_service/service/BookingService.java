@@ -13,10 +13,14 @@ public class BookingService {
 
     private final BookingRepository bookingRepo;
     private final ReceptionService receptionService;
+    private final StaffDirectoryService staffDirectory;
 
-    public BookingService(BookingRepository bookingRepo, ReceptionService receptionService) {
+    public BookingService(BookingRepository bookingRepo,
+            ReceptionService receptionService,
+            StaffDirectoryService staffDirectory) {
         this.bookingRepo = bookingRepo;
         this.receptionService = receptionService;
+        this.staffDirectory = staffDirectory;
     }
 
     /**
@@ -31,11 +35,13 @@ public class BookingService {
         b.setDate(req.getDate());
         b.setTime(req.getTime());
         b.setStaff(req.getStaff());
+        b.setStaffEmail(resolveStaffEmail(req.getStaff(), req.getStaffEmail(), null));
         b.setPaymentStatus(resolvePaymentStatus(req.getPaymentStatus(), "Pending"));
         b.setTotalPayment(req.getTotalPayment());
         Booking savedBooking = bookingRepo.save(b);
 
-        // Always mirror the booking in reception appointments so the two collections stay
+        // Always mirror the booking in reception appointments so the two collections
+        // stay
         // in sync. Let any failure propagate so we don't end up with mismatched data.
         receptionService.createFromExistingBooking(savedBooking.getId(), req.getEmail(), req.getCustomerName());
 
@@ -51,6 +57,7 @@ public class BookingService {
         existing.setDate(req.getDate());
         existing.setTime(req.getTime());
         existing.setStaff(req.getStaff());
+        existing.setStaffEmail(resolveStaffEmail(req.getStaff(), req.getStaffEmail(), existing.getStaffEmail()));
         String normalizedPaymentStatus = resolvePaymentStatus(req.getPaymentStatus(), null);
         if (normalizedPaymentStatus != null) {
             existing.setPaymentStatus(normalizedPaymentStatus);
@@ -77,6 +84,16 @@ public class BookingService {
             return normalized;
         }
         return fallbackIfBlank;
+    }
+
+    private String resolveStaffEmail(String staffName, String explicitEmail, String fallback) {
+        if (explicitEmail != null && !explicitEmail.isBlank()) {
+            return explicitEmail.trim();
+        }
+        if (staffName != null && !staffName.isBlank()) {
+            return staffDirectory.findEmailByName(staffName.trim()).orElse(fallback);
+        }
+        return fallback;
     }
 
     private String normalizePaymentValue(String paymentValue) {

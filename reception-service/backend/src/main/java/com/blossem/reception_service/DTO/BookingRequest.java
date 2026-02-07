@@ -21,6 +21,7 @@ public class BookingRequest {
     private String time;
 
     private String staff;
+    private String staffEmail;
 
     @JsonProperty("paymentStatus")
     @JsonAlias({ "payment" })
@@ -78,6 +79,14 @@ public class BookingRequest {
 
     public void setStaff(String staff) {
         this.staff = staff;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
     }
 
     @JsonProperty("paymentStatus")
