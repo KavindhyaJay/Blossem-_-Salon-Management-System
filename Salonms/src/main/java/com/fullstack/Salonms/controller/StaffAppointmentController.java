@@ -1,4 +1,4 @@
-// File: StaffAppointmentController.java
+// File: StaffAppointmentController.java - COMPLETE UPDATED VERSION
 package com.fullstack.Salonms.controller;
 
 import com.fullstack.Salonms.model.Appointment;
@@ -31,8 +31,6 @@ public class StaffAppointmentController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     // Get staff profile (their own)
-    // In StaffAppointmentController, update any status checks:
-
     @GetMapping("/me")
     public ResponseEntity<?> getStaffProfile(@RequestAttribute("userId") String staffId) {
         try {
@@ -52,6 +50,74 @@ public class StaffAppointmentController {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
+
+    // Get appointments for date range (for monthly calendar view)
+    @GetMapping("/appointments/range")
+    public ResponseEntity<?> getAppointmentsByDateRange(
+            @RequestParam("start") String startDate,
+            @RequestParam("end") String endDate,
+            @RequestAttribute("userId") String staffId) {
+
+        try {
+            // Validate date formats
+            LocalDate start = LocalDate.parse(startDate, DATE_FORMATTER);
+            LocalDate end = LocalDate.parse(endDate, DATE_FORMATTER);
+
+            if (start.isAfter(end)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Start date must be before end date");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            }
+
+            // Validate date range (max 60 days to prevent abuse)
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+            if (daysBetween > 60) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Date range cannot exceed 60 days");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            }
+
+            com.fullstack.Salonms.model.Staff staff = staffService.getStaffById(staffId);
+            String staffName = staff.getName();
+
+            // Get appointments for date range
+            List<Appointment> appointments = staffAppointmentService.getAppointmentsByDateRangeForStaff(
+                    staffName, startDate, endDate);
+
+            // Group appointments by date for easier frontend processing
+            Map<String, List<Appointment>> appointmentsByDate = new HashMap<>();
+            for (Appointment appointment : appointments) {
+                String date = appointment.getDate();
+                if (date != null) {
+                    // Remove time part if present (keep only YYYY-MM-DD)
+                    if (date.contains("T")) {
+                        date = date.split("T")[0];
+                    }
+                    if (date.length() > 10) {
+                        date = date.substring(0, 10);
+                    }
+
+                    appointmentsByDate.computeIfAbsent(date, k -> new java.util.ArrayList<>()).add(appointment);
+                }
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("startDate", startDate);
+            response.put("endDate", endDate);
+            response.put("staffName", staffName);
+            response.put("appointments", appointments);
+            response.put("appointmentsByDate", appointmentsByDate);
+            response.put("totalCount", appointments.size());
+            response.put("dateCount", appointmentsByDate.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid request: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 
@@ -101,6 +167,28 @@ public class StaffAppointmentController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("date", date);
+            response.put("staffName", staffName);
+            response.put("appointments", appointments);
+            response.put("count", appointments.size());
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
+    // Get all appointments for staff
+    @GetMapping("/appointments/all")
+    public ResponseEntity<?> getAllAppointments(@RequestAttribute("userId") String staffId) {
+        try {
+            com.fullstack.Salonms.model.Staff staff = staffService.getStaffById(staffId);
+            String staffName = staff.getName();
+
+            List<Appointment> appointments = staffAppointmentService.getAllAppointmentsForStaff(staffName);
+
+            Map<String, Object> response = new HashMap<>();
             response.put("staffName", staffName);
             response.put("appointments", appointments);
             response.put("count", appointments.size());
