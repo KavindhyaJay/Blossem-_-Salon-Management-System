@@ -20,6 +20,8 @@ export const ProgressBar = ({ step }) => {
         if (step === 'STAFF' && index === 1) isActive = true;
         if (step === 'DATE' && index === 2) isActive = true;
         if (step === 'TIME' && index === 3) isActive = true;
+        // Keep Time active during Info step
+        if (step === 'INFO' && index === 3) isActive = true;
         
         return (
           <div key={label} className={`progress-step ${isActive ? 'active' : ''}`}>
@@ -78,7 +80,7 @@ export const Method = ({ onNext, onBack, onUpdate }) => (
   </div>
 );
 
-// --- Services Step (With Filtering Logic) ---
+// --- Services Step ---
 export const Services = ({ booking, onNext, onBack, onToggle }) => {
   const [expandedCat, setExpandedCat] = useState(null);
 
@@ -86,10 +88,8 @@ export const Services = ({ booking, onNext, onBack, onToggle }) => {
     setExpandedCat(expandedCat === id ? null : id);
   };
 
-  // --- FILTER LOGIC ---
   let availableCategories = SERVICE_CATEGORIES;
 
-  // If user booked by staff AND selected a specific person, only show their specialties
   if (booking.method === 'staff' && booking.staff && booking.staff.id !== 'any') {
     availableCategories = SERVICE_CATEGORIES.filter(category => 
       booking.staff.specialties.includes(category.id)
@@ -106,7 +106,6 @@ export const Services = ({ booking, onNext, onBack, onToggle }) => {
         <div style={{width: 60}}></div>
       </div>
 
-      {/* Show context if filtered by staff */}
       {booking.method === 'staff' && booking.staff && booking.staff.id !== 'any' && (
         <div style={{marginBottom: 15, fontSize: 14, color: '#666', background: '#f9f9f9', padding: 10, borderRadius: 8}}>
           Showing services provided by <strong>{booking.staff.name}</strong>
@@ -116,7 +115,6 @@ export const Services = ({ booking, onNext, onBack, onToggle }) => {
       <div className="service-list">
         {availableCategories.map(category => (
           <div key={category.id} className="category-group">
-            {/* Category Header */}
             <div className="category-header" onClick={() => handleExpand(category.id)}>
               <div>
                 <h3>{category.name}</h3>
@@ -125,7 +123,6 @@ export const Services = ({ booking, onNext, onBack, onToggle }) => {
               {expandedCat === category.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </div>
 
-            {/* Sub-Services List */}
             {expandedCat === category.id && (
               <div className="sub-service-list">
                 {category.items.map(item => {
@@ -164,8 +161,6 @@ export const Services = ({ booking, onNext, onBack, onToggle }) => {
         {booking.services.length > 0 && (
            <button 
              className="btn-primary full-width" 
-             // IF booked by staff -> Go to Date (skip staff selection)
-             // IF booked by service -> Go to Staff (to pick who does them)
              onClick={() => onNext(booking.method === 'staff' ? 'DATE' : 'STAFF')}
            >
              Continue ({booking.services.length} selected)
@@ -185,7 +180,6 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
     setExpandedServiceId(expandedServiceId === id ? null : id);
   };
 
-  // --- CASE 1: Book By Service (Accordion View) ---
   if (booking.method === 'service') {
     return (
       <div className="step-container">
@@ -215,11 +209,9 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
 
                 {isOpen && (
                   <div className="staff-selection-list">
-                    {/* No Preference */}
                     <div 
                       className={`staff-card ${currentSelection?.id === 'any' ? 'selected' : ''}`}
                       onClick={() => { 
-                         // IMPORTANT: Save as map: { serviceId: staffObject }
                          const updatedStaff = { ...booking.staff, [service.id]: {id: 'any', name: 'No Preference'} };
                          onUpdate('staff', updatedStaff);
                       }}
@@ -236,7 +228,6 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
                       </div>
                     </div>
 
-                    {/* Specific Staff */}
                     {relatedStaff.map(staff => (
                       <div 
                         key={staff.id} 
@@ -253,12 +244,6 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
                         </div>
                       </div>
                     ))}
-                    
-                    {relatedStaff.length === 0 && (
-                      <div style={{padding: 10, color: '#888', fontStyle: 'italic', fontSize: 13}}>
-                        No specific specialists found for this service.
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -298,7 +283,6 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
     );
   }
 
-  // --- CASE 2: Book By Staff (Standard Search View) ---
   let availableStaff = STAFF;
   if (searchTerm) {
     availableStaff = availableStaff.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -362,29 +346,19 @@ export const Staff = ({ booking, onNext, onBack, onUpdate }) => {
 
 // --- Date Step ---
 export const DateSelect = ({ onNext, onBack, onUpdate }) => {
-  // 1. State to keep track of the month currently being viewed
   const [viewDate, setViewDate] = useState(new Date()); 
   
-  // 2. Get "Today" to disable past dates
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+  today.setHours(0, 0, 0, 0); 
 
-  // 3. Helper: Get formatted Month & Year (e.g., "February 2026")
   const monthName = viewDate.toLocaleString('default', { month: 'long' });
   const year = viewDate.getFullYear();
-
-  // 4. Helper: Calculate how many days are in this specific month
   const daysInMonth = new Date(year, viewDate.getMonth() + 1, 0).getDate();
-
-  // 5. Helper: Find out which day of the week the 1st of the month falls on (0=Sun, 1=Mon...)
   const firstDayOfMonth = new Date(year, viewDate.getMonth(), 1).getDay();
 
-  // 6. Navigation Handlers
   const handlePrevMonth = () => {
-    // Prevent going back past the current real month
     const prevMonthDate = new Date(year, viewDate.getMonth() - 1, 1);
     if (prevMonthDate.getMonth() < today.getMonth() && prevMonthDate.getFullYear() === today.getFullYear()) return;
-    
     setViewDate(new Date(year, viewDate.getMonth() - 1, 1));
   };
 
@@ -393,15 +367,9 @@ export const DateSelect = ({ onNext, onBack, onUpdate }) => {
   };
 
   const handleDateClick = (day) => {
-    // Construct the clicked date object
     const selectedDate = new Date(year, viewDate.getMonth(), day);
-    
-    // Check if it's in the past
     if (selectedDate < today) return;
-
-    // Format YYYY-MM-DD for your backend
     const formattedDate = `${year}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    
     onUpdate('date', formattedDate);
     onNext('TIME');
   };
@@ -417,7 +385,6 @@ export const DateSelect = ({ onNext, onBack, onUpdate }) => {
       </div>
       
       <div className="calendar-mock">
-        {/* Calendar Header with Navigation */}
         <div className="cal-header">
           <ChevronLeft 
             size={20} 
@@ -433,26 +400,19 @@ export const DateSelect = ({ onNext, onBack, onUpdate }) => {
         </div>
 
         <div className="cal-grid">
-          {/* Day Names */}
           {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
             <div key={d} className="cal-day-name">{d}</div>
           ))}
-
-          {/* Empty Slots for days before the 1st of the month */}
           {Array.from({ length: firstDayOfMonth }).map((_, i) => (
             <div key={`empty-${i}`} className="cal-day empty" />
           ))}
-
-          {/* Actual Days */}
           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
             const checkDate = new Date(year, viewDate.getMonth(), day);
             const isPast = checkDate < today;
-            const isSelected = false; // You can compare with booking.date if needed
-
             return (
               <div 
                 key={day} 
-                className={`cal-day ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''}`}
+                className={`cal-day ${isPast ? 'disabled' : ''}`}
                 onClick={() => !isPast && handleDateClick(day)}
               >
                 {day}
@@ -465,7 +425,7 @@ export const DateSelect = ({ onNext, onBack, onUpdate }) => {
   );
 };
 
-// --- Time Step (UPDATED NAV) ---
+// --- Time Step ---
 export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
   <div className="step-container">
     <div className="header-row">
@@ -490,11 +450,60 @@ export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
     
     <div className="footer-action">
       {booking.time && (
-         // UPDATED: Navigates directly to SUMMARY, skipping Info
-         <button className="btn-primary full-width" onClick={() => onNext('SUMMARY')}>
+         // UPDATED: Goes to INFO step now
+         <button className="btn-primary full-width" onClick={() => onNext('INFO')}>
            Continue
          </button>
       )}
+    </div>
+  </div>
+);
+
+// --- Info Step (NEWLY RESTORED & SIMPLIFIED) ---
+export const Info = ({ booking, onNext, onBack, onUpdate }) => (
+  <div className="step-container">
+     <div className="header-row">
+      <button className="btn-back" onClick={() => onBack('TIME')}>
+        <ChevronLeft size={16}/> Back
+      </button>
+      <h2>Your Details</h2>
+      <div style={{width: 60}}></div>
+    </div>
+    
+    <div className="form-card">
+      <div className="input-group">
+        <label>Full Name</label>
+        <input 
+          type="text" 
+          placeholder="Enter Name" 
+          value={booking.customer.name}
+          onChange={(e) => onUpdate('customer', {...booking.customer, name: e.target.value})}
+        />
+      </div>
+      <div className="input-group">
+        <label>Phone Number</label>
+        <input 
+          type="tel" 
+          placeholder="Enter Phone Number" 
+          value={booking.customer.phone}
+          onChange={(e) => onUpdate('customer', {...booking.customer, phone: e.target.value})}
+        />
+      </div>
+      <div className="input-group">
+        <label>Email</label>
+        <input 
+          type="email" 
+          placeholder="Enter Email" 
+          value={booking.customer.email}
+          onChange={(e) => onUpdate('customer', {...booking.customer, email: e.target.value})}
+        />
+      </div>
+      
+      <div className="form-actions">
+         <button className="btn-primary full-width" onClick={() => onNext('SUMMARY')}>
+           Review Booking
+         </button>
+      </div>
     </div>
   </div>
 );
@@ -504,7 +513,6 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
   const totalCost = booking.services.reduce((acc, curr) => acc + curr.price, 0);
 
   const handleConfirm = () => {
-    // 1. Prepare Staff String
     let staffName = "No Preference";
     if (booking.method === 'staff') {
         staffName = booking.staff?.name || "No Preference";
@@ -516,23 +524,26 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
         staffName = staffList.join(', ');
     }
 
-    // 2. Build Payload
     const payload = {
       name: booking.customer.name,
       phone: booking.customer.phone || "0000000000",
       email: booking.customer.email,
-      username: booking.customer.username,
-      password: booking.customer.password,
+      // Removed username/password from payload since we aren't collecting them
       services: booking.services.map(s => s.name),
-      staff: staffName, 
+      staff:
+        booking.method === 'staff'
+          ? [booking.staff?.name || "No Preference"]
+          : booking.services.map(
+              s => booking.staff?.[s.id]?.name || "No Preference"
+            ),
+
       date: booking.date,
       time: booking.time,
-      payment: totalCost.toString()
+      totalPayment: totalCost
     };
 
-    console.log("Sending Payload: - Steps.js:533", payload);
+    console.log("Sending Payload: - Steps.js:545", payload);
 
-    // 3. Send to Backend
     fetch('http://localhost:8081/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -547,7 +558,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
         window.location.reload(); 
     })
     .catch(error => {
-        console.error("Error: - Steps.js:550", error);
+        console.error("Error: - Steps.js:561", error);
         alert("Booking Failed. Check console.");
     });
   };
@@ -555,7 +566,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
   return (
     <div className="step-container">
        <div className="header-row">
-        <button className="btn-back" onClick={() => onBack('TIME')}>
+        <button className="btn-back" onClick={() => onBack('INFO')}>
           <ChevronLeft size={16}/> Back
         </button>
         <h2>Booking Summary</h2>
@@ -563,7 +574,13 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
       </div>
       
       <div className="summary-card">
-        
+        {/* Customer */}
+        <div className="summary-section">
+          <h3>Customer</h3>
+          <p><strong>Name:</strong> {booking.customer.name || 'N/A'}</p>
+          <p><strong>Phone:</strong> {booking.customer.phone || 'N/A'}</p>
+          <p><strong>Email:</strong> {booking.customer.email || 'N/A'}</p>
+        </div>
         
         {/* Services */}
         <div className="summary-section">
@@ -580,7 +597,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
           </div>
         </div>
         
-        {/* Appointment (List View Support) */}
+        {/* Appointment */}
         <div className="summary-section">
            <h3>Appointment</h3>
            <p><strong>Date:</strong> {booking.date}</p>
@@ -588,15 +605,11 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
            
            <div style={{marginTop: '12px'}}>
              <strong>Stylist(s):</strong>
-             
-             {/* CASE 1: Booked by Staff */}
              {booking.method === 'staff' && (
                 <p style={{margin: '5px 0 0 0', color: '#333'}}>
                   {booking.staff?.name || "No Preference"}
                 </p>
              )}
-
-             {/* CASE 2: Booked by Service */}
              {booking.method === 'service' && (
                 <ul style={{margin: '8px 0 0 0', padding: 0, listStyle: 'none'}}>
                   {booking.services.map(service => {
@@ -629,7 +642,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
           
           <button 
             className="btn-outline full-width" 
-            style={{marginTop: '5px',marginBottom: '10px', color: '#007bff', borderColor: '#007bff'}}
+            style={{marginTop: '5px', marginBottom: '10px', color: '#007bff', borderColor: '#007bff'}}
             onClick={onEdit}
           >
             Edit Booking Details
@@ -637,7 +650,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
 
           <div className="secondary-actions">
             <button className="btn-outline text-red" onClick={onCancel}>
-              Cancel & Exit...
+              Cancel & Exit
             </button>
           </div>
         </div>

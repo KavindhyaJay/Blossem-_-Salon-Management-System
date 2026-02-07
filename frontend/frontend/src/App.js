@@ -4,26 +4,23 @@ import { Scissors } from 'lucide-react';
 import './App.css'; 
 import { 
   Home, Method, Services, Staff, DateSelect, 
-  TimeSelect, Summary, ProgressBar 
+  TimeSelect, Info, Summary, ProgressBar 
 } from './components/Steps';
 
 function App() {
   const [step, setStep] = useState('HOME');
   
-  // Define initial state separately so we can reuse it for resetting
+  // Define initial state
   const initialBookingState = {
     method: null,      
     services: [],      
     staff: {},       
     date: null,        
     time: null,        
-    // Customer details kept as empty placeholders since we removed the input step
     customer: { 
-      name: 'Guest Client', 
+      name: '', 
       email: '', 
-      phone: '', 
-      username: '', 
-      password: '' 
+      phone: '' 
     }
   };
 
@@ -114,7 +111,15 @@ function App() {
           />
         )}
         
-        {/* INFO STEP REMOVED */}
+        {/* ADDED INFO STEP BACK */}
+        {step === 'INFO' && (
+          <Info 
+            booking={booking} 
+            onNext={handleNext} 
+            onBack={handleBack} 
+            onUpdate={updateBooking} 
+          />
+        )}
         
         {step === 'SUMMARY' && (
           <Summary 
