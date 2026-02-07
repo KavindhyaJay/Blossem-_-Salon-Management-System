@@ -637,7 +637,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
 
           <div className="secondary-actions">
             <button className="btn-outline text-red" onClick={onCancel}>
-              Cancel & Exit
+              Cancel & Exit...
             </button>
           </div>
         </div>
