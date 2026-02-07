@@ -9,7 +9,7 @@ export const SERVICE_CATEGORIES = [
       { id: 'n1', name: 'Classic Manicure', price: 2000, duration: '45 min' },
       { id: 'n2', name: 'Gel Polish Application', price: 3000, duration: '60 min' },
       { id: 'n3', name: 'Acrylic Extensions', price: 5500, duration: '120 min' },
-      { id: 'n4', name: 'Nail Art (Per Finger)', price: 500, duration: '15 min' },
+      { id: 'n4', name: 'Nail Art ', price: 5000, duration: '15 min' },
     ]
   },
   {
@@ -53,14 +53,14 @@ export const STAFF = [
     id: 3, 
     name: 'Risty Murphy', 
     role: 'Skincare Specialist', 
-    specialties: ['facial', 'nails'], // Can do multiple things
+    specialties: ['facial'], // Can do multiple things
     image: '/images/rivish.jpg' 
   },
   { 
     id: 4, 
     name: 'Raisin Cooper', 
     role: 'Hair & Makeup', 
-    specialties: ['hair', 'facial'], 
+    specialties: ['professional makeup', 'facial'], 
     image: '/images/sithara.jpg' 
   },
 ];
