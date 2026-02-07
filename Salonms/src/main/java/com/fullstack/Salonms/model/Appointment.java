@@ -1,4 +1,4 @@
-// File: Appointment.java
+// File: Appointment.java - COMPLETELY UPDATED
 package com.fullstack.Salonms.model;
 
 import lombok.AllArgsConstructor;
@@ -17,17 +17,33 @@ import java.util.List;
 public class Appointment {
     @Id
     private String id;
+
+    // Fields from your database
+    private String email;
     private String bookingId;
     private String customerName;
     private List<String> services;
-    private String date; // Format: "2025-12-01"
-    private String time; // Format: "10:30"
+    private String date; // Format: "2026-01-03"
+    private String time; // Format: "10:00 AM"
     private String staff;
-    private String amount;
-    private String bookingStatus; // e.g., CONFIRMED, CANCELLED, COMPLETED, CUSTOMER_NOT_ARRIVED
+
+    // Payment fields - CHANGED from 'amount' to match database
+    private Double totalPayment; // This is the actual payment field in your database
+    private String payment; // "Paid", "Pending", etc.
+    private String paymentChecked; // "Yes", "No"
+
+    private String customer_arrived; // "Yes", "No"
+
+    // Status fields
+    private String bookingStatus; // e.g., CONFIRMED, CANCELLED, COMPLETED
     private String paymentStatus; // e.g., PENDING, PAID, PARTIAL
+
     private Date createdAt;
     private Date updatedAt;
+    private String _class; // Keep this field
+
+    // Constructors, getters and setters are handled by @Data annotation
+    // But if you need custom ones:
 
     public String getId() {
         return id;
@@ -35,6 +51,14 @@ public class Appointment {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getBookingId() {
@@ -85,12 +109,36 @@ public class Appointment {
         this.staff = staff;
     }
 
-    public String getAmount() {
-        return amount;
+    public Double getTotalPayment() {
+        return totalPayment;
     }
 
-    public void setAmount(String amount) {
-        this.amount = amount;
+    public void setTotalPayment(Double totalPayment) {
+        this.totalPayment = totalPayment;
+    }
+
+    public String getPayment() {
+        return payment;
+    }
+
+    public void setPayment(String payment) {
+        this.payment = payment;
+    }
+
+    public String getPaymentChecked() {
+        return paymentChecked;
+    }
+
+    public void setPaymentChecked(String paymentChecked) {
+        this.paymentChecked = paymentChecked;
+    }
+
+    public String getCustomer_arrived() {
+        return customer_arrived;
+    }
+
+    public void setCustomer_arrived(String customer_arrived) {
+        this.customer_arrived = customer_arrived;
     }
 
     public String getBookingStatus() {
@@ -123,5 +171,13 @@ public class Appointment {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String get_class() {
+        return _class;
+    }
+
+    public void set_class(String _class) {
+        this._class = _class;
     }
 }
