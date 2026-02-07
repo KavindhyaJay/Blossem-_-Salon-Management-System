@@ -52,7 +52,7 @@
 - **Proxy**: `http://localhost:8081` (configured in package.json for development)
 
 #### CORS Configuration
-- **Backend Controllers**: Both `ReceptionController` and `BookingController` have `@CrossOrigin` enabled
+- **Backend Controllers**: Both `ReceptionAppintmentController` and `BookingController` have `@CrossOrigin` enabled
 - **Allowed Origins**: All origins (default @CrossOrigin behavior)
 
 #### Database Connection

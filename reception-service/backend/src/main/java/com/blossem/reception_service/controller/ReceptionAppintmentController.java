@@ -10,11 +10,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reception_appointments")
 @CrossOrigin
-public class ReceptionController {
+public class ReceptionAppintmentController {
 
     private final ReceptionService service;
 
-    public ReceptionController(ReceptionService service) {
+    public ReceptionAppintmentController(ReceptionService service) {
         this.service = service;
     }
 

@@ -6,6 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.blossem.reception_service.model.StaffMember;
 
-public interface StaffRepository extends MongoRepository<StaffMember, String> {
+public interface StaffMemberRepository extends MongoRepository<StaffMember, String> {
     Optional<StaffMember> findFirstByNameIgnoreCase(String name);
 }

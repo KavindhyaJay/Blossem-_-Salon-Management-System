@@ -50,7 +50,7 @@ Backend Server
 ├─ Running on: http://localhost:8081
 ├─ Database: MongoDB Atlas (Connected)
 ├─ Controllers: 
-│  ├─ ReceptionController (CORS enabled)
+│  ├─ ReceptionAppintmentController (CORS enabled)
 │  └─ BookingController (CORS enabled)
 └─ Status: ✅ Active and Responding
 

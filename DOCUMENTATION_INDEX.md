@@ -189,7 +189,7 @@ reception-service/
 ├── backend/
 │   ├── src/main/java/.../
 │   │   ├── controller/
-│   │   │   └── ReceptionController.java ← API endpoint
+│   │   │   └── ReceptionAppintmentController.java ← API endpoint
 │   │   ├── service/
 │   │   └── ...
 │   └── ...
@@ -271,7 +271,7 @@ Component:     src/components/AllDataDisplay.jsx
 Styling:       src/components/AllDataDisplay.css
 API Service:   src/services/receptionService.js
 Page:          src/pages/ReceptionDashboard.jsx
-Backend:       backend/src/.../ReceptionController.java
+Backend:       backend/src/.../ReceptionAppintmentController.java
 ```
 
 ### Commands

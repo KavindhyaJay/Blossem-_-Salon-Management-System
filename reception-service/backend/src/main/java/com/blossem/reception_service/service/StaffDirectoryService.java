@@ -5,22 +5,22 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.blossem.reception_service.model.StaffMember;
-import com.blossem.reception_service.repository.StaffRepository;
+import com.blossem.reception_service.repository.StaffMemberRepository;
 
 @Service
 public class StaffDirectoryService {
 
-    private final StaffRepository staffRepository;
+    private final StaffMemberRepository staffMemberRepository;
 
-    public StaffDirectoryService(StaffRepository staffRepository) {
-        this.staffRepository = staffRepository;
+    public StaffDirectoryService(StaffMemberRepository staffMemberRepository) {
+        this.staffMemberRepository = staffMemberRepository;
     }
 
     public Optional<StaffMember> findByName(String staffName) {
         if (staffName == null || staffName.isBlank()) {
             return Optional.empty();
         }
-        return staffRepository.findFirstByNameIgnoreCase(staffName.trim());
+        return staffMemberRepository.findFirstByNameIgnoreCase(staffName.trim());
     }
 
     public Optional<String> findEmailByName(String staffName) {
