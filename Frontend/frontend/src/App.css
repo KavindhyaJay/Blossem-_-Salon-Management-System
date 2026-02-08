@@ -1,0 +1,5 @@
+/* Cleared CRA defaults to avoid styling conflicts with premium design system */
+.App {
+  width: 100%;
+  min-height: 100vh;
+}
