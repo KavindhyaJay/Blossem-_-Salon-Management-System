@@ -1,8 +1,8 @@
 package com.blossem.reception_service.service;
 
 import com.blossem.reception_service.DTO.BookingRequest;
-import com.blossem.reception_service.model.Booking;
-import com.blossem.reception_service.repository.BookingRepository;
+import com.blossem.reception_service.model.Bookingcustomer;
+import com.blossem.reception_service.repository.BookingcustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,11 +11,11 @@ import java.util.List;
 @Service
 public class BookingService {
 
-    private final BookingRepository bookingRepo;
+    private final BookingcustomerRepository bookingRepo;
     private final ReceptionService receptionService;
     private final StaffDirectoryService staffDirectory;
 
-    public BookingService(BookingRepository bookingRepo,
+    public BookingService(BookingcustomerRepository bookingRepo,
             ReceptionService receptionService,
             StaffDirectoryService staffDirectory) {
         this.bookingRepo = bookingRepo;
@@ -28,8 +28,8 @@ public class BookingService {
      * If email is provided, automatically creates a reception appointment as well.
      */
     @Transactional
-    public Booking createFromRequest(BookingRequest req) {
-        Booking b = new Booking();
+    public Bookingcustomer createFromRequest(BookingRequest req) {
+        Bookingcustomer b = new Bookingcustomer();
         b.setEmail(req.getEmail()); // Save email in booking collection
         b.setServices(req.getServices());
         b.setDate(req.getDate());
@@ -38,7 +38,7 @@ public class BookingService {
         b.setStaffEmail(resolveStaffEmail(req.getStaff(), req.getStaffEmail(), null));
         b.setPaymentStatus(resolvePaymentStatus(req.getPaymentStatus(), "Pending"));
         b.setTotalPayment(req.getTotalPayment());
-        Booking savedBooking = bookingRepo.save(b);
+        Bookingcustomer savedBooking = bookingRepo.save(b);
 
         // Always mirror the booking in reception appointments so the two collections
         // stay
@@ -48,8 +48,9 @@ public class BookingService {
         return savedBooking;
     }
 
-    public Booking update(String id, BookingRequest req) {
-        Booking existing = bookingRepo.findById(id).orElseThrow(() -> new RuntimeException("Booking not found: " + id));
+    public Bookingcustomer update(String id, BookingRequest req) {
+        Bookingcustomer existing = bookingRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found: " + id));
         if (req.getEmail() != null) {
             existing.setEmail(req.getEmail());
         }
@@ -70,12 +71,13 @@ public class BookingService {
         bookingRepo.deleteById(id);
     }
 
-    public List<Booking> listAll() {
+    public List<Bookingcustomer> listAll() {
         return bookingRepo.findAll();
     }
 
-    public Booking getById(String id) {
-        return bookingRepo.findById(id).orElseThrow(() -> new RuntimeException("Booking not found: " + id));
+    public Bookingcustomer getById(String id) {
+        return bookingRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found: " + id));
     }
 
     private String resolvePaymentStatus(String rawValue, String fallbackIfBlank) {

@@ -1,10 +1,10 @@
 package com.blossem.reception_service.service;
 
 import com.blossem.reception_service.DTO.ReceptionAppointmentRequest;
-import com.blossem.reception_service.model.Booking;
-import com.blossem.reception_service.model.Customer;
+import com.blossem.reception_service.model.Bookingcustomer;
+import com.blossem.reception_service.model.Customerdetails;
 import com.blossem.reception_service.model.ReceptionAppointment;
-import com.blossem.reception_service.repository.BookingRepository;
+import com.blossem.reception_service.repository.BookingcustomerRepository;
 import com.blossem.reception_service.repository.CustomerRepository;
 import com.blossem.reception_service.repository.ReceptionAppointmentRepository;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
 public class ReceptionService {
 
     private final ReceptionAppointmentRepository repo;
-    private final BookingRepository bookingRepo;
+    private final BookingcustomerRepository bookingRepo;
     private final CustomerRepository customerRepo;
     private final EmailService emailService;
     private final StaffDirectoryService staffDirectory;
 
     public ReceptionService(ReceptionAppointmentRepository repo,
-            BookingRepository bookingRepo,
+            BookingcustomerRepository bookingRepo,
             CustomerRepository customerRepo,
             EmailService emailService,
             StaffDirectoryService staffDirectory) {
@@ -60,7 +60,7 @@ public class ReceptionService {
      */
     private String fetchCustomerName(String email, String fallbackName) {
         if (email != null && !email.isBlank()) {
-            Optional<Customer> customerOpt = lookupCustomerByEmail(email);
+            Optional<Customerdetails> customerOpt = lookupCustomerByEmail(email);
             if (customerOpt.isPresent() && customerOpt.get().getName() != null
                     && !customerOpt.get().getName().isBlank()) {
                 return customerOpt.get().getName();
@@ -76,14 +76,14 @@ public class ReceptionService {
         String sanitizedFallback = (fallbackName != null && !fallbackName.isBlank()) ? fallbackName : null;
         if (email != null && !email.isBlank()) {
             return lookupCustomerByEmail(email)
-                    .map(Customer::getName)
+                    .map(Customerdetails::getName)
                     .filter(name -> name != null && !name.isBlank())
                     .orElseGet(() -> firstNonBlank(sanitizedFallback, email, "Customer"));
         }
         return firstNonBlank(sanitizedFallback, "Customer");
     }
 
-    private Optional<Customer> lookupCustomerByEmail(String email) {
+    private Optional<Customerdetails> lookupCustomerByEmail(String email) {
         if (email == null || email.isBlank()) {
             return Optional.empty();
         }
@@ -108,12 +108,12 @@ public class ReceptionService {
         String customerArrivedInput = req.getCustomerArrived();
 
         String bookingId = req.getBookingId();
-        Booking linkedBooking = null;
+        Bookingcustomer linkedBooking = null;
         String staffEmailForAppointment = null;
 
         // Create booking if not provided
         if (bookingId == null || bookingId.isBlank()) {
-            Booking newBooking = new Booking();
+            Bookingcustomer newBooking = new Bookingcustomer();
             newBooking.setEmail(req.getEmail()); // Save email in booking collection for linking
             newBooking.setServices(req.getServices());
             newBooking.setDate(req.getDate());
@@ -235,7 +235,7 @@ public class ReceptionService {
     // Create from existing booking with email and fallback name
     @Transactional
     public ReceptionAppointment createFromExistingBooking(String bookingId, String email, String fallbackCustomerName) {
-        Booking b = bookingRepo.findById(bookingId)
+        Bookingcustomer b = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
 
         // Use email from booking if not provided, or use provided email
@@ -329,9 +329,9 @@ public class ReceptionService {
 
         // Sync with Booking collection if bookingId exists
         if (existing.getBookingId() != null && !existing.getBookingId().isBlank()) {
-            Optional<Booking> bookingOpt = bookingRepo.findById(existing.getBookingId());
+            Optional<Bookingcustomer> bookingOpt = bookingRepo.findById(existing.getBookingId());
             if (bookingOpt.isPresent()) {
-                Booking booking = bookingOpt.get();
+                Bookingcustomer booking = bookingOpt.get();
                 // Update email if changed
                 if (req.getEmail() != null && !req.getEmail().equals(booking.getEmail())) {
                     booking.setEmail(req.getEmail());
@@ -417,7 +417,7 @@ public class ReceptionService {
     // Mark customer as arrived by booking ID
     @Transactional
     public ReceptionAppointment markArrivedByBookingId(String bookingId, String staffEmail) {
-        Booking booking = bookingRepo.findById(bookingId)
+        Bookingcustomer booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
         String bookingStaffEmail = ensureBookingStaffEmail(booking);
 
@@ -474,7 +474,7 @@ public class ReceptionService {
             throw new IllegalArgumentException("payment value must not be blank");
         }
 
-        Booking booking = bookingRepo.findById(bookingId)
+        Bookingcustomer booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
         booking.setPaymentStatus(paymentValue);
         bookingRepo.save(booking);
@@ -544,11 +544,11 @@ public class ReceptionService {
      */
     @Transactional
     public SyncSummary syncBookingsIntoReception() {
-        List<Booking> bookings = bookingRepo.findAll();
+        List<Bookingcustomer> bookings = bookingRepo.findAll();
         int created = 0;
         int updated = 0;
 
-        for (Booking booking : bookings) {
+        for (Bookingcustomer booking : bookings) {
             if (booking.getId() == null || booking.getId().isBlank()) {
                 continue; // skip malformed booking records
             }
@@ -645,7 +645,7 @@ public class ReceptionService {
         return trimmed.equalsIgnoreCase("Paid") || trimmed.equalsIgnoreCase("Yes");
     }
 
-    private boolean applyBookingSnapshotToReception(Booking booking, ReceptionAppointment ap) {
+    private boolean applyBookingSnapshotToReception(Bookingcustomer booking, ReceptionAppointment ap) {
         boolean changed = false;
         String bookingStaffEmail = ensureBookingStaffEmail(booking);
 
@@ -729,7 +729,7 @@ public class ReceptionService {
         return fallback;
     }
 
-    private String ensureBookingStaffEmail(Booking booking) {
+    private String ensureBookingStaffEmail(Bookingcustomer booking) {
         if (booking == null) {
             return null;
         }

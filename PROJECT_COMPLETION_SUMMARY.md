@@ -51,7 +51,7 @@ Backend Server
 ├─ Database: MongoDB Atlas (Connected)
 ├─ Controllers: 
 │  ├─ ReceptionAppintmentController (CORS enabled)
-│  └─ BookingController (CORS enabled)
+│  └─ BookingcustomerController (CORS enabled)
 └─ Status: ✅ Active and Responding
 
 Frontend Server  

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "bookings")
-public class Booking {
+public class Bookingcustomer {
 
     @Id
     private String id;

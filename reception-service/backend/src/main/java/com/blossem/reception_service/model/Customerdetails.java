@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "customers")
-public class Customer {
+public class Customerdetails {
 
     @Id
     private String id;
@@ -13,7 +13,7 @@ public class Customer {
     private String phone;
     private String email;
 
-    public Customer() {
+    public Customerdetails() {
     }
 
     public String getId() {
