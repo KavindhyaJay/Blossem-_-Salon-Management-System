@@ -17,7 +17,7 @@
 ## 🔧 Errors Fixed
 
 ### ✅ Backend
-- **Removed**: Unused `PaymentStatus` import from `BookingService.java`
+- **Removed**: Unused `PaymentStatus` import from `BookingcustomerService.java`
 - **Result**: Zero compilation warnings
 - **Build Status**: ✅ SUCCESS
 - **Command**: `mvn clean install -DskipTests`
@@ -160,7 +160,7 @@ export default function AppointmentCard() {
 
 ### Backend
 1. ✅ `pom.xml` - Verified dependencies
-2. ✅ `BookingService.java` - Removed unused import
+2. ✅ `BookingcustomerService.java` - Removed unused import
 3. ✅ All 16 source files - Clean compile
 
 ### Frontend  

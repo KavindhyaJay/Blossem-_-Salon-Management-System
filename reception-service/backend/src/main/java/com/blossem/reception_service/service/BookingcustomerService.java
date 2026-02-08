@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class BookingService {
+public class BookingcustomerService {
 
     private final BookingcustomerRepository bookingRepo;
     private final ReceptionService receptionService;
     private final StaffDirectoryService staffDirectory;
 
-    public BookingService(BookingcustomerRepository bookingRepo,
+    public BookingcustomerService(BookingcustomerRepository bookingRepo,
             ReceptionService receptionService,
             StaffDirectoryService staffDirectory) {
         this.bookingRepo = bookingRepo;

@@ -2,7 +2,7 @@ package com.blossem.reception_service.controller;
 
 import com.blossem.reception_service.DTO.BookingRequest;
 import com.blossem.reception_service.model.Bookingcustomer;
-import com.blossem.reception_service.service.BookingService;
+import com.blossem.reception_service.service.BookingcustomerService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +12,9 @@ import java.util.List;
 @CrossOrigin
 public class BookingcustomerController {
 
-    private final BookingService service;
+    private final BookingcustomerService service;
 
-    public BookingcustomerController(BookingService service) {
+    public BookingcustomerController(BookingcustomerService service) {
         this.service = service;
     }
 

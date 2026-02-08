@@ -7,7 +7,7 @@
 ## 🔧 Fixes Applied
 
 ### ✅ Backend Fixes
-1. **Fixed unused import** in `BookingService.java`
+1. **Fixed unused import** in `BookingcustomerService.java`
    - Removed unused `PaymentStatus` import
    - Build now clean without warnings
 
@@ -144,7 +144,7 @@ audited 1343 packages
 ## 🔍 Error Status
 
 ### Before Fixes ❌
-- Unused import warning in BookingService
+- Unused import warning in BookingcustomerService
 - Bootstrap not installed
 - Missing npm dependencies
 
@@ -158,9 +158,8 @@ audited 1343 packages
 
 ## 📋 File Updates Summary
 
-### Backend
 - ✅ `pom.xml` - Dependencies verified
-- ✅ `BookingService.java` - Unused import removed
+- ✅ `BookingcustomerService.java` - Unused import removed
 - ✅ All Java files compile successfully
 
 ### Frontend
