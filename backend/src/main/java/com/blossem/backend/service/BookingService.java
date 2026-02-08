@@ -12,8 +12,6 @@ public class BookingService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    @Autowired
-    private LoginRepository loginRepository;
 
     @Autowired
     private BookingRepository bookingRepository;

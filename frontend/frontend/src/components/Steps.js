@@ -629,48 +629,47 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
   const totalCost = booking.services.reduce((acc, curr) => acc + curr.price, 0);
 
   const handleConfirm = () => {
-    let staffName = "No Preference";
-    if (booking.method === 'staff') {
-        staffName = booking.staff?.name || "No Preference";
-    } else if (booking.method === 'service') {
-        const staffList = booking.services.map(s => {
-            const assigned = booking.staff?.[s.id];
-            return `${s.name}: ${assigned?.name || "Any"}`;
-        });
-        staffName = staffList.join(', ');
-    }
 
-    const payload = {
-      name: booking.customer.name,
-      phone: booking.customer.phone || "0000000000",
-      email: booking.customer.email,
-      services: booking.services.map(s => s.name),
-      staff: staffName, 
-      date: booking.date,
-      time: booking.time,
-      payment: totalCost.toString()
-    };
+  const staffList =
+    booking.method === 'staff'
+      ? [booking.staff?.name || "No Preference"]
+      : booking.services.map(
+          s => booking.staff?.[s.id]?.name || "No Preference"
+        );
 
-    console.log("Sending Payload: - Steps.js:654", payload);
+  const payload = {
+    name: booking.customer.name,
+    phone: booking.customer.phone || "0000000000",
+    email: booking.customer.email,
 
-    fetch('http://localhost:8081/api/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Server Error");
-        return response.json();
+    services: booking.services.map(s => s.name),
+    staff: staffList,            // ✅ List<String>
+    date: booking.date,
+    time: booking.time,
+    totalPayment: totalCost      // ✅ double
+  };
+
+  console.log("Sending Payload: - Steps.js:652", payload);
+
+  fetch('http://localhost:8081/api/bookings/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Server Error");
+      return res.json();
     })
     .then(data => {
-        alert("Booking Confirmed! ID: " + data.bookingId);
-        window.location.reload(); 
+      alert("Booking Confirmed! ID: " + data.bookingId);
+      window.location.reload();
     })
-    .catch(error => {
-        console.error("Error: - Steps.js:670", error);
-        alert("Booking Failed. Check console.");
+    .catch(err => {
+      console.error("Error: - Steps.js:668", err);
+      alert("Booking Failed. Check console.");
     });
-  };
+};
+
 
   return (
     <div className="step-container">
