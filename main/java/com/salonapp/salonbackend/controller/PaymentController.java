@@ -28,4 +28,24 @@ public class PaymentController {
     public List<Appointment> getPaymentsByStatus(@PathVariable String status) {
         return service.getPaymentsByStatus(status);
     }
+
+    @PostMapping("/confirm/{id}")
+    public Appointment confirmPayment(@PathVariable String id) {
+        Appointment a = service.getPaymentByBookingId(id);
+        a.setPayment("PAID");
+        return service.save(a);
+    }
+
+    @PostMapping("/notify")
+    public void payhereNotify(@RequestParam String order_id, @RequestParam String status_code) {
+        if ("2".equals(status_code)) { // 2 = success in PayHere
+            Appointment a = service.getPaymentByBookingId(order_id);
+            if (a != null) {
+                a.setPayment("PAID");
+                service.save(a); // ✅ use service instead of appointmentRepo
+            }
+        }
+    }
+
+
 }

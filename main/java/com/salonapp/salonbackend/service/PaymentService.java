@@ -26,4 +26,9 @@ public class PaymentService {
                 .filter(a -> a.getPayment().equalsIgnoreCase(status))
                 .toList();
     }
+
+    // ✅ Add this save method
+    public Appointment save(Appointment appointment) {
+        return appointmentRepo.save(appointment);
+    }
 }

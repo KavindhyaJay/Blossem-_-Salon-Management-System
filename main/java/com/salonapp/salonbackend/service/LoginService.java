@@ -9,9 +9,10 @@ public class LoginService {
     private final LoginRepo repo;
     public LoginService(LoginRepo repo) { this.repo = repo; }
 
-    public Login login(String username, String password) {
-        Login user = repo.findByUsername(username);
+    public Login login(String email, String password) {
+        Login user = repo.findByEmail(email);
         if(user != null && password.equals(user.getPassword())) return user;
         return null;
     }
+
 }

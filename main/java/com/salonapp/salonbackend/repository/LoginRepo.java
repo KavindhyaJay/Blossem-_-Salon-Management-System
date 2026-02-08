@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface LoginRepo extends MongoRepository<Login, String> {
     Login findByUsername(String username);
     Login findByEmail(String email);
+
 }
