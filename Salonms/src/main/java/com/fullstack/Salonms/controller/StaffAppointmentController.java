@@ -1,4 +1,4 @@
-// File: StaffAppointmentController.java - COMPLETE UPDATED VERSION
+// File: StaffAppointmentController.java
 package com.fullstack.Salonms.controller;
 
 import com.fullstack.Salonms.model.Appointment;

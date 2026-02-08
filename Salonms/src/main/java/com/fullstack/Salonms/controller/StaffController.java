@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import com.fullstack.Salonms.model.Staff;
 
 @RestController
-@RequestMapping("/api/staff-management")  // 🚨 CHANGED HERE
+@RequestMapping("/api/staff-management")
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")  // Added admin protection
 public class StaffController {
