@@ -5,7 +5,7 @@ import com.blossem.reception_service.model.Bookingcustomer;
 import com.blossem.reception_service.model.Customerdetails;
 import com.blossem.reception_service.model.ReceptionAppointment;
 import com.blossem.reception_service.repository.BookingcustomerRepository;
-import com.blossem.reception_service.repository.CustomerRepository;
+import com.blossem.reception_service.repository.CustomerdetailsRepository;
 import com.blossem.reception_service.repository.ReceptionAppointmentRepository;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Sort;
@@ -28,13 +28,13 @@ public class ReceptionService {
 
     private final ReceptionAppointmentRepository repo;
     private final BookingcustomerRepository bookingRepo;
-    private final CustomerRepository customerRepo;
+    private final CustomerdetailsRepository customerRepo;
     private final EmailService emailService;
     private final StaffDirectoryService staffDirectory;
 
     public ReceptionService(ReceptionAppointmentRepository repo,
             BookingcustomerRepository bookingRepo,
-            CustomerRepository customerRepo,
+            CustomerdetailsRepository customerRepo,
             EmailService emailService,
             StaffDirectoryService staffDirectory) {
         this.repo = repo;

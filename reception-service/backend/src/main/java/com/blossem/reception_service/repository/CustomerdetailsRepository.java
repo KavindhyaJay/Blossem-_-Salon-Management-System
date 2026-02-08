@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CustomerRepository extends MongoRepository<Customerdetails, String> {
+public interface CustomerdetailsRepository extends MongoRepository<Customerdetails, String> {
     Optional<Customerdetails> findByEmail(String email);
 
     List<Customerdetails> findAllByEmailIgnoreCase(String email);
