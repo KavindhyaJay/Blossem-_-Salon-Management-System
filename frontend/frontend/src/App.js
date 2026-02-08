@@ -34,6 +34,31 @@ function App() {
   const handleCancel = () => {
     setBooking(initialBookingState);
     setStep('HOME');
+    window.scrollTo(0, 0); // Scroll to top when cancelling
+  };
+
+  // --- SMART SCROLL HANDLER ---
+  const handleNavClick = (e, sectionId) => {
+    e.preventDefault(); // Stop default anchor jump
+
+    // 1. If we are NOT on Home, go to Home first
+    if (step !== 'HOME') {
+      setStep('HOME');
+      
+      // Wait 100ms for React to render the Home component, then scroll
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      // 2. If we are already on Home, just scroll
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   const updateBooking = (key, value) => {
@@ -60,10 +85,12 @@ function App() {
           </div>
           Blossem<span>Salon</span>
         </div>
+        
+        {/* UPDATED NAV LINKS */}
         <div className="nav-links">
-          <a href="#about">About</a>
-          <a href="#reviews">Reviews</a>
-          <a href="#locations">Location</a>
+          <a href="#about" onClick={(e) => handleNavClick(e, 'about')}>About</a>
+          <a href="#reviews" onClick={(e) => handleNavClick(e, 'reviews')}>Reviews</a>
+          <a href="#locations" onClick={(e) => handleNavClick(e, 'locations')}>Location</a>
         </div>
       </nav>
 
@@ -111,7 +138,6 @@ function App() {
           />
         )}
         
-        {/* ADDED INFO STEP BACK */}
         {step === 'INFO' && (
           <Info 
             booking={booking} 

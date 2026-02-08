@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { 
   ChevronLeft, ChevronRight, Scissors, User, 
-  Check, ChevronDown, ChevronUp, Search 
+  Check, ChevronDown, ChevronUp, Search,
+  MapPin, Phone, Clock, Star, Quote
 } from 'lucide-react';
 import { SERVICE_CATEGORIES, STAFF, TIME_SLOTS } from '../data';
 
@@ -20,7 +21,6 @@ export const ProgressBar = ({ step }) => {
         if (step === 'STAFF' && index === 1) isActive = true;
         if (step === 'DATE' && index === 2) isActive = true;
         if (step === 'TIME' && index === 3) isActive = true;
-        // Keep Time active during Info step
         if (step === 'INFO' && index === 3) isActive = true;
         
         return (
@@ -33,17 +33,134 @@ export const ProgressBar = ({ step }) => {
   );
 };
 
-// --- Home Step ---
+// --- Home Step (UPDATED WITH SECTIONS) ---
 export const Home = ({ onNext }) => (
-  <div className="hero-section">
-    <div className="hero-content">
-      <h1 className="logo-text">Blossem <span className="text-red">Salon</span></h1>
-      <h2>Premium Beauty & Excellence</h2>
-      <p>Transform your look with our expert stylists in a luxurious setting.</p>
-      <button className="btn-primary" onClick={() => onNext('METHOD')}>
-        Book Appointment
-      </button>
+  <div className="home-wrapper">
+    {/* Hero Section */}
+    <div className="hero-section">
+      <div className="hero-content">
+        <h1 className="logo-text">Blossem <span className="text-red">Salon</span></h1>
+        <h2>Premium Beauty & Excellence</h2>
+        <p>Transform your look with our expert stylists in a luxurious setting.</p>
+        <button className="btn-primary" onClick={() => onNext('METHOD')}>
+          Book Appointment
+        </button>
+      </div>
     </div>
+
+    {/* About Section */}
+    <section id="about" className="section-padding">
+      <div className="section-content text-center">
+        <h2 className="section-title">About <span className="text-red">Us</span></h2>
+        <p className="section-desc">
+          At Blossem Salon, we believe beauty is an art form. Founded in 2025, our salon 
+          combines cutting-edge styling techniques with a relaxing, premium atmosphere. 
+          Our dedicated team of professionals is committed to bringing out the best version of you.
+        </p>
+        <div className="stats-grid">
+          <div className="stat-item">
+            <h3>5+</h3>
+            <p>Years Experience</p>
+          </div>
+          <div className="stat-item">
+            <h3>2k+</h3>
+            <p>Happy Clients</p>
+          </div>
+          <div className="stat-item">
+            <h3>15+</h3>
+            <p>Expert Stylists</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Reviews Section */}
+    <section id="reviews" className="section-padding bg-alt">
+      <div className="section-content">
+        <h2 className="section-title text-center">Client <span className="text-red">Love</span></h2>
+        <div className="reviews-grid">
+          <div className="review-card">
+            <Quote className="quote-icon" size={24} />
+            <p>"Absolutely the best salon experience I've ever had. The staff is incredibly professional and the vibe is unmatched."</p>
+            <div className="review-author">
+              <div className="author-avatar">S</div>
+              <div>
+                <h4>Sarah Jenkins</h4>
+                <div className="stars"><Star size={12} fill="#e11d48" color="#e11d48"/> 5.0</div>
+              </div>
+            </div>
+          </div>
+          <div className="review-card">
+            <Quote className="quote-icon" size={24} />
+            <p>"I love my new hair! The stylists really listen to what you want. Highly recommended for anyone looking for a change."</p>
+            <div className="review-author">
+              <div className="author-avatar">M</div>
+              <div>
+                <h4>Mike Ross</h4>
+                <div className="stars"><Star size={12} fill="#e11d48" color="#e11d48"/> 5.0</div>
+              </div>
+            </div>
+          </div>
+          <div className="review-card">
+            <Quote className="quote-icon" size={24} />
+            <p>"The facial treatment was divine. My skin feels amazing. I'll definitely be coming back next month."</p>
+            <div className="review-author">
+              <div className="author-avatar">A</div>
+              <div>
+                <h4>Amanda Lee</h4>
+                <div className="stars"><Star size={12} fill="#e11d48" color="#e11d48"/> 5.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Location Section */}
+    <section id="locations" className="section-padding">
+      <div className="section-content">
+        <h2 className="section-title text-center">Visit <span className="text-red">Us</span></h2>
+        <div className="location-container">
+          <div className="location-info">
+            <div className="info-item">
+              <MapPin className="text-red" size={24} />
+              <div>
+                <h4>Address</h4>
+                <p>123 Lotus Road, Colombo 07, Sri Lanka</p>
+              </div>
+            </div>
+            <div className="info-item">
+              <Phone className="text-red" size={24} />
+              <div>
+                <h4>Phone</h4>
+                <p>+94 11 234 5678</p>
+              </div>
+            </div>
+            <div className="info-item">
+              <Clock className="text-red" size={24} />
+              <div>
+                <h4>Opening Hours</h4>
+                <p>Mon - Sat: 9:00 AM - 8:00 PM</p>
+                <p>Sun: 10:00 AM - 6:00 PM</p>
+              </div>
+            </div>
+          </div>
+          {/* UPDATED: Actual Google Maps Iframe */}
+          <div className="map-placeholder" style={{ padding: 0, background: 'none' }}>
+            <iframe 
+              title="Google Map Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.798511757685!2d79.85620551477286!3d6.914677495003817!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25963120b1509%3A0x2db2c18a5287f258!2sCinnamon%20Gardens%2C%20Colombo%2007!5e0!3m2!1sen!2slk!4v1625000000000!5m2!1sen!2slk" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0, minHeight: '300px' }} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 );
 
@@ -450,7 +567,6 @@ export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
     
     <div className="footer-action">
       {booking.time && (
-         // UPDATED: Goes to INFO step now
          <button className="btn-primary full-width" onClick={() => onNext('INFO')}>
            Continue
          </button>
@@ -459,7 +575,7 @@ export const TimeSelect = ({ booking, onNext, onBack, onUpdate }) => (
   </div>
 );
 
-// --- Info Step (NEWLY RESTORED & SIMPLIFIED) ---
+// --- Info Step ---
 export const Info = ({ booking, onNext, onBack, onUpdate }) => (
   <div className="step-container">
      <div className="header-row">
@@ -528,21 +644,14 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
       name: booking.customer.name,
       phone: booking.customer.phone || "0000000000",
       email: booking.customer.email,
-      // Removed username/password from payload since we aren't collecting them
       services: booking.services.map(s => s.name),
-      staff:
-        booking.method === 'staff'
-          ? [booking.staff?.name || "No Preference"]
-          : booking.services.map(
-              s => booking.staff?.[s.id]?.name || "No Preference"
-            ),
-
+      staff: staffName, 
       date: booking.date,
       time: booking.time,
-      totalPayment: totalCost
+      payment: totalCost.toString()
     };
 
-    console.log("Sending Payload: - Steps.js:545", payload);
+    console.log("Sending Payload: - Steps.js:654", payload);
 
     fetch('http://localhost:8081/api/bookings/create', {
         method: 'POST',
@@ -558,7 +667,7 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
         window.location.reload(); 
     })
     .catch(error => {
-        console.error("Error: - Steps.js:561", error);
+        console.error("Error: - Steps.js:670", error);
         alert("Booking Failed. Check console.");
     });
   };
@@ -574,7 +683,6 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
       </div>
       
       <div className="summary-card">
-        {/* Customer */}
         <div className="summary-section">
           <h3>Customer</h3>
           <p><strong>Name:</strong> {booking.customer.name || 'N/A'}</p>
@@ -582,7 +690,6 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
           <p><strong>Email:</strong> {booking.customer.email || 'N/A'}</p>
         </div>
         
-        {/* Services */}
         <div className="summary-section">
           <h3>Services</h3>
           {booking.services.map(s => (
@@ -597,7 +704,6 @@ export const Summary = ({ booking, onBack, onCancel, onEdit }) => {
           </div>
         </div>
         
-        {/* Appointment */}
         <div className="summary-section">
            <h3>Appointment</h3>
            <p><strong>Date:</strong> {booking.date}</p>
